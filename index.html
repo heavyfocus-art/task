@@ -46,7 +46,8 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 (function(){
   "use strict";
   var app = document.getElementById("app");
-  var h = decodeURIComponent((location.hash || "").slice(1));
+  var qk = (location.search.match(/[?&]k=([^&#]+)/) || [])[1];
+  var h = decodeURIComponent(qk || (location.hash || "").slice(1));
   var i1 = h.indexOf("."), i2 = i1 < 0 ? -1 : h.indexOf(".", i1 + 1);
   var topic = i1 > 0 ? h.slice(0, i1) : "";
   var id = i2 > 0 ? h.slice(i1 + 1, i2) : (i1 > 0 ? h.slice(i1 + 1) : "");
