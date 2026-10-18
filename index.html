@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>עדכון משימה</title>
+<title>✅ לאישור ביצוע המשימה</title>
+<meta property="og:title" content="✅ לאישור ביצוע המשימה">
+<meta property="og:description" content="לחץ כאן כדי לעדכן: בוצע / לא בוצע">
+<meta property="og:type" content="website">
+<meta name="description" content="לחץ כאן כדי לעדכן: בוצע / לא בוצע">
 <style>
 :root{--bg:#F4F2EC;--surface:#FFFFFF;--ink:#1A2133;--muted:#667089;--line:#E1DED4;--accent:#2B4C9B;--ok:#1C8F62;--ok-soft:#DDF3E8;--no:#C7631A;--no-soft:#FBEBDD;--r:16px}
 @media (prefers-color-scheme:dark){:root{--bg:#10141F;--surface:#191F2E;--ink:#EEF0F5;--muted:#98A1B7;--line:#2A3245;--accent:#8EA8F0;--ok:#43CC93;--ok-soft:#12342A;--no:#F09A55;--no-soft:#3A2717}}
@@ -56,7 +60,7 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 
   function showForm(){
     while(app.children.length > 1) app.removeChild(app.lastChild);
-    var h1 = el("h1", null, title || "המשימה שלך");
+    var h1 = el("h1", null, title || "אישור ביצוע המשימה");
     var card = el("div", "card");
     card.appendChild(el("div", "label", "מה המצב?"));
     var ch = el("div", "choices");
