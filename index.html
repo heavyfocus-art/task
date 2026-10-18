@@ -35,6 +35,9 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 .done p{margin:0;color:var(--muted)}
 .again{font:inherit;color:var(--accent);background:none;border:0;margin-top:14px;font-weight:600;cursor:pointer}
 .bad{text-align:center;color:var(--muted);padding:40px 16px}
+.task{background:var(--surface);border:1px solid var(--line);border-right:5px solid var(--accent);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.task .ttl{font-size:20px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.task .due{font-size:15px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
@@ -46,12 +49,21 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 (function(){
   "use strict";
   var app = document.getElementById("app");
-  var qk = (location.search.match(/[?&]k=([^&#]+)/) || [])[1];
-  var h = decodeURIComponent(qk || (location.hash || "").slice(1));
+  function qp(n){ var m = location.search.match(new RegExp("[?&]"+n+"=([^&#]*)")); if(!m) return ""; try{ return decodeURIComponent(m[1].replace(/\+/g," ")); }catch(e){ return ""; } }
+  var qk = qp("k"), qt = qp("t"), qd = parseInt(qp("d"), 36);
+  var h = qk || decodeURIComponent((location.hash || "").slice(1));
   var i1 = h.indexOf("."), i2 = i1 < 0 ? -1 : h.indexOf(".", i1 + 1);
   var topic = i1 > 0 ? h.slice(0, i1) : "";
   var id = i2 > 0 ? h.slice(i1 + 1, i2) : (i1 > 0 ? h.slice(i1 + 1) : "");
-  var title = i2 > 0 ? h.slice(i2 + 1) : "";
+  var title = qt || (i2 > 0 ? h.slice(i2 + 1) : "");
+  var due = qd > 0 ? new Date(qd * 60000) : null;
+  function dueText(d){
+    var days = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"], p2 = function(n){ return (n<10?"0":"")+n; };
+    var t0 = new Date(); t0.setHours(0,0,0,0); var d0 = new Date(d); d0.setHours(0,0,0,0);
+    var diff = Math.round((d0 - t0) / 86400000);
+    var day = diff === 0 ? "היום" : diff === 1 ? "מחר" : diff === -1 ? "אתמול" : "יום " + days[d.getDay()];
+    return day + " " + d.getDate() + "." + (d.getMonth()+1) + " בשעה " + p2(d.getHours()) + ":" + p2(d.getMinutes());
+  }
   if(!/^[A-Za-z0-9_-]{12,64}$/.test(topic) || !/^[A-Za-z0-9_-]{1,64}$/.test(id)){
     app.insertAdjacentHTML("beforeend", '<p class="bad">הקישור לא שלם. פתח אותו שוב מההודעה בוואטסאפ.</p>');
     return;
@@ -61,7 +73,14 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 
   function showForm(){
     while(app.children.length > 1) app.removeChild(app.lastChild);
-    var h1 = el("h1", null, title || "אישור ביצוע המשימה");
+    var h1 = el("h1", null, "אישור ביצוע המשימה");
+    var task = null;
+    if(title){
+      task = el("div", "task");
+      task.appendChild(el("div", "label", "המשימה"));
+      task.appendChild(el("div", "ttl", title));
+      if(due) task.appendChild(el("div", "due", "📅 תאריך יעד: " + dueText(due)));
+    }
     var card = el("div", "card");
     card.appendChild(el("div", "label", "מה המצב?"));
     var ch = el("div", "choices");
@@ -76,7 +95,7 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
     var send = el("button", "send", "שליחה"); send.type = "button"; send.disabled = true;
     var err = el("p", "err"); err.setAttribute("role","alert");
     card.appendChild(send); card.appendChild(err);
-    app.appendChild(h1); app.appendChild(card);
+    app.appendChild(h1); if(task) app.appendChild(task); app.appendChild(card);
 
     var state = null;
     function pick(s){ state = s; bDone.setAttribute("aria-pressed", String(s==="done")); bNo.setAttribute("aria-pressed", String(s==="no"));
