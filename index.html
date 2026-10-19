@@ -51,6 +51,10 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
   var app = document.getElementById("app");
   function qp(n){ var m = location.search.match(new RegExp("[?&]"+n+"=([^&#]*)")); if(!m) return ""; try{ return decodeURIComponent(m[1].replace(/\+/g," ")); }catch(e){ return ""; } }
   var qk = qp("k"), qt = qp("t"), qd = parseInt(qp("d"), 36);
+  // short form "?a.<taskId>": a known manager alias instead of the long private topic
+  var ALIAS = {a: "rsTzpR2CKgYntVGE9voyo8QCod"};
+  var sm = location.search.match(/^\?([a-z])\.([A-Za-z0-9_-]{1,64})$/);
+  if(sm && ALIAS[sm[1]]) qk = ALIAS[sm[1]] + "." + sm[2];
   var h = qk || decodeURIComponent((location.hash || "").slice(1));
   var i1 = h.indexOf("."), i2 = i1 < 0 ? -1 : h.indexOf(".", i1 + 1);
   var topic = i1 > 0 ? h.slice(0, i1) : "";
