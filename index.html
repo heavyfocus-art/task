@@ -52,10 +52,14 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
   function qp(n){ var m = location.search.match(new RegExp("[?&]"+n+"=([^&#]*)")); if(!m) return ""; try{ return decodeURIComponent(m[1].replace(/\+/g," ")); }catch(e){ return ""; } }
   var qk = qp("k"), qt = qp("t"), qd = parseInt(qp("d"), 36);
   // short form "?a.<taskId>": a known manager alias instead of the long private topic
-  var ALIAS = {a: "rsTzpR2CKgYntVGE9voyo8QCod"};
+  // old short links "?a.<id>" (before the secure links). Turned off automatically after 3.11.2026.
+  var ALIAS = Date.now() < Date.UTC(2026, 10, 3) ? {a: "rsTzpR2CKgYntVGE9voyo8QCod"} : {};
   var sm = location.search.match(/^\?([a-z])\.([A-Za-z0-9_-]{1,64})$/);
   if(sm && ALIAS[sm[1]]) qk = ALIAS[sm[1]] + "." + sm[2];
-  var h = qk || decodeURIComponent((location.hash || "").slice(1));
+  var expired = !!(sm && !ALIAS[sm[1]]);
+  // secure links: "#s.<inbox>.<token>". The report is sealed with a key made from the token.
+  var sec = (location.hash || "").match(/^#s\.([A-Za-z0-9_-]{12,64})\.([A-Za-z0-9]{10})$/);
+  var h = sec ? sec[1] + "." + sec[2] : (qk || decodeURIComponent((location.hash || "").slice(1)));
   var i1 = h.indexOf("."), i2 = i1 < 0 ? -1 : h.indexOf(".", i1 + 1);
   var topic = i1 > 0 ? h.slice(0, i1) : "";
   var id = i2 > 0 ? h.slice(i1 + 1, i2) : (i1 > 0 ? h.slice(i1 + 1) : "");
@@ -69,7 +73,7 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
     return day + " " + d.getDate() + "." + (d.getMonth()+1) + " בשעה " + p2(d.getHours()) + ":" + p2(d.getMinutes());
   }
   if(!/^[A-Za-z0-9_-]{12,64}$/.test(topic) || !/^[A-Za-z0-9_-]{1,64}$/.test(id)){
-    app.insertAdjacentHTML("beforeend", '<p class="bad">הקישור לא שלם. פתח אותו שוב מההודעה בוואטסאפ.</p>');
+    app.insertAdjacentHTML("beforeend", '<p class="bad">'+(expired ? "הקישור הזה הוחלף בקישור מאובטח. בקש מהמנהל לשלוח לך את המשימה שוב." : "הקישור לא שלם. פתח אותו שוב מההודעה בוואטסאפ.")+'</p>');
     return;
   }
   var KEY = "sent:" + topic + "." + id;
@@ -110,11 +114,22 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
       if(!state) return;
       if(state==="no" && !ta.value.trim()){ err.textContent = "כתוב בקצרה מה הבעיה, כדי שיידעו איך לעזור."; ta.focus(); return; }
       send.disabled = true; send.textContent = "שולח…"; err.textContent = "";
-      var body = JSON.stringify({i:id, s:state, n:ta.value.trim().slice(0,800)});
-      fetch("https://ntfy.sh/" + topic, {method:"POST", body: body})
+      makeBody({s:state, n:ta.value.trim().slice(0,800)})
+        .then(function(body){ return fetch("https://ntfy.sh/" + topic, {method:"POST", body: body}); })
         .then(function(r){ if(!r.ok) throw new Error(r.status); try{ localStorage.setItem(KEY, state); }catch(e){} showThanks(state); })
         .catch(function(){ send.disabled = false; send.textContent = "שליחה"; err.textContent = "השליחה לא הצליחה. בדוק שיש אינטרנט ונסה שוב."; });
     };
+  }
+
+  // secure link: {v:2, k: lookup id, iv, c} sealed with SHA-256("rs-task:"+token). Old links: plain.
+  function b64u(buf){ var b=new Uint8Array(buf), x=""; for(var i=0;i<b.length;i++) x+=String.fromCharCode(b[i]); return btoa(x).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+  function makeBody(o){
+    if(!sec) return Promise.resolve(JSON.stringify({i:id, s:o.s, n:o.n}));
+    var S = crypto.subtle, te = new TextEncoder(), iv = crypto.getRandomValues(new Uint8Array(12));
+    return Promise.all([S.digest("SHA-256", te.encode("rs-task:"+id)), S.digest("SHA-256", te.encode("rs-kid:"+id))]).then(function(r){
+      return S.importKey("raw", r[0], "AES-GCM", false, ["encrypt"]).then(function(k){ return S.encrypt({name:"AES-GCM", iv:iv}, k, te.encode(JSON.stringify(o))); })
+        .then(function(c){ return JSON.stringify({v:2, k:b64u(r[1]).slice(0,10), iv:b64u(iv), c:b64u(c)}); });
+    });
   }
 
   function showThanks(s){
