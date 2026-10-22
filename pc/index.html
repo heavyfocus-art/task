@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ראש שקט</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+:root{
+  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#141B2D; --muted:#5D6780; --line:#D8DDE8;
+  --accent:#2D4BE0; --accent-ink:#FFFFFF; --signal:#FFC23D; --signal-ink:#2A1E00;
+  --danger:#C93A31; --danger-soft:#FBE7E5; --ok:#1C8F62; --ok-soft:#DDF3E8; --warn:#B5560F; --warn-soft:#FBECDD; --overlay:rgba(14,20,36,.45);
+  --font-display:"Secular One","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6); color-scheme:dark }
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;direction:rtl}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0}
+
+/* top bar */
+.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding:14px max(16px,3vw);background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:0 0 40px}
+.mark svg{width:22px;height:22px}
+.brand h1{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1}
+.brand small{display:block;font-size:13px;color:var(--muted);font-weight:600}
+.syncp{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:14px;font-weight:600;max-width:100%}
+.syncp .d{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 8px}
+.syncp.wait{background:color-mix(in srgb,var(--signal) 30%,var(--surface));color:var(--signal-ink)}
+.syncp.bad{background:var(--danger-soft);color:var(--danger)}
+:root[data-theme="dark"] .syncp.wait{color:var(--signal)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .syncp.wait{color:var(--signal)}}
+.tact{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border-radius:12px;padding:0 16px;min-height:44px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border:1px solid var(--line);background:var(--surface)}
+.btn.danger{color:var(--danger);border:1px solid var(--danger)}
+.btn.danger.armed{background:var(--danger);color:#fff}
+.btn.okfill{background:var(--ok);color:#fff}
+.btn.wa{background:#1FA855;color:#fff}
+.btn svg{width:18px;height:18px}
+.icon{width:44px;padding:0}
+
+/* layout */
+.shell{display:flex;flex-wrap:wrap;gap:24px;padding:24px max(16px,3vw) 60px;max-width:1440px;margin:0 auto}
+aside{flex:1 1 210px;display:flex;flex-direction:column;gap:16px;align-self:flex-start}
+main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.people{padding:10px;display:flex;flex-direction:column;gap:2px}
+.people .h{font-size:13px;color:var(--muted);font-weight:700;padding:6px 10px}
+.pbtn{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border-radius:10px;text-align:right;width:100%;font-size:15px}
+.pbtn:hover{background:var(--bg)}
+.pbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbtn .n{color:var(--muted);font-weight:700;font-size:14px}
+.pbtn .d{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:transparent}
+.pbtn .d.late{background:var(--danger)}.pbtn .d.g{background:var(--ok)}
+.pbtn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--accent);font-weight:700}
+.pbtn[aria-pressed="true"] .n{color:var(--accent)}
+.side-note{padding:14px 16px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.side-note b{color:var(--ink);font-size:15px}
+
+/* composer */
+.composer{padding:14px;display:flex;flex-direction:column;gap:10px}
+.crow{display:flex;gap:10px;align-items:center}
+#new-task{flex:1;min-width:0;font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+#new-task::placeholder{color:var(--muted)}
+.towho{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.towho span{font-size:13px;color:var(--muted);font-weight:700}
+.towho button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px;font-size:14px;font-weight:600;min-height:32px}
+.towho button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.preview{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}.preview:empty{display:none}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:14px;color:var(--muted);font-weight:600}
+.tile b{font-family:var(--font-display);font-weight:400;font-size:32px;line-height:1.1}
+.tile.late b{color:var(--danger)}.tile.rev{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}.tile.rev b,.tile.rev span{color:var(--ok)}
+.tile.ext b{color:var(--accent)}
+
+/* groups */
+.group{display:flex;flex-direction:column;gap:8px}
+.group h2{font-size:14px;font-weight:700;color:var(--muted);display:flex;gap:8px;align-items:center;letter-spacing:.02em}
+.group h2 .c{font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink)}
+.group.late h2{color:var(--danger)}.group.review h2{color:var(--ok)}.group.issue h2{color:var(--warn)}.group.extreq h2{color:var(--accent)}.group.rej h2{color:var(--danger)}
+.list{overflow:hidden}
+.row{display:grid;grid-template-columns:36px minmax(0,1fr) 120px 150px minmax(0,auto);gap:4px 14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.reported,.row.extok{background:var(--ok-soft)}
+.row.issue{background:var(--warn-soft)}
+.row.extreq{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+.row.rej{background:var(--danger-soft)}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center}
+.check svg{width:16px;height:16px;opacity:0}
+.row.done .check{background:var(--ok);border-color:var(--ok)}
+.row.done .check svg{opacity:1;stroke:var(--surface)}
+.row.reported .check{border-color:var(--ok)}
+.row.reported .check svg{opacity:.55;stroke:var(--ok)}
+.body{text-align:right;display:flex;flex-direction:column;gap:3px;padding:2px 0;min-width:0}
+.body .title{font-weight:600;overflow-wrap:anywhere}
+.row.done .title{text-decoration:line-through;color:var(--muted);font-weight:400}
+.fbnote{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.cell{font-size:15px;min-width:0}
+.cell.muted{color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-weight:600;font-size:13px;white-space:nowrap}
+.chip.soon{background:var(--signal);color:var(--signal-ink)}
+.chip.late{background:var(--danger-soft);color:var(--danger)}
+.chip.plain{background:color-mix(in srgb,var(--line) 60%,transparent);color:var(--ink)}
+.chip.okc{background:var(--ok);color:#fff}
+.chip.noc{background:var(--warn);color:#fff}
+.chip.extc{background:var(--accent);color:var(--accent-ink)}
+.chip.rejc{background:var(--danger);color:#fff}
+.chip.app{background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent)}
+.chip.pend{background:color-mix(in srgb,var(--signal) 35%,var(--surface));color:var(--signal-ink)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.abtn{border-radius:10px;min-height:38px;padding:0 12px;font-weight:700;font-size:14px;border:1.5px solid var(--line);background:var(--surface);white-space:nowrap}
+.abtn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.abtn.no{border-color:var(--danger);color:var(--danger)}
+.abtn.wa{border-color:#1FA855;color:#167A3E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .abtn.wa{color:#43CC93}}
+:root[data-theme="dark"] .abtn.wa{color:#43CC93}
+@media (max-width:860px){
+  .row{grid-template-columns:36px minmax(0,1fr)}
+  .row .cell,.row .acts{grid-column:2}
+  .row .acts{justify-content:flex-start}
+  .row .cell.who:empty,.row .cell.due:empty{display:none}
+}
+.empty{padding:24px 20px;display:flex;flex-direction:column;gap:8px}
+.empty h2{font-family:var(--font-display);font-weight:400;font-size:22px}
+.empty p{margin:0;color:var(--muted)}
+.donebar{display:flex;justify-content:space-between;align-items:center}
+.linkbtn{color:var(--accent);font-weight:700;font-size:14px;padding:4px 2px}
+
+/* sheets */
+.overlay{position:fixed;inset:0;background:var(--overlay);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px;display:flex;flex-direction:column;gap:14px;padding:22px;max-height:92vh;overflow:auto}
+.sheet.wide{max-width:720px}
+.sheet h3{font-family:var(--font-display);font-weight:400;font-size:24px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--muted);font-weight:700}
+.field textarea,.field input,.field select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.field textarea{min-height:70px;resize:vertical}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;background:var(--bg)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .primary{flex:1}
+.fbbox{border-radius:12px;padding:10px 12px;background:var(--ok-soft);font-size:15px;white-space:pre-wrap}
+.fbbox.no{background:var(--warn-soft)}.fbbox.ext{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}.fbbox.rej{background:var(--danger-soft)}
+.hint{font-size:14px;color:var(--muted);margin:0}
+.err{color:var(--danger);font-size:15px;margin:0;min-height:1.2em}
+
+/* weekly (same blocks as the phone) */
+.wknav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wknav button{width:42px;height:42px;flex:0 0 42px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;background:var(--bg)}
+.wknav button svg{width:18px;height:18px}
+.wknav button:disabled{opacity:.3;cursor:default}
+.wknav .lb{flex:1;text-align:center;display:flex;flex-direction:column}
+.wknav .lb b{font-size:19px}
+.wknav .lb small{color:var(--muted);font-size:13px}
+.tiles4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tiles4 .tile{background:var(--bg);border-radius:12px;padding:10px 4px;text-align:center;align-items:center}
+.tiles4 .tile b{font-size:26px}
+.tiles4 .tile span{font-size:12px}
+.tiles4 .tile.ok b{color:var(--ok)}.tiles4 .tile.bad b{color:var(--danger)}.tiles4 .tile.pp b{color:var(--warn)}
+.wkover{font-size:14px;color:var(--muted);text-align:center;margin:-2px 0 0}
+.wkover b{color:var(--danger)}
+.wrow{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.wrow > button{width:100%;display:flex;flex-direction:column;gap:6px;padding:12px;text-align:right}
+.wrow .top{display:flex;align-items:center;gap:8px;width:100%}
+.wrow .nm{flex:1;min-width:0;font-weight:700;font-size:17px}
+.wrow .pct{font-weight:700;border-radius:999px;padding:0 10px;font-size:15px}
+.pct.g{background:var(--ok-soft);color:var(--ok)}.pct.y{background:color-mix(in srgb,var(--signal) 32%,var(--surface));color:var(--ink)}.pct.r{background:var(--danger-soft);color:var(--danger)}.pct.n{background:var(--bg);color:var(--muted)}
+.wbar{height:8px;width:100%;border-radius:999px;background:var(--bg);overflow:hidden;display:flex}
+.wbar i{display:block;height:100%}
+.wbar .wa{background:var(--ok)}.wbar .wb{background:var(--danger)}.wbar .wc{background:var(--muted);opacity:.35}
+.wrow .vd{font-size:14px;font-weight:600}
+.wrow .st{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.wrow .st b{color:var(--ink)}
+.wrow .more{font-size:13px;color:var(--accent);font-weight:600}
+.items{border-top:1px solid var(--line);display:flex;flex-direction:column;background:var(--bg)}
+.it{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-top:1px solid var(--line);font-size:15px}
+.it:first-child{border-top:0}
+.it .m{flex:1;min-width:0;display:flex;flex-direction:column;overflow-wrap:anywhere}
+.it small{color:var(--muted);font-size:13px}
+
+/* pairing */
+.pair{max-width:520px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:20px}
+.pair .card{padding:22px;display:flex;flex-direction:column;gap:14px}
+.pair h2{font-family:var(--font-display);font-weight:400;font-size:26px}
+.steps{margin:0;padding-inline-start:22px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.steps b{color:var(--ink)}
+#code{font:inherit;font-size:34px;font-weight:700;letter-spacing:.25em;text-align:center;direction:ltr;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:50;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font-size:15px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.toast button{color:var(--signal);font-weight:700}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="pair" id="pair" hidden>
+  <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><h1>ראש שקט</h1><small>במחשב</small></div></div>
+  <form class="card" id="pair-form" autocomplete="off">
+    <h2>חיבור המחשב לטלפון</h2>
+    <ol class="steps">
+      <li>בטלפון, פתח את ראש שקט ולחץ על <b>העובדים שלי</b> (סמל האנשים למעלה)</li>
+      <li>גלול ל<b>המחשב שלי</b> ולחץ <b>חיבור</b></li>
+      <li>הקלד כאן את הקוד בן 8 הספרות שמופיע בטלפון</li>
+    </ol>
+    <label for="code" class="hint">קוד חיבור</label>
+    <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000">
+    <p class="err" id="pair-err" role="alert"></p>
+    <button class="btn primary" id="pair-go" type="submit">חיבור</button>
+    <p class="hint">הכול מוצפן. רק המחשב הזה והטלפון שלך יכולים לקרוא את המשימות. במחשב משותף, נתק בסיום העבודה (בהגדרות).</p>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><h1>ראש שקט</h1><small id="who-am-i">במחשב</small></div></div>
+    <span class="syncp wait" id="syncp" role="status"><span class="d" aria-hidden="true"></span><span id="sync-t">מתחבר…</span></span>
+    <div class="tact">
+      <button class="btn ghost" id="wk-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>דו״ח ביצוע שבועי</button>
+      <button class="btn ghost icon" id="set-btn" type="button" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+  </header>
+  <div class="shell">
+    <aside>
+      <nav class="card people" id="people" aria-label="סינון לפי עובד"></nav>
+      <div class="card side-note"><b>איך זה עובד</b><span>מה שתעשה כאן מגיע לעובדים מיד, ולרשימה בטלפון כשתפתח בו את האפליקציה. משימה שעוד לא עודכנה בטלפון מסומנת "ממתין לטלפון".</span></div>
+    </aside>
+    <main>
+      <form class="card composer" id="form" autocomplete="off">
+        <div class="crow">
+          <input id="new-task" type="text" placeholder="למשל: דני מחר ב-9 להחליף זמזם בצומת הרצל" aria-label="משימה חדשה">
+          <button class="btn primary" id="add" type="submit" disabled>+ הוספה</button>
+        </div>
+        <div class="towho" id="towho"></div>
+        <div class="preview" id="preview"></div>
+      </form>
+      <div class="tiles" id="tiles"></div>
+      <div id="lists" style="display:flex;flex-direction:column;gap:20px"></div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="edit-ov" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="edit-h">
+    <h3 id="edit-h">עריכת משימה</h3>
+    <div class="fbbox" id="edit-fb" hidden></div>
+    <div class="actions" id="edit-dec" hidden></div>
+    <div class="field"><label for="edit-title">משימה</label><textarea id="edit-title"></textarea></div>
+    <div class="field" id="edit-who-f"><label for="edit-who">למי</label><select id="edit-who"></select></div>
+    <div class="field"><label for="edit-due">מועד</label><input id="edit-due" type="datetime-local"></div>
+    <div class="quick" id="edit-quick">
+      <button type="button" data-q="1h">בעוד שעה</button>
+      <button type="button" data-q="eve">הערב 20:00</button>
+      <button type="button" data-q="tmr">מחר 09:00</button>
+      <button type="button" data-q="none">בלי מועד</button>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="edit-save" type="button">שמירה</button>
+      <button class="btn ghost" id="edit-cancel" type="button">ביטול</button>
+      <button class="btn danger" id="edit-del" type="button">מחיקה</button>
+    </div>
+    <button class="btn ghost" id="edit-rep" type="button" hidden></button>
+    <button class="btn wa" id="edit-wa" type="button" hidden>שלח שוב בוואטסאפ</button>
+  </div>
+</div>
+
+<div class="overlay" id="wk-ov" hidden>
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="wk-h">
+    <h3 id="wk-h">דו״ח ביצוע שבועי</h3>
+    <div class="wknav">
+      <button type="button" id="wk-older" aria-label="שבוע קודם"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <div class="lb"><b id="wk-range" class="num"></b><small id="wk-sub" class="num"></small></div>
+      <button type="button" id="wk-newer" aria-label="שבוע הבא"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    </div>
+    <div id="wk-body" style="display:flex;flex-direction:column;gap:10px"></div>
+    <p class="hint">בזמן = העובד דיווח "בוצע" עד היעד. הדו״ח מחושב בטלפון ומתעדכן כאן כשהטלפון שולח עדכון.</p>
+    <button class="btn ghost" id="wk-close" type="button">סגירה</button>
+  </div>
+</div>
+
+<div class="overlay" id="set-ov" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="set-h">
+    <h3 id="set-h">הגדרות</h3>
+    <p class="hint" id="set-info"></p>
+    <button class="btn ghost" id="set-resync" type="button">בקש מהטלפון לשלוח הכול מחדש</button>
+    <button class="btn danger" id="set-off" type="button">ניתוק המחשב הזה</button>
+    <p class="hint">ניתוק מוחק מהמחשב את המשימות ואת מפתח ההצפנה. כדי לחבר שוב צריך קוד חדש מהטלפון.</p>
+    <button class="btn ghost" id="set-close" type="button">סגירה</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toast-msg"></span><button id="toast-act" type="button" hidden></button></div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- Hebrew natural-language time parser ---------- */
+var NUMW = {"אחת":1,"אחד":1,"שתיים":2,"שתים":2,"שניים":2,"שלוש":3,"שלושה":3,"ארבע":4,"ארבעה":4,"חמש":5,"חמישה":5,"שש":6,"שישה":6,"שבע":7,"שבעה":7,"שמונה":8,"תשע":9,"תשעה":9,"עשר":10,"עשרה":10,"עשרים":20,"שלושים":30,"ארבעים":40};
+var DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+var B = "(^|\\s)", E = "(?=$|[\\s,.!?])";
+
+function normalize(text){
+  var s = " " + String(text).replace(/[״“”]/g,'"').replace(/[׳’]/g,"'").replace(/\s+/g," ").trim() + " ";
+  s = s.replace(/(^|\s)(ב-?)?(אחת עשרה|אחד עשר)(?=\s)/g, function(_,a,p){ return a+(p||"")+"11"; });
+  s = s.replace(/(^|\s)(ב-?)?(שתים עשרה|שתיים עשרה|שנים עשר)(?=\s)/g, function(_,a,p){ return a+(p||"")+"12"; });
+  s = s.split(" ").map(function(tok){
+    var m = tok.match(/^(ב-?|ל-?|ו)?(.+)$/);
+    if(m && NUMW[m[2]] != null) return (m[1]||"") + NUMW[m[2]];
+    return tok;
+  }).join(" ");
+  return s;
+}
+function atTime(d,h,m){ var x=new Date(d); x.setHours(h,m||0,0,0); return x; }
+function startOfDay(d){ return atTime(d,0,0); }
+function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+
+function parseTask(text, nowArg){
+  var now = nowArg ? new Date(nowArg) : new Date();
+  var s = normalize(text);
+  var date=null, h=null, m=0, period=null, relMs=null, explicitDate=false;
+  function cut(re, fn){ s = s.replace(re, function(){ var r = fn.apply(null, arguments); return r===false ? arguments[0] : " "; }); }
+
+  // relative: בעוד ...
+  cut(new RegExp(B+"בעוד\\s+(חצי שעה|רבע שעה|שעתיים|יומיים|שבועיים|דקה|שעה|יום|שבוע|(\\d+)\\s*(דקות|דק'|דקה|שעות|שעה|ימים|יום|שבועות|שבוע))"+E), function(_,a,w,n,u){
+    var MIN=60000, H=3600000;
+    if(w==="חצי שעה") relMs=30*MIN; else if(w==="רבע שעה") relMs=15*MIN;
+    else if(w==="שעתיים") relMs=2*H; else if(w==="דקה") relMs=MIN; else if(w==="שעה") relMs=H;
+    else if(w==="יום"){ date=addDays(now,1); } else if(w==="יומיים"){ date=addDays(now,2); }
+    else if(w==="שבוע"){ date=addDays(now,7); } else if(w==="שבועיים"){ date=addDays(now,14); }
+    else { n=+n; if(/^דק/.test(u)) relMs=n*MIN; else if(/^שע/.test(u)) relMs=n*H; else if(/^(ימים|יום)$/.test(u)) date=addDays(now,n); else date=addDays(now,7*n); }
+    if(date) explicitDate=true;
+  });
+  // day words
+  cut(new RegExp(B+"(מחרתיים|מחר|היום|הערב|הלילה)"+E), function(_,a,w){
+    if(w==="מחרתיים") date=addDays(now,2); else if(w==="מחר") date=addDays(now,1);
+    else { date=new Date(now); if(w==="הערב") period=period||"evening"; if(w==="הלילה") period=period||"night"; }
+    explicitDate=true;
+  });
+  // weekdays
+  cut(new RegExp(B+"(?:ב?יום\\s+(ראשון|שני|שלישי|רביעי|חמישי|שישי|שבת)|ב(שבת))"+E), function(_,a,d1,d2){
+    var idx = DAYS.indexOf(d1||d2); var diff = (idx - now.getDay() + 7) % 7; if(diff===0) diff=7;
+    date = addDays(now,diff); explicitDate=true;
+  });
+  // dates dd/mm(/yy)
+  cut(new RegExp(B+"(?:ב-?|ל-?)?(\\d{1,2})[./](\\d{1,2})(?:[./](\\d{2,4}))?"+E), function(_,a,dd,mm,yy){
+    dd=+dd; mm=+mm; if(mm<1||mm>12||dd<1||dd>31) return false;
+    var y = yy ? (+yy<100 ? 2000+ +yy : +yy) : now.getFullYear();
+    var d = new Date(y,mm-1,dd); if(!yy && startOfDay(d) < startOfDay(now)) d.setFullYear(y+1);
+    date=d; explicitDate=true;
+  });
+  // periods of day
+  cut(new RegExp(B+"(בבוקר|בצהריים|בצהרים|אחה\"צ|אחרי הצהריים|אחר הצהריים|בערב|בלילה)"+E), function(_,a,w){
+    period = /בוקר/.test(w)?"morning": /^בצהר/.test(w)?"noon": /הצהריים|אחה/.test(w)?"afternoon": /ערב/.test(w)?"evening":"night";
+  });
+  // clock time
+  var gotTime=false;
+  function setT(hh,mm,frac){ hh=+hh; mm=mm?+mm:0; if(frac){ if(/חצי/.test(frac)) mm=30; else if(/רבע/.test(frac)) mm=15; } if(hh>23||mm>59) return false; h=hh; m=mm; gotTime=true; }
+  cut(new RegExp(B+"(?:בשעה\\s*|עד\\s*|ב-?)?(\\d{1,2}):(\\d{2})"+E), function(_,a,hh,mm){ return setT(hh,mm); });
+  if(!gotTime) cut(new RegExp(B+"(?:בשעה\\s*|ב-?)(\\d{1,2})(\\s+וחצי|\\s+ורבע)?"+E), function(_,a,hh,frac){ return setT(hh,0,frac); });
+
+  var due=null;
+  if(relMs!=null && !gotTime){ due = new Date(now.getTime()+relMs); }
+  else if(date || gotTime || period){
+    var base = date || now;
+    if(gotTime){
+      if(h<12 && (period==="afternoon"||period==="evening")) h+=12;
+      else if(h<12 && period==="night" && h>=8) h+=12;
+      else if(h===12 && period==="morning") h=0;
+      else if(!period && h>=1 && h<=6) h+=12;
+    } else {
+      h = {morning:9,noon:13,afternoon:16,evening:20,night:22}[period] || 9; m=0;
+    }
+    due = atTime(base,h,m);
+    if(!explicitDate && due <= now) due = addDays(due,1);
+  }
+  var title = s.replace(/\s+/g," ").trim()
+    .replace(/^(?:תזכיר|תזכירי|תזכרו|הזכר|להזכיר)\s+לי\s*/,"")
+    .replace(/^(?:ב|ל|ו|עד)\s+/,"").replace(/\s+(?:ב|ל|ו|עד|ש)$/,"").replace(/^[\s,.\-–]+|[\s,.\-–]+$/g,"");
+  if(!title) title = String(text).trim();
+  return { title: title, due: due ? due.getTime() : null };
+}
+
+/* ---------- formatting ---------- */
+var WD = ["יום ראשון","יום שני","יום שלישי","יום רביעי","יום חמישי","יום שישי","שבת"];
+function pad(n){ return (n<10?"0":"")+n; }
+function hm(d){ return pad(d.getHours())+":"+pad(d.getMinutes()); }
+function dayDiff(t){ return Math.round((startOfDay(t)-startOfDay(Date.now()))/86400000); }
+function dayLabel(t){
+  var d=new Date(t), n=dayDiff(t);
+  if(n===0) return "היום"; if(n===1) return "מחר"; if(n===-1) return "אתמול";
+  if(n>1 && n<7) return WD[d.getDay()];
+  return d.getDate()+"."+(d.getMonth()+1);
+}
+function whenLabel(t){ return dayLabel(t)+" · "+hm(new Date(t)); }
+function relLabel(t){
+  var diff=t-Date.now(), past=diff<0, a=Math.abs(diff), min=Math.round(a/60000), s;
+  if(min<1) return "עכשיו";
+  if(min<60) s = min===1?"דקה":min+" דק׳";
+  else if(min<60*24){ var hh=Math.round(min/60); s = hh===1?"שעה":hh===2?"שעתיים":hh+" שעות"; }
+  else { var dd=Math.round(min/1440); s = dd===1?"יום":dd===2?"יומיים":dd+" ימים"; }
+  return (past?"לפני ":"בעוד ")+s;
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+
+/* ---------- weekly report: how it looks (the same block is in index.html and worker.html) ---------- */
+function wkDM(t){ var d=new Date(t); return d.getDate()+"."+(d.getMonth()+1); }
+function wkWhen(t){ var d=new Date(t); return wkDM(t)+" "+pad(d.getHours())+":"+pad(d.getMinutes()); }
+function wkDur(ms){
+  var m = Math.max(1, Math.round((ms||0)/60000));
+  if(m<60) return m+" דק׳";
+  var h = Math.floor(m/60), mm = m%60;
+  if(h<24) return (h===1?"שעה":h===2?"שעתיים":h+" שעות")+(h<5 && mm>=10 ? " ו-"+mm+" דק׳" : "");
+  var d = Math.floor(h/24), hh = h%24;
+  return (d===1?"יום":d===2?"יומיים":d+" ימים")+(hh ? " ו-"+(hh===1?"שעה":hh===2?"שעתיים":hh+" שעות") : "");
+}
+function wkRange(r){ return wkDM(r.ws)+" – "+wkDM(r.we-1); }
+function wkPct(r){ var n=r.ok+r.late+r.open; return n ? Math.round(100*r.ok/n) : null; }
+function wkTiles(t){
+  return '<div class="tiles num"><div class="tile"><b>'+t.total+'</b><span>סה״כ משימות</span></div>' +
+    '<div class="tile ok"><b>'+t.ok+'</b><span>בזמן</span></div>' +
+    '<div class="tile bad"><b>'+(t.late+t.open)+'</b><span>לא בזמן</span></div>' +
+    '<div class="tile pp"><b>'+t.postp+'</b><span>נדחו</span></div></div>' +
+    (t.over ? '<p class="wkover">סה״כ חריגה מהיעדים: <b class="num">'+esc(wkDur(t.over))+'</b></p>' : '');
+}
+var WK_IC = {ok:"✅", late:"⏰", open:"❌", wait:"⏳", moved:"↪️"};
+function wkItem(it){
+  var s;
+  if(it.st==="ok") s = "יעד "+wkWhen(it.dl)+" · בוצע "+wkWhen(it.fin);
+  else if(it.st==="late") s = "בוצע באיחור של "+wkDur(it.over)+" · יעד "+wkWhen(it.dl);
+  else if(it.st==="open") s = "לא בוצע · חריגה של "+wkDur(it.over)+" · יעד "+wkWhen(it.dl);
+  else if(it.st==="wait") s = "היעד עוד לא הגיע · "+wkWhen(it.dl);
+  else s = "נדחתה השבוע ליעד חדש: "+wkWhen(it.dl);
+  if(it.pp && it.st!=="moved") s += " · נדחתה"+(it.pp>1 ? " "+it.pp+" פעמים" : "");
+  return '<div class="it"><span aria-hidden="true">'+(WK_IC[it.st]||"•")+'</span><div class="m"><span>'+esc(it.ti)+'</span><small class="num">'+esc(s)+'</small></div></div>';
+}
+/* one person's card. key = makes it a toggle (manager); open = show the task list */
+function wkRow(r, open, key){
+  var p = wkPct(r), miss = r.late+r.open, n = r.ok+miss+(r.wait||0);
+  var cls = p==null ? "n" : p>=90 ? "g" : p>=70 ? "y" : "r";
+  var vd = !r.total ? (r.postp ? "לא היו משימות עם יעד השבוע" : "לא היו משימות השבוע") : p==null ? "היעדים עוד לא הגיעו" : !miss ? "עמד בכל היעדים 👍" : "לא עמד ב-"+miss+" מתוך "+(r.ok+miss)+" יעדים";
+  var h = '<div class="wrow"><button type="button"'+(key ? ' data-wk="'+esc(key)+'" aria-expanded="'+(!!open)+'"' : ' tabindex="-1" style="cursor:default"')+'>' +
+    '<span class="top"><span class="nm">'+esc(r.name)+'</span><span class="pct '+cls+' num">'+(p==null ? "–" : '<bdi>'+p+'%</bdi> בזמן')+'</span></span>' +
+    (n ? '<span class="wbar" aria-hidden="true"><i class="wa" style="width:'+(100*r.ok/n)+'%"></i><i class="wb" style="width:'+(100*miss/n)+'%"></i><i class="wc" style="width:'+(100*(r.wait||0)/n)+'%"></i></span>' : '') +
+    '<span class="vd">'+esc(vd)+'</span>' +
+    '<span class="st num"><span><b>'+r.total+'</b> משימות</span><span><b>'+r.ok+'</b> בזמן</span>' +
+      (r.late ? '<span><b>'+r.late+'</b> באיחור</span>' : '') + (r.open ? '<span><b>'+r.open+'</b> לא בוצעו</span>' : '') +
+      (r.wait ? '<span><b>'+r.wait+'</b> לפני היעד</span>' : '') + (r.postp ? '<span><b>'+r.postp+'</b> נדחו</span>' : '') +
+      (r.over ? '<span>חריגה: <b>'+esc(wkDur(r.over))+'</b></span>' : '') + '</span>' +
+    (key && r.items && r.items.length ? '<span class="more">'+(open ? "הסתר פירוט" : "פירוט המשימות")+'</span>' : '') +
+    '</button>';
+  if(open && r.items && r.items.length) h += '<div class="items">'+r.items.map(wkItem).join("")+(r.more ? '<div class="it"><small>ועוד '+r.more+' משימות</small></div>' : '')+'</div>';
+  return h+'</div>';
+}
+
+/* ---------- crypto: AES-256-GCM, the same scheme as the phone app and the task page ---------- */
+var SUB = window.crypto && crypto.subtle, TE = new TextEncoder(), TD = new TextDecoder();
+function b64u(buf){ var b=new Uint8Array(buf), x=""; for(var i=0;i<b.length;i++) x+=String.fromCharCode(b[i]); return btoa(x).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function unb64u(v){ v=String(v).replace(/-/g,"+").replace(/_/g,"/"); while(v.length%4) v+="="; var r=atob(v), b=new Uint8Array(r.length); for(var i=0;i<r.length;i++) b[i]=r.charCodeAt(i); return b; }
+function sha(str){ return SUB.digest("SHA-256", TE.encode(str)); }
+function hexOf(buf){ return Array.prototype.map.call(new Uint8Array(buf), function(x){ return (x<16?"0":"")+x.toString(16); }).join(""); }
+function seal(keyBytes, obj){ var iv = crypto.getRandomValues(new Uint8Array(12));
+  return SUB.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt"]).then(function(k){ return SUB.encrypt({name:"AES-GCM", iv:iv}, k, TE.encode(JSON.stringify(obj))); })
+    .then(function(c){ return {v:2, iv:b64u(iv), c:b64u(c)}; }); }
+function openEnv(keyBytes, env){
+  try{ return SUB.importKey("raw", keyBytes, "AES-GCM", false, ["decrypt"]).then(function(k){ return SUB.decrypt({name:"AES-GCM", iv:unb64u(env.iv)}, k, unb64u(env.c)); })
+    .then(function(p){ return JSON.parse(TD.decode(p)); }, function(){ return null; }); }catch(e){ return Promise.resolve(null); }
+}
+function randStr(n){ var A="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", rb=crypto.getRandomValues(new Uint8Array(n)), x=""; for(var i=0;i<n;i++) x+=A[rb[i]%A.length]; return x; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+/* ---------- what this computer keeps ---------- */
+function ld(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
+function sv(k, v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+var CFGK="rspc-cfg", SNAPK="rspc-snap", PENDK="rspc-pend", OUTK="rspc-out";
+var cfg = ld(CFGK), snap = ld(SNAPK), pend = ld(PENDK) || [], out = ld(OUTK) || [];
+var ID_RE = /^[A-Za-z0-9_-]{12,64}$/;
+
+/* ---------- sending: everything leaves sealed ---------- */
+var flushing = false;
+function saveOut(){ sv(OUTK, out.slice(-300)); }
+function queue(topic, key, obj, w){ out.push({topic:topic, key:key, obj:obj, w:w||null}); saveOut(); flush(); }
+function flush(){
+  if(flushing || !out.length) return;
+  var m = out[0];
+  if(!m.key || !m.topic){ out.shift(); saveOut(); setTimeout(flush, 0); return; }
+  flushing = true;
+  seal(unb64u(m.key), m.obj).then(function(env){ if(m.w) env.w = m.w; return fetch("https://ntfy.sh/"+m.topic, {method:"POST", body:JSON.stringify(env)}); }).then(function(r){
+    if(!r.ok && r.status!==400) throw new Error(r.status);
+    out.shift(); saveOut(); flushing = false; if(out.length) setTimeout(flush, 250); else renderSync();
+  }).catch(function(){ flushing = false; netOk = false; renderSync(); });
+}
+setInterval(flush, 15000); window.addEventListener("online", flush);
+function toPhone(obj){ if(cfg) queue(cfg.m, cfg.key, obj, cfg.id); }
+
+/* ---------- pairing ---------- */
+function join(code){
+  return Promise.all([sha("rs-jt:"+code), sha("rs-jk:"+code)]).then(function(r){
+    var topic = "rsj"+hexOf(r[0]).slice(0,24), key = new Uint8Array(r[1]);
+    return fetch("https://ntfy.sh/"+topic+"/json?poll=1&since=12h").then(function(res){ if(!res.ok) throw "net"; return res.text(); }).then(function(txt){
+      var envs = [];
+      txt.split("\n").forEach(function(l){ if(!l.trim()) return; try{ var m = JSON.parse(l); if(m.event==="message") envs.push(JSON.parse(m.message)); }catch(e){} });
+      return Promise.all(envs.map(function(e){ return openEnv(key, e); })).then(function(list){
+        var found = null;
+        list.forEach(function(j){ if(j && j.kind==="pc" && ID_RE.test(j.m||"") && ID_RE.test(j.t||"") && ID_RE.test(j.id||"") && j.key && unb64u(j.key).length===32) found = j; });
+        if(!found) throw "notfound";
+        return found;
+      });
+    });
+  });
+}
+$("code").addEventListener("input", function(){ var d = this.value.replace(/\D/g,"").slice(0,8); this.value = d.length>4 ? d.slice(0,4)+" "+d.slice(4) : d; $("pair-err").textContent = ""; });
+$("pair-form").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var code = $("code").value.replace(/\D/g,"");
+  if(code.length!==8){ $("pair-err").textContent = "הקוד צריך להיות 8 ספרות."; return; }
+  if(!SUB){ $("pair-err").textContent = "הדפדפן הזה לא תומך בהצפנה. נסה Chrome או Edge."; return; }
+  var b = $("pair-go"); b.disabled = true; b.textContent = "מתחבר…";
+  join(code).then(function(j){
+    cfg = {m:j.m, t:j.t, id:j.id, key:j.key, mName:j.mName||"", at:Date.now()}; sv(CFGK, cfg);
+    snap = null; pend = []; out = []; sv(SNAPK, null); sv(PENDK, pend); saveOut();
+    toPhone({j:1});
+    startApp(); toast("💻 המחשב חובר");
+  }).catch(function(e){
+    $("pair-err").textContent = e==="notfound" ? "הקוד לא נמצא. בדוק שהקלדת נכון ושהקוד בטלפון עדיין מוצג (הוא תקף 12 שעות)." : "אין חיבור לאינטרנט. נסה שוב.";
+  }).then(function(){ b.disabled = false; b.textContent = "חיבור"; });
+});
+function disconnect(msg){
+  cfg = null; snap = null; pend = []; out = []; view = {}; fbs = {}; inboxRaw = []; parts = {};
+  [CFGK, SNAPK, PENDK, OUTK].forEach(function(k){ sv(k, null); });
+  closeAll(); $("app").hidden = true; $("pair").hidden = false; $("code").value = "";
+  $("pair-err").textContent = msg || "";
+}
+
+/* ---------- receiving: the phone's snapshot, and workers' reports on the phone's inbox ---------- */
+var since = "12h", inSince = "12h", parts = {}, polling = false, netOk = true, lastPoll = 0, askedResync = false;
+function lines(txt){ var a = []; txt.split("\n").forEach(function(l){ if(!l.trim()) return; try{ var m = JSON.parse(l); if(m.event==="message") a.push(m); }catch(e){} }); return a; }
+function unpack(b){
+  var bytes = unb64u(b.z.join(""));
+  var p = b.f==="d" ? new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"))).text() : Promise.resolve(TD.decode(bytes));
+  return p.then(function(t){ return JSON.parse(t); }).catch(function(){ return null; });
+}
+function onSnapMsg(o){
+  if(o.op==="bye"){ disconnect("הטלפון ניתק את המחשב. כדי לחבר שוב צריך קוד חדש מהטלפון."); return Promise.resolve(); }
+  if(o.op!=="snap" || !o.s || !(o.n>0) || o.n>300 || !(o.i>=0) || o.i>=o.n) return Promise.resolve();
+  var b = parts[o.s] || (parts[o.s] = {n:o.n, f:o.f, at:o.at, got:0, z:[]});
+  if(b.z[o.i]==null){ b.z[o.i] = String(o.z||""); b.got++; }
+  if(b.got < b.n) return Promise.resolve();
+  delete parts[o.s];
+  if(snap && snap.at >= b.at) return Promise.resolve();
+  return unpack(b).then(function(s){ if(s && s.v===1 && Array.isArray(s.tasks) && (!snap || s.at > snap.at)) setSnap(s); });
+}
+function setSnap(s){
+  snap = s; sv(SNAPK, snap);
+  var ak = s.acks || [];
+  pend = pend.filter(function(p){ return ak.indexOf(p.oid) < 0 && Date.now()-p.at < 7*86400000; }); sv(PENDK, pend);
+  rebuild(); render(); refreshKids();
+}
+function poll(){
+  if(!cfg || polling) return; polling = true;
+  var key = unb64u(cfg.key), mine = cfg;
+  var a = fetch("https://ntfy.sh/"+cfg.t+"/json?poll=1&since="+since).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(txt){
+    return lines(txt).reduce(function(p, m){ return p.then(function(){
+      if(cfg!==mine) return; since = m.id; var env; try{ env = JSON.parse(m.message); }catch(e){ return; }
+      if(!env || env.v!==2) return;
+      return openEnv(key, env).then(function(o){ if(o && cfg===mine) return onSnapMsg(o); });
+    }); }, Promise.resolve());
+  });
+  var b = fetch("https://ntfy.sh/"+cfg.m+"/json?poll=1&since="+inSince).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(txt){
+    lines(txt).forEach(function(m){ inSince = m.id; var env; try{ env = JSON.parse(m.message); }catch(e){ return; }
+      if(env && env.v===2 && env.k && !env.w) inboxRaw.push({id:m.id, at:(m.time||0)*1000, env:env}); });
+    if(inboxRaw.length > 400) inboxRaw = inboxRaw.slice(-400);
+    return readReports();
+  });
+  Promise.all([a, b]).then(function(){ netOk = true; }, function(){ netOk = false; }).then(function(){
+    polling = false; lastPoll = Date.now(); renderSync();
+    if(cfg && !snap && !askedResync && Date.now() - (cfg.at||0) > 30000){ askedResync = true; toPhone({r:1}); }
+  });
+}
+function tick(){ if(cfg) poll(); }
+setInterval(function(){ if(!document.hidden) tick(); }, 12000);
+setInterval(function(){ if(document.hidden) tick(); }, 60000);
+document.addEventListener("visibilitychange", function(){ if(!document.hidden){ tick(); render(); } });
+
+/* a worker's report, sealed with the task's token: shown here at once, before the phone even opens */
+var inboxRaw = [], fbs = {}, kids = {};
+function refreshKids(){
+  var toks = {};
+  Object.keys(view).forEach(function(id){ var t = view[id]; if(t.tok) toks[t.tok] = id; });
+  Promise.all(Object.keys(toks).map(function(tok){ return Promise.all([sha("rs-kid:"+tok), sha("rs-task:"+tok)]).then(function(r){ return {kid:b64u(r[0]).slice(0,10), key:new Uint8Array(r[1]), id:toks[tok]}; }); }))
+    .then(function(list){ var k = {}; list.forEach(function(x){ k[x.kid] = x; }); kids = k; return readReports(); }).then(function(ch){ if(ch){ rebuild(); render(); } });
+}
+function readReports(){
+  var ch = false;
+  return inboxRaw.reduce(function(p, m){ return p.then(function(){
+    if(fbs[m.id]) return; var x = kids[m.env.k]; if(!x) return;
+    return openEnv(x.key, m.env).then(function(o){ if(!o) return;
+      var s = o.s==="no" ? "no" : o.s==="ext" ? "ext" : "done";
+      fbs[m.id] = {id:x.id, s:s, note:String(o.n||"").slice(0,1000), at:m.at, d:+o.d||0}; ch = true; });
+  }); }, Promise.resolve()).then(function(){ if(ch){ rebuild(); render(); } return ch; });
+}
+function applyFb(t, x){
+  if(t.done) return;
+  if(x.s==="ext"){ if(!x.d || (t.ext && t.ext.at===x.at)) return; t.ext = {due:x.d, note:x.note, at:x.at, st:"pending"}; t.rej = null; t.fb = null; t.reported = false; t._fresh = true; return; }
+  if(t.fb && t.fb.at===x.at) return;
+  if(t.fb && t.fb.at > x.at) return;
+  t.fb = {s:x.s==="no"?"no":"done", note:x.note, at:x.at}; t.rej = null; if(t.ext && t.ext.st==="pending") t.ext.st = "moot";
+  if(t.fb.s==="done"){ t.reported = true; t.reportedAt = x.at; } else { t.reported = false; t.reportedAt = null; }
+  t._fresh = true;
+}
+
+/* ---------- the list as shown: the phone's snapshot + new reports + my changes not yet on the phone ---------- */
+var view = {};
+function rebuild(){
+  view = {};
+  (snap ? snap.tasks : []).forEach(function(t){ view[t.id] = clone(t); });
+  // reports and my own changes, in the order they happened
+  var ev = Object.keys(fbs).map(function(k){ return {at:fbs[k].at, fb:fbs[k]}; }).concat(pend.map(function(p){ return {at:p.at, op:p.op}; }));
+  ev.sort(function(a,b){ return (a.at-b.at) || ((a.fb?0:1)-(b.fb?0:1)); });
+  ev.forEach(function(e){ if(e.fb){ var t = view[e.fb.id]; if(t) applyFb(t, e.fb); } else applyLocal(e.op, true); });
+}
+function applyLocal(o, mark){
+  var t = view[o.id];
+  switch(o.k){
+    case "add": if(t) return; view[o.id] = {id:o.id, title:o.title, due:o.due||null, assignee:o.assignee||null, assigneeName:o.assigneeName||null, done:false, createdAt:o.at, sentAt:o.sentAt||null, tok:o.tok||null}; break;
+    case "edit": if(!t) return; if(o.title!=null) t.title = o.title; if(o.due!==undefined) t.due = o.due||null;
+      if(o.assignee!==undefined){ t.assignee = o.assignee||null; t.assigneeName = o.assigneeName||null; } if(o.tok && !t.tok) t.tok = o.tok; if(o.sentAt) t.sentAt = o.sentAt; break;
+    case "decide": if(!t || t.done) return;
+      if(o.kind==="okdone"){ t.done = true; t.doneAt = o.at; }
+      else if(o.kind==="rejdone"){ t.reported = false; t.reportedAt = null; t.rej = {at:o.at, why:"done"}; }
+      else if(o.kind==="okext" && t.ext){ t.due = t.ext.due; t.ext = Object.assign({}, t.ext, {st:"ok", dec:o.at}); t.rej = null; }
+      else if(o.kind==="rejext" && t.ext){ t.ext = Object.assign({}, t.ext, {st:"no", dec:o.at}); t.rej = {at:o.at, why:"ext"}; }
+      break;
+    case "done": if(!t) return; t.done = !!o.done; t.doneAt = o.done ? o.at : null; break;
+    case "rep": if(!t || t.done || t.reported) return; t.reported = true; t.reportedAt = o.at; break;
+    case "sent": if(!t) return; t.sentAt = o.at; if(t.fb && t.fb.s==="no") t.fb = null; break;
+    case "del": delete view[o.id]; return;
+    default: return;
+  }
+  if(mark && view[o.id]) view[o.id]._p = true;
+}
+/* one change: shown at once, sent to the phone, and to a linked worker's app straight away */
+function doOp(o){
+  o.at = o.at || Date.now();
+  var before = view[o.id] ? clone(view[o.id]) : null;
+  var oid = randStr(12);
+  pend.push({oid:oid, at:o.at, op:o}); sv(PENDK, pend);
+  toPhone({oid:oid, op:o});
+  rebuild();
+  try{ syncOut(before, view[o.id]||null); }catch(e){}
+  render();
+  if(o.k==="add" || (o.k==="edit" && o.tok)) refreshKids();
+}
+
+/* ---------- workers (from the phone) ---------- */
+function workers(){ return (snap && snap.workers || []).slice().sort(function(a,b){ return a.name.localeCompare(b.name,"he"); }); }
+function worker(id){ var ws = snap && snap.workers || []; for(var i=0;i<ws.length;i++) if(ws[i].id===id) return ws[i]; return null; }
+function nameOf(t){ var w = t.assignee && worker(t.assignee); return w ? w.name : (t.assigneeName || "עובד"); }
+function firstName(n){ return String(n||"").trim().split(/\s+/)[0] || ""; }
+function linkedW(id){ var w = id && worker(id); return w && w.linked && w.topic && w.key ? w : null; }
+function myName(){ return (snap && snap.me && snap.me.name) || (cfg && cfg.mName) || ""; }
+function stOf(t){ if(t.done) return "done"; if(t.reported) return "review"; if(t.ext && t.ext.st==="pending") return "extreq"; if(t.rej) return "rej";
+  if(t.fb && t.fb.s==="no") return "no"; if(t.ext && t.ext.st==="ok") return "extok"; return "open"; }
+var WST = {review:"done", extreq:"ext", no:"no", extok:"extok", open:"open"};
+function wTask(t){ if(!t.tok) return null; var s0 = stOf(t), w = {id:t.id, tok:t.tok, title:t.title, due:t.due||null, st: s0==="rej" ? (t.rej.why==="ext"?"extno":"rej") : (WST[s0]||"open")};
+  if(s0==="extreq") w.xd = t.ext.due; return w; }
+function pushW(w, obj){ if(w && w.topic && w.key && obj) queue(w.topic, w.key, obj); }
+function syncOut(b, a){
+  var bw = b && !b.done ? linkedW(b.assignee) : null, aw = a ? linkedW(a.assignee) : null;
+  if(bw && (!aw || aw.id!==bw.id)) pushW(bw, {op:"rm", id:b.id, r:"del"});
+  if(!aw) return;
+  if(a.done){ if(b && !b.done && bw && bw.id===aw.id) pushW(aw, {op:"rm", id:a.id, r:"ok"}); return; }
+  var x = wTask(a), y = b ? wTask(b) : null; if(!x) return;
+  if(!y || b.done || !bw || bw.id!==aw.id || x.title!==y.title || x.due!==y.due || x.st!==y.st) pushW(aw, {op:"up", t:x});
+}
+var FORM_URL = "https://heavyfocus-art.github.io/task/";
+function formLink(t){ return FORM_URL+"#s."+cfg.m+"."+t.tok; }
+function taskMessage(t, w, reminder){
+  var L = [], mn = myName();
+  L.push(reminder ? "היי "+firstName(w.name)+", תזכורת למשימה:" : "היי "+firstName(w.name)+", משימה חדשה"+(mn?" מ"+mn:"")+":");
+  L.push("*"+t.title+"*");
+  if(t.due){ var d = new Date(t.due), dl = dayLabel(t.due), dm = d.getDate()+"."+(d.getMonth()+1); L.push("📅 תאריך יעד: "+(dl===dm ? dm : dl+" "+dm)+" בשעה "+hm(d)); }
+  L.push(""); L.push("כשסיימת, או אם יש בעיה:"); L.push("*לחץ כאן* 👈 "+formLink(t));
+  return L.join("\n");
+}
+function openWa(phone, text){ var u = "https://wa.me/"+phone+"?text="+encodeURIComponent(text); var win = window.open(u, "_blank", "noopener"); if(!win) location.href = u; }
+/* returns true when it went to the worker's app only */
+function sendToWorker(t, reminder, forceWa){
+  var w = worker(t.assignee); if(!w){ toast("העובד הזה כבר לא ברשימה."); return false; }
+  if(!t.tok){ toast("אי אפשר לשלוח מהמחשב לפני שהטלפון עדכן את המשימה. נסה שוב בעוד רגע."); return false; }
+  doOp({k:"sent", id:t.id});
+  var lw = linkedW(w.id);
+  if(lw){ if(reminder){ var x = wTask(view[t.id]||t); if(x) pushW(lw, {op:"up", t:x}); } if(!forceWa && !w.wa) return true; }
+  openWa(w.phone, taskMessage(view[t.id]||t, w, reminder)); return false;
+}
+function matchPerson(text){
+  var ws = snap && snap.workers || []; if(!ws.length) return null;
+  var words = String(text).trim().split(/\s+/);
+  function cl(x){ return String(x||"").replace(/[,:\-–]+$/,"").toLowerCase(); }
+  function eq(word, nm){ nm = nm.toLowerCase(); return word===nm || word==="ל"+nm || word==="ל-"+nm; }
+  for(var i=0;i<ws.length;i++){ var full = ws[i].name.trim(), ps = full.split(/\s+/); if(ps.length>1 && eq(cl(words.slice(0,ps.length).join(" ")), full)) return {w:ws[i], rest:words.slice(ps.length).join(" ")}; }
+  for(var j=0;j<ws.length;j++){ if(eq(cl(words[0]), firstName(ws[j].name))) return {w:ws[j], rest:words.slice(1).join(" ")}; }
+  return null;
+}
+
+/* ---------- rendering ---------- */
+var filter = "all", target = null, showDone = false, clearArmed = false;
+var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function all(){ return Object.keys(view).map(function(k){ return view[k]; }); }
+function inView(t){ return filter==="all" ? true : filter==="me" ? !t.assignee : t.assignee===filter; }
+var ROWCLS = {review:" reported", no:" issue", extreq:" extreq", rej:" rej", extok:" extok"};
+function rowHtml(t){
+  var s0 = stOf(t), chips = "", now = Date.now();
+  if(t._p) chips += '<span class="chip pend">⏳ ממתין לטלפון</span>';
+  if(s0==="review") chips += '<span class="chip okc">בוצע · '+esc(relLabel(t.reportedAt||now))+'</span>';
+  else if(s0==="no") chips += '<span class="chip noc">לא בוצע · '+esc(relLabel(t.fb.at))+'</span>';
+  else if(s0==="extreq") chips += '<span class="chip extc num">⏳ מבקש הארכה עד '+esc(whenLabel(t.ext.due))+'</span>';
+  else if(s0==="rej") chips += '<span class="chip rejc">'+(t.rej.why==="ext"?"הארכה לא אושרה":"ביצוע לא אושר")+'</span>';
+  else if(s0==="extok") chips += '<span class="chip okc">הארכה אושרה</span>';
+  var extNote = s0==="extreq" || (s0==="rej" && t.rej && t.rej.why==="ext");
+  var nt = t.done ? "" : extNote ? (t.ext && t.ext.note) : (t.fb && t.fb.note);
+  var due = "";
+  if(t.due){ var late = !t.done && !t.reported && t.due < now, soon = !t.done && !late && t.due - now < 86400000*1.5;
+    due = '<span class="chip '+(late?"late":soon?"soon":"plain")+' num">'+esc(whenLabel(t.due))+'</span>'; }
+  var lw = t.assignee && linkedW(t.assignee);
+  var acts = "";
+  if(s0==="review") acts = '<button class="abtn ok" type="button" data-act="okdone">✓ מאשר ביצוע</button><button class="abtn no" type="button" data-act="rejdone">✗ לא מאשר</button>';
+  else if(s0==="extreq") acts = '<button class="abtn ok" type="button" data-act="okext">✓ מאשר הארכה</button><button class="abtn no" type="button" data-act="rejext">✗ לא מאשר</button>';
+  else if(!t.done && t.assignee && worker(t.assignee)) acts = '<button class="abtn wa" type="button" data-act="remind">'+(t.due && t.due < now ? "שלח תזכורת" : "שלח שוב")+'</button>';
+  return '<div class="row'+(t.done?" done":"")+(ROWCLS[s0]||"")+'" data-id="'+esc(t.id)+'">' +
+    '<button class="check" type="button" data-act="toggle" aria-label="'+(t.done?"סמן כפתוחה":s0==="review"?"אשר ביצוע":"סמן כבוצעה")+'">'+CHECK+'</button>' +
+    '<button class="body" type="button" data-act="edit"><span class="title">'+esc(t.title)+'</span>'+(chips?'<span class="chips">'+chips+'</span>':'')+(nt?'<span class="fbnote">💬 '+esc(nt)+'</span>':'')+'</button>' +
+    '<span class="cell who">'+(t.assignee ? (lw?'<span class="chip app" title="מחובר לאפליקציה">📱</span> ':'')+esc(nameOf(t)) : '<span class="cell muted">שלי</span>')+'</span>' +
+    '<span class="cell due">'+due+'</span>' +
+    '<span class="acts">'+acts+'</span></div>';
+}
+function group(cls, title, items){
+  if(!items.length) return "";
+  return '<section class="group '+cls+'"><h2>'+title+' <span class="c num">'+items.length+'</span></h2><div class="card list">'+items.map(rowHtml).join("")+'</div></section>';
+}
+function renderPeople(){
+  var ws = workers(), l = all(), now = Date.now();
+  if(filter!=="all" && filter!=="me" && !worker(filter)) filter = "all";
+  if(target && !worker(target)) target = null;
+  function btn(key, label, items){
+    var o = items.filter(function(t){ return !t.done; }), lt = o.some(function(t){ return !t.reported && t.due && t.due<now; }), rp = o.some(function(t){ return t.reported; });
+    return '<button type="button" class="pbtn" data-f="'+esc(key)+'" aria-pressed="'+(filter===key)+'"><span class="d'+(lt?" late":rp?" g":"")+'" aria-hidden="true"></span><span class="nm">'+esc(label)+'</span><span class="n num">'+o.length+'</span></button>';
+  }
+  var h = '<span class="h">עובדים</span>' + btn("all","כולם",l) + btn("me","שלי",l.filter(function(t){ return !t.assignee; }));
+  ws.forEach(function(w){ h += btn(w.id, w.name, l.filter(function(t){ return t.assignee===w.id; })); });
+  $("people").innerHTML = h;
+  var th = '<span>למי:</span><button type="button" data-u="">לי</button>';
+  ws.forEach(function(w){ th += '<button type="button" data-u="'+esc(w.id)+'">'+esc(w.name)+'</button>'; });
+  $("towho").innerHTML = th; syncTowho();
+}
+function render(){
+  if(!cfg) return;
+  renderSync(); renderPeople();
+  var now = Date.now(), list = all().filter(inView);
+  var open = list.filter(function(t){ return !t.done; });
+  function inSt(k){ return open.filter(function(t){ return stOf(t)===k; }); }
+  var checking = inSt("review").sort(function(a,b){ return (a.reportedAt||0)-(b.reportedAt||0); });
+  var extreqs = inSt("extreq").sort(function(a,b){ return (a.ext.at||0)-(b.ext.at||0); });
+  var rejs = inSt("rej").sort(function(a,b){ return (b.rej.at||0)-(a.rej.at||0); });
+  var issues = inSt("no").sort(function(a,b){ return (a.fb.at||0)-(b.fb.at||0); });
+  open = open.filter(function(t){ var k = stOf(t); return k==="open" || k==="extok"; });
+  var done = list.filter(function(t){ return t.done; }).sort(function(a,b){ return (b.doneAt||0)-(a.doneAt||0); });
+  var timed = open.filter(function(t){ return t.due; }).sort(function(a,b){ return a.due-b.due; });
+  var late = timed.filter(function(t){ return t.due<now; });
+  var today = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)===0; });
+  var tmr = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)===1; });
+  var later = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)>1; });
+  var none = open.filter(function(t){ return !t.due; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  $("tiles").innerHTML =
+    '<div class="card tile late"><span>באיחור</span><b class="num">'+late.length+'</b></div>' +
+    '<div class="card tile"><span>להיום</span><b class="num">'+(today.length+late.length)+'</b></div>' +
+    '<div class="card tile"><span>פתוחות</span><b class="num">'+open.length+'</b></div>' +
+    '<div class="card tile rev"><span>בוצעו, לבדיקה שלך</span><b class="num">'+checking.length+'</b></div>' +
+    (extreqs.length ? '<div class="card tile ext"><span>בקשות הארכה</span><b class="num">'+extreqs.length+'</b></div>' : '');
+  var outH = "";
+  if(!snap && !pend.length){
+    outH = '<section class="card empty"><h2>ממתין למשימות מהטלפון…</h2><p>פתח את ראש שקט בטלפון. ברגע שהוא נפתח, המשימות יופיעו כאן לבד.</p></section>';
+  } else if(!list.length){
+    outH = '<section class="card empty"><h2>'+(filter==="all" ? "עוד אין משימות" : filter==="me" ? "אין לך משימות" : "ל"+esc(worker(filter).name)+" אין משימות")+'</h2><p>כתוב משימה בשורה למעלה. אם תתחיל בשם של עובד, היא תישלח אליו.</p></section>';
+  } else {
+    outH += group("extreq","בקשות להארכת זמן",extreqs) + group("review","בוצעו, לבדיקה שלך",checking) + group("rej","לא אושרו",rejs) + group("issue","לא בוצעו, עם הערות",issues) +
+      group("late","באיחור",late) + group("today","היום",today) + group("tmr","מחר",tmr) + group("later","בהמשך",later) + group("none","בלי מועד",none);
+    if(!open.length && !checking.length && !issues.length && !extreqs.length && !rejs.length) outH += '<section class="card empty"><h2>הכול בוצע</h2><p>אין משימות פתוחות כאן.</p></section>';
+    if(done.length){
+      outH += '<section class="group"><div class="donebar"><h2>הושלמו ב-7 הימים האחרונים <span class="c num">'+done.length+'</span></h2><span><button class="linkbtn" type="button" data-act="toggle-done">'+(showDone?"הסתר":"הצג")+'</button>'+(showDone?' · <button class="linkbtn" type="button" data-act="clear-done">'+(clearArmed?"למחוק? לחץ שוב":"מחק הכול")+'</button>':'')+'</span></div>' +
+        (showDone ? '<div class="card list">'+done.map(rowHtml).join("")+'</div>' : '') + '</section>';
+    }
+  }
+  $("lists").innerHTML = outH;
+  document.title = (late.length ? "("+late.length+") " : "") + "ראש שקט";
+}
+function renderSync(){
+  if(!cfg) return;
+  var p = $("syncp"), t = $("sync-t"), unsent = out.length, waiting = pend.length;
+  var cls = "", txt;
+  if(!netOk){ cls = "bad"; txt = "אין חיבור לאינטרנט"+(unsent ? " · "+unsent+" שינויים יישלחו כשיחזור" : ""); }
+  else if(!snap){ cls = "wait"; txt = "ממתין לטלפון · פתח בו את ראש שקט"; }
+  else {
+    var age = Date.now() - snap.at;
+    txt = "עודכן מהטלפון "+relLabel(snap.at);
+    if(waiting){ cls = "wait"; txt += " · ⏳ "+(waiting===1 ? "שינוי אחד ממתין" : waiting+" שינויים ממתינים")+" לטלפון"; }
+    else if(age > 12*3600000){ cls = "wait"; txt += " · פתח את האפליקציה בטלפון לעדכון"; }
+  }
+  p.className = "syncp" + (cls ? " "+cls : ""); t.textContent = txt;
+  $("who-am-i").textContent = myName() ? "במחשב · "+myName() : "במחשב";
+}
+setInterval(function(){ if(cfg && !document.hidden) render(); }, 30000);
+
+$("people").addEventListener("click", function(ev){
+  var b = ev.target.closest("[data-f]"); if(!b) return;
+  filter = b.dataset.f; target = (filter==="all"||filter==="me") ? null : filter; render(); updatePreview();
+});
+$("lists").addEventListener("click", function(ev){
+  var b = ev.target.closest("button"); if(!b) return;
+  var act = b.dataset.act, row = b.closest(".row"), id = row && row.dataset.id, t = id && view[id];
+  if(act==="toggle-done"){ showDone = !showDone; clearArmed = false; render(); return; }
+  if(act==="clear-done"){ if(!clearArmed){ clearArmed = true; render(); return; } clearArmed = false;
+    all().filter(function(x){ return x.done && inView(x); }).forEach(function(x){ doOp({k:"del", id:x.id}); }); toast("נמחקו"); return; }
+  if(!t) return;
+  if(act==="toggle"){
+    if(t.done){ doOp({k:"done", id:id, done:false}); return; }
+    var rp = !!t.reported; doOp({k:"decide", id:id, kind:"okdone"});
+    toast(rp ? "✅ אושר והוסר מהרשימה" : "סומן כבוצע", "ביטול", function(){ doOp({k:"done", id:id, done:false}); });
+  }
+  else if(act==="okdone" || act==="rejdone" || act==="okext" || act==="rejext") decide(id, act);
+  else if(act==="remind"){ var ao = sendToWorker(t, !!(t.due && t.due < Date.now()), false); if(ao) toast("📱 נשלח שוב לאפליקציה של "+nameOf(t), "גם וואטסאפ", function(){ sendToWorker(view[id], true, true); }); }
+  else if(act==="edit") openEdit(id);
+});
+function decide(id, kind){
+  var t = view[id]; if(!t || t.done) return;
+  doOp({k:"decide", id:id, kind:kind});
+  var app = !!linkedW(t.assignee), w = worker(t.assignee);
+  if(kind==="okdone") toast("✅ אושר והוסר מהרשימה", "ביטול", function(){ doOp({k:"done", id:id, done:false}); });
+  else if(kind==="rejdone"){
+    if(app) toast("❌ לא אושר. "+nameOf(t)+" קיבל עדכון באפליקציה");
+    else if(w && t.tok) toast("❌ לא אושר. המשימה סומנה באדום", "הודע לו בוואטסאפ", function(){ openWa(w.phone, "היי "+firstName(w.name)+", בדקתי את המשימה:\n*"+t.title+"*\n\nעדיין לא אישרתי את הביצוע. דבר איתי בבקשה.\n\nכשסיימת, או אם יש בעיה:\n*לחץ כאן* 👈 "+formLink(t)); });
+    else toast("❌ לא אושר");
+  }
+  else if(kind==="okext") toast("✅ ההארכה אושרה עד "+whenLabel(t.ext.due));
+  else if(kind==="rejext") toast("❌ ההארכה לא אושרה. המשימה סומנה באדום");
+}
+
+/* ---------- composer ---------- */
+var inp = $("new-task");
+function syncTowho(){
+  var iv = inp.value, m = iv.trim() ? matchPerson(iv) : null, eff = m ? m.w.id : (target||"");
+  Array.prototype.forEach.call($("towho").querySelectorAll("button"), function(b){ b.setAttribute("aria-pressed", String(b.dataset.u===eff)); });
+}
+$("towho").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-u]"); if(!b) return; target = b.dataset.u||null; syncTowho(); updatePreview(); inp.focus(); });
+function resolveInput(v){ var m = matchPerson(v); return {w: m ? m.w : (target ? worker(target) : null), text: m ? m.rest : v}; }
+function updatePreview(){
+  var v = inp.value.trim(); $("add").disabled = !v; syncTowho();
+  if(!v){ $("preview").innerHTML = ""; return; }
+  var r = resolveInput(v), p = parseTask(r.text);
+  var how = r.w ? (linkedW(r.w.id) && !r.w.wa ? "לאפליקציה של "+r.w.name : "ל"+r.w.name+" בוואטסאפ") : "לרשימה שלך";
+  $("preview").innerHTML = '<span class="chip app">'+esc(how)+'</span>' + (p.due ? '<span class="chip soon num">'+esc(whenLabel(p.due))+'</span><span class="num">'+esc(relLabel(p.due))+'</span>' : '<span>בלי מועד. אפשר להוסיף "מחר ב-10" או "בעוד שעה".</span>');
+}
+inp.addEventListener("input", updatePreview);
+$("form").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var v = inp.value.trim(); if(!v || !cfg) return;
+  var r = resolveInput(v), p = parseTask(r.text), now = Date.now();
+  var o = {k:"add", id:uid(), title:p.title, due:p.due, at:now};
+  if(r.w){ o.assignee = r.w.id; o.assigneeName = r.w.name; o.sentAt = now; o.tok = randStr(10); }
+  doOp(o);
+  if(r.w){
+    var lw = linkedW(r.w.id);
+    if(lw && !r.w.wa){ var id0 = o.id; toast("📱 נשלחה לאפליקציה של "+r.w.name, "גם וואטסאפ", function(){ openWa(r.w.phone, taskMessage(view[id0], r.w, false)); }); }
+    else { openWa(r.w.phone, taskMessage(view[o.id], r.w, false)); toast("נשמרה ונפתחה בוואטסאפ ל"+r.w.name); }
+  } else toast(p.due ? "נוספה · "+whenLabel(p.due) : "נוספה לרשימה");
+  inp.value = ""; updatePreview();
+});
+
+/* ---------- edit ---------- */
+var editing = null, delArmed = false;
+function toLocalInput(t){ if(!t) return ""; var d = new Date(t); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+hm(d); }
+function openEdit(id){
+  var t = view[id]; if(!t) return; editing = id; delArmed = false;
+  $("edit-del").classList.remove("armed"); $("edit-del").textContent = "מחיקה";
+  $("edit-title").value = t.title; $("edit-due").value = toLocalInput(t.due);
+  var o = '<option value="">אני</option>';
+  workers().forEach(function(w){ o += '<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>'; });
+  if(t.assignee && !worker(t.assignee)) o += '<option value="'+esc(t.assignee)+'">'+esc(nameOf(t))+' (הוסר)</option>';
+  $("edit-who").innerHTML = o; $("edit-who").value = t.assignee || "";
+  var s0 = stOf(t), fbx = $("edit-fb"), dx = $("edit-dec");
+  fbx.hidden = true;
+  if(s0==="extreq"){ fbx.hidden = false; fbx.className = "fbbox ext"; fbx.textContent = "⏳ "+nameOf(t)+" מבקש הארכה עד "+whenLabel(t.ext.due)+" · "+relLabel(t.ext.at)+(t.ext.note ? "\n💬 "+t.ext.note : ""); }
+  else if(s0==="rej"){ fbx.hidden = false; fbx.className = "fbbox rej"; fbx.textContent = (t.rej.why==="ext" ? "❌ לא אישרת את בקשת ההארכה" : "❌ לא אישרת את הביצוע")+" · "+relLabel(t.rej.at); }
+  else if(t.fb && !t.done){ fbx.hidden = false; fbx.className = "fbbox"+(t.fb.s==="no"?" no":""); fbx.textContent = (t.fb.s==="no" ? "❌ "+nameOf(t)+" עדכן: לא בוצע" : "✅ "+nameOf(t)+" עדכן: בוצע")+" · "+relLabel(t.fb.at)+(t.fb.note ? "\n💬 "+t.fb.note : ""); }
+  dx.hidden = !(s0==="review" || s0==="extreq");
+  dx.innerHTML = s0==="review" ? '<button class="btn okfill" type="button" data-d="okdone">✓ מאשר ביצוע</button><button class="btn danger" type="button" data-d="rejdone">✗ לא מאשר ביצוע</button>'
+               : s0==="extreq" ? '<button class="btn okfill" type="button" data-d="okext">✓ מאשר הארכה</button><button class="btn danger" type="button" data-d="rejext">✗ לא מאשר</button>' : '';
+  var er = $("edit-rep"); er.hidden = !(t.assignee && !t.done) || s0==="review" || s0==="extreq";
+  er.textContent = "העובד סיים? סמן בירוק";
+  $("edit-wa").hidden = !(t.assignee && worker(t.assignee) && !t.done && !t.reported);
+  $("edit-wa").textContent = (t.due && t.due < Date.now()) ? "שלח תזכורת בוואטסאפ" : "שלח שוב בוואטסאפ";
+  $("edit-ov").hidden = false; $("edit-title").focus();
+}
+function closeEdit(){ $("edit-ov").hidden = true; editing = null; }
+$("edit-quick").addEventListener("click", function(ev){
+  var b = ev.target.closest("button"); if(!b) return; var now = new Date(), d = null;
+  if(b.dataset.q==="1h") d = new Date(now.getTime()+3600000);
+  else if(b.dataset.q==="eve"){ d = atTime(now,20,0); if(d<=now) d = addDays(d,1); }
+  else if(b.dataset.q==="tmr") d = atTime(addDays(now,1),9,0);
+  $("edit-due").value = d ? toLocalInput(d.getTime()) : "";
+});
+$("edit-save").addEventListener("click", function(){
+  if(!editing) return; var id = editing, old = view[id]; if(!old){ closeEdit(); return; }
+  var v = $("edit-due").value, due = v ? new Date(v).getTime() : null;
+  var title = $("edit-title").value.trim() || old.title, who = $("edit-who").value || null;
+  var o = {k:"edit", id:id}, moved = who !== (old.assignee||null), changed = false;
+  if(title !== old.title){ o.title = title; changed = true; }
+  if(due !== (old.due||null)){ o.due = due; changed = true; }
+  if(moved){ var nw = who && worker(who); o.assignee = who; o.assigneeName = nw ? nw.name : null; changed = true; if(who){ o.sentAt = Date.now(); if(!old.tok) o.tok = randStr(10); } }
+  closeEdit();
+  if(!changed){ toast("לא שונה כלום"); return; }
+  doOp(o);
+  var t2 = view[id], w2 = t2 && t2.assignee && worker(t2.assignee);
+  if(w2){ var ao = linkedW(w2.id) && !w2.wa; if(!ao) openWa(w2.phone, taskMessage(t2, w2, false)); toast(ao ? "📱 נשמר ועודכן באפליקציה של "+w2.name : "נשמר ונפתח בוואטסאפ ל"+w2.name); }
+  else toast("נשמר");
+});
+$("edit-cancel").addEventListener("click", closeEdit);
+$("edit-dec").addEventListener("click", function(ev){ var b = ev.target.closest("[data-d]"); if(!b || !editing) return; var id = editing; closeEdit(); decide(id, b.dataset.d); });
+$("edit-rep").addEventListener("click", function(){ var id = editing; closeEdit(); if(!view[id]) return; doOp({k:"rep", id:id}); toast("סומן בירוק. אחרי בדיקה, אשר את הביצוע"); });
+$("edit-wa").addEventListener("click", function(){ var t = view[editing]; closeEdit(); if(t) sendToWorker(t, !!(t.due && t.due < Date.now()), true); });
+$("edit-del").addEventListener("click", function(){
+  if(!delArmed){ delArmed = true; this.classList.add("armed"); this.textContent = "למחוק? לחץ שוב"; return; }
+  var id = editing; closeEdit(); doOp({k:"del", id:id}); toast("נמחקה");
+});
+$("edit-ov").addEventListener("click", function(ev){ if(ev.target===this) closeEdit(); });
+
+/* ---------- weekly report (computed on the phone) ---------- */
+function wkTotals(r){ var t = {total:0, ok:0, late:0, open:0, wait:0, postp:0, over:0}; r.rows.forEach(function(x){ Object.keys(t).forEach(function(k){ t[k] += x[k]||0; }); }); return t; }
+var wkPages = [], wkIdx = 0, wkExp = {};
+function openWeekly(){
+  wkPages = [snap && snap.live, snap && snap.wk].filter(function(x){ return x && x.rows; }); wkExp = {};
+  if(snap && snap.live && snap.wk && snap.live.ws===snap.wk.ws) wkPages = [snap.wk];
+  wkIdx = wkPages.length > 1 ? 1 : 0;
+  renderWeekly(); $("wk-ov").hidden = false;
+}
+function renderWeekly(){
+  var r = wkPages[wkIdx];
+  $("wk-older").disabled = wkIdx >= wkPages.length-1; $("wk-newer").disabled = wkIdx <= 0;
+  if(!r){ $("wk-range").textContent = ""; $("wk-sub").textContent = ""; $("wk-body").innerHTML = '<p class="hint" style="text-align:center">הדו״ח יופיע כאן אחרי שהטלפון ישלח עדכון.</p>'; return; }
+  $("wk-range").textContent = wkRange(r);
+  $("wk-sub").textContent = r.live ? "השבוע הנוכחי · נכון לעדכון האחרון מהטלפון" : "עודכן ביום ראשון "+wkDM(r.at)+" ב-09:00";
+  var h = wkTiles(wkTotals(r)).replace('class="tiles num"', 'class="tiles4 num"');
+  if(!r.rows.length) h += '<p class="hint" style="text-align:center">עוד אין עובדים.</p>';
+  h += r.rows.map(function(x){ return wkRow(x, !!wkExp[x.w], x.w); }).join("");
+  $("wk-body").innerHTML = h;
+}
+$("wk-btn").addEventListener("click", openWeekly);
+$("wk-close").addEventListener("click", function(){ $("wk-ov").hidden = true; });
+$("wk-older").addEventListener("click", function(){ if(wkIdx < wkPages.length-1){ wkIdx++; wkExp = {}; renderWeekly(); } });
+$("wk-newer").addEventListener("click", function(){ if(wkIdx > 0){ wkIdx--; wkExp = {}; renderWeekly(); } });
+$("wk-ov").addEventListener("click", function(ev){
+  if(ev.target===this){ this.hidden = true; return; }
+  var b = ev.target.closest("[data-wk]"); if(!b) return; wkExp[b.dataset.wk] = !wkExp[b.dataset.wk]; renderWeekly();
+});
+
+/* ---------- settings ---------- */
+var offArmed = false;
+$("set-btn").addEventListener("click", function(){
+  offArmed = false; $("set-off").textContent = "ניתוק המחשב הזה"; $("set-off").classList.remove("armed");
+  $("set-info").textContent = "המחשב הזה מחובר לטלפון של "+(myName()||"המנהל")+(cfg && cfg.at ? " מאז "+dayLabel(cfg.at)+" "+hm(new Date(cfg.at)) : "")+". המשימות מוצפנות, ורק המחשב הזה והטלפון יכולים לקרוא אותן.";
+  $("set-ov").hidden = false;
+});
+$("set-close").addEventListener("click", function(){ $("set-ov").hidden = true; });
+$("set-ov").addEventListener("click", function(ev){ if(ev.target===this) this.hidden = true; });
+$("set-resync").addEventListener("click", function(){ toPhone({r:1}); $("set-ov").hidden = true; toast("נשלחה בקשה. הטלפון ישלח הכול כשהאפליקציה תיפתח בו"); });
+$("set-off").addEventListener("click", function(){
+  if(!offArmed){ offArmed = true; this.textContent = "לנתק? לחץ שוב"; this.classList.add("armed"); return; }
+  disconnect("המחשב נותק. כדי לחבר שוב, הקלד קוד חדש מהטלפון.");
+});
+function closeAll(){ ["edit-ov","wk-ov","set-ov"].forEach(function(k){ $(k).hidden = true; }); }
+document.addEventListener("keydown", function(ev){ if(ev.key==="Escape") closeAll(); });
+
+/* ---------- toast ---------- */
+var toastT = null;
+function toast(msg, actLabel, fn){
+  $("toast-msg").textContent = msg; var a = $("toast-act");
+  if(actLabel){ a.hidden = false; a.textContent = actLabel; a.onclick = function(){ $("toast").hidden = true; fn(); }; } else a.hidden = true;
+  $("toast").hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ $("toast").hidden = true; }, 4500);
+}
+
+/* ---------- start ---------- */
+function startApp(){
+  $("pair").hidden = true; $("app").hidden = false;
+  since = "12h"; inSince = "12h"; parts = {}; inboxRaw = []; fbs = {};
+  rebuild(); render(); refreshKids(); flush(); poll();
+}
+if(cfg && cfg.key && cfg.m && cfg.t && cfg.id) startApp();
+else { $("pair").hidden = false; setTimeout(function(){ $("code").focus(); }, 50); }
+window.__rs = {view:function(){ return view; }, pend:function(){ return pend; }};
+})();
+</script>
+</body>
+</html>
