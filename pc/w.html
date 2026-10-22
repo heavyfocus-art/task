@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta name="robots" content="noindex">
+<script src="wshim.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ראש שקט · המשימות שלי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+:root{
+  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#141B2D; --muted:#5D6780; --line:#D8DDE8;
+  --accent:#2D4BE0; --accent-ink:#FFFFFF; --signal:#FFC23D; --signal-ink:#2A1E00;
+  --danger:#C93A31; --danger-soft:#FBE7E5; --ok:#1C8F62; --ok-soft:#DDF3E8; --warn:#C7631A; --warn-soft:#FBEBDD;
+  --font-display:"Secular One","Assistant",system-ui,sans-serif;
+  --font-body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif; --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A;
+  --warn:#F09A55; --warn-soft:#3A2717; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A;
+  --warn:#F09A55; --warn-soft:#3A2717; color-scheme:dark }
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.45;direction:rtl;
+  padding:12px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:4px}
+h1{font-family:var(--font-display);font-weight:400;font-size:28px;margin:0}
+.sub{font-size:14px;color:var(--muted)}
+h1 .ver{font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--muted)}
+.sum{background:var(--ink);color:var(--bg);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.sum .big{font-family:var(--font-display);font-size:30px;line-height:1.1}
+.sum .sm{font-size:14px;opacity:.8}
+h2{font-size:14px;font-weight:700;margin:4px 0 -6px;color:var(--muted);letter-spacing:.03em}
+h2.wait{color:var(--ok)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.done{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.card.no{background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
+.ttl{font-size:18px;font-weight:700;overflow-wrap:anywhere}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 10px;font-weight:700;font-size:14px}
+.chip.soon{background:var(--signal);color:var(--signal-ink)}
+.chip.late{background:var(--danger-soft);color:var(--danger)}
+.chip.plain{background:color-mix(in srgb,var(--line) 60%,transparent);color:var(--ink)}
+.chip.ok{background:var(--ok);color:var(--surface)}
+.chip.no{background:var(--warn);color:#fff}
+.chip.ext{background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent)}
+.chip.bad{background:var(--danger);color:#fff}
+.card.ext{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.card.bad{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.card.extok{background:var(--ok-soft)}
+.b.wide{grid-column:1/-1}
+.b.ext{border-color:var(--accent);color:var(--accent)}
+.box{display:flex;flex-direction:column;gap:8px}
+.box label{font-size:14px;font-weight:700;color:var(--muted)}
+.box .boxh{font-weight:700}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.b{border-radius:12px;padding:12px 8px;font-weight:700;font-size:16px;border:2px solid var(--line);background:var(--surface)}
+.b.ok{border-color:var(--ok);color:var(--ok)}
+.b.no{border-color:var(--warn);color:var(--warn)}
+.b.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.b:disabled{opacity:.5}
+textarea,input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+textarea{min-height:70px;resize:vertical}
+.note{font-size:15px;white-space:pre-wrap}
+.empty{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px 18px;text-align:center}
+.empty .e{font-size:44px;line-height:1}
+.empty h3{font-family:var(--font-display);font-weight:400;font-size:21px;margin:8px 0 4px}
+.empty p{margin:0;color:var(--muted);font-size:15px}
+.join{display:flex;flex-direction:column;gap:14px;padding-top:10px}
+.join .code{font-size:30px;letter-spacing:.25em;text-align:center;direction:ltr;font-weight:700;padding:12px}
+.err{color:var(--danger);font-size:15px;margin:0;min-height:1.2em}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.link{color:var(--accent);font-weight:600;font-size:14px;padding:4px 2px}
+.banner{display:flex;gap:10px;align-items:flex-start;font-size:14px;border:1px dashed var(--line);border-radius:var(--r);padding:10px 12px;color:var(--muted)}
+.banner p{margin:0;flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:var(--bg);
+  border-radius:999px;padding:10px 16px;font-size:15px;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.done-list{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.done-list div{display:flex;gap:6px}
+/* weekly report */
+.wkbtn{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:right;width:100%}
+.wkbtn .ic{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent);display:grid;place-items:center}
+.wkbtn .ic svg{width:22px;height:22px}
+.wkbtn .tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.wkbtn .tx b{font-weight:700;font-size:17px}
+.wkbtn .tx small{color:var(--muted);font-size:13px}
+.wkbtn .new{background:var(--signal);color:var(--signal-ink);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;flex:0 0 auto}
+.wknav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wknav button{width:42px;height:42px;flex:0 0 42px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;background:var(--bg)}
+.wknav button svg{width:18px;height:18px}
+.wknav button:disabled{opacity:.3;cursor:default}
+.wknav .lb{flex:1;text-align:center;display:flex;flex-direction:column}
+.wknav .lb b{font-size:19px}
+.wknav .lb small{color:var(--muted);font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.1}
+.tile span{font-size:12px;color:var(--muted);font-weight:600}
+.tile.ok b{color:var(--ok)}
+.tile.bad b{color:var(--danger)}
+.tile.pp b{color:var(--warn,#C7631A)}
+.wkover{font-size:14px;color:var(--muted);text-align:center;margin:-2px 0 0}
+.wkover b{color:var(--danger)}
+.wrow{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.wrow > button{width:100%;display:flex;flex-direction:column;gap:6px;padding:12px;text-align:right}
+.wrow .top{display:flex;align-items:center;gap:8px;width:100%}
+.wrow .nm{flex:1;min-width:0;font-weight:700;font-size:17px}
+.wrow .pct{font-weight:700;border-radius:999px;padding:0 10px;font-size:15px}
+.pct.g{background:var(--ok-soft);color:var(--ok)}
+.pct.y{background:color-mix(in srgb,var(--signal) 32%,var(--surface));color:var(--ink)}
+.pct.r{background:var(--danger-soft);color:var(--danger)}
+.pct.n{background:var(--bg);color:var(--muted)}
+.wbar{height:8px;width:100%;border-radius:999px;background:var(--bg);overflow:hidden;display:flex}
+.wbar i{display:block;height:100%}
+.wbar .wa{background:var(--ok)}
+.wbar .wb{background:var(--danger)}
+.wbar .wc{background:var(--muted);opacity:.35}
+.wrow .vd{font-size:14px;font-weight:600}
+.wrow .st{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.wrow .st b{color:var(--ink)}
+.wrow .more{font-size:13px;color:var(--accent);font-weight:600}
+.items{border-top:1px solid var(--line);display:flex;flex-direction:column;background:var(--bg)}
+.it{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-top:1px solid var(--line);font-size:15px}
+.it:first-child{border-top:0}
+.it .m{flex:1;min-width:0;display:flex;flex-direction:column;overflow-wrap:anywhere}
+.it small{color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+"use strict";
+var A = window.Android || null;
+var VER = ""; try{ VER = A && A.appVersion ? String(A.appVersion()||"") : ""; }catch(e){}
+function verTag(){ return VER ? ' <small class="ver num">גרסה '+esc(VER)+'</small>' : ''; }
+var app = document.getElementById("app");
+var st = {joined:false, tasks:[]};
+var openNo = null;    // task id whose note box is open
+var boxKind = null;   // "done" | "no" | "ext"
+var busy = {};        // id -> true while sending
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+function pad(n){ return (n<10?"0":"")+n; }
+var WD=["יום ראשון","יום שני","יום שלישי","יום רביעי","יום חמישי","יום שישי","שבת"];
+function day0(t){ var d=new Date(t); d.setHours(0,0,0,0); return d.getTime(); }
+function dueLabel(t){
+  var d=new Date(t), n=Math.round((day0(t)-day0(Date.now()))/86400000);
+  var dl = n===0?"היום":n===1?"מחר":n===-1?"אתמול":(n>1&&n<7)?WD[d.getDay()]:d.getDate()+"."+(d.getMonth()+1);
+  return dl+" · "+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function ago(t){ var m=Math.round((Date.now()-t)/60000); if(m<1) return "עכשיו"; if(m<60) return "לפני "+m+" דק׳"; var h=Math.round(m/60); if(h<24) return "לפני "+h+" שע׳"; return "לפני "+Math.round(h/24)+" ימים"; }
+var tt=null; function toast(m){ var e=document.getElementById("toast"); e.textContent=m; e.hidden=false; clearTimeout(tt); tt=setTimeout(function(){ e.hidden=true; },3500); }
+
+/* ---------- weekly report: how it looks (the same block is in index.html and worker.html) ---------- */
+function wkDM(t){ var d=new Date(t); return d.getDate()+"."+(d.getMonth()+1); }
+function wkWhen(t){ var d=new Date(t); return wkDM(t)+" "+pad(d.getHours())+":"+pad(d.getMinutes()); }
+function wkDur(ms){
+  var m = Math.max(1, Math.round((ms||0)/60000));
+  if(m<60) return m+" דק׳";
+  var h = Math.floor(m/60), mm = m%60;
+  if(h<24) return (h===1?"שעה":h===2?"שעתיים":h+" שעות")+(h<5 && mm>=10 ? " ו-"+mm+" דק׳" : "");
+  var d = Math.floor(h/24), hh = h%24;
+  return (d===1?"יום":d===2?"יומיים":d+" ימים")+(hh ? " ו-"+(hh===1?"שעה":hh===2?"שעתיים":hh+" שעות") : "");
+}
+function wkRange(r){ return wkDM(r.ws)+" – "+wkDM(r.we-1); }
+function wkPct(r){ var n=r.ok+r.late+r.open; return n ? Math.round(100*r.ok/n) : null; }
+function wkTiles(t){
+  return '<div class="tiles num"><div class="tile"><b>'+t.total+'</b><span>סה״כ משימות</span></div>' +
+    '<div class="tile ok"><b>'+t.ok+'</b><span>בזמן</span></div>' +
+    '<div class="tile bad"><b>'+(t.late+t.open)+'</b><span>לא בזמן</span></div>' +
+    '<div class="tile pp"><b>'+t.postp+'</b><span>נדחו</span></div></div>' +
+    (t.over ? '<p class="wkover">סה״כ חריגה מהיעדים: <b class="num">'+esc(wkDur(t.over))+'</b></p>' : '');
+}
+var WK_IC = {ok:"✅", late:"⏰", open:"❌", wait:"⏳", moved:"↪️"};
+function wkItem(it){
+  var s;
+  if(it.st==="ok") s = "יעד "+wkWhen(it.dl)+" · בוצע "+wkWhen(it.fin);
+  else if(it.st==="late") s = "בוצע באיחור של "+wkDur(it.over)+" · יעד "+wkWhen(it.dl);
+  else if(it.st==="open") s = "לא בוצע · חריגה של "+wkDur(it.over)+" · יעד "+wkWhen(it.dl);
+  else if(it.st==="wait") s = "היעד עוד לא הגיע · "+wkWhen(it.dl);
+  else s = "נדחתה השבוע ליעד חדש: "+wkWhen(it.dl);
+  if(it.pp && it.st!=="moved") s += " · נדחתה"+(it.pp>1 ? " "+it.pp+" פעמים" : "");
+  return '<div class="it"><span aria-hidden="true">'+(WK_IC[it.st]||"•")+'</span><div class="m"><span>'+esc(it.ti)+'</span><small class="num">'+esc(s)+'</small></div></div>';
+}
+/* one person's card. key = makes it a toggle (manager); open = show the task list */
+function wkRow(r, open, key){
+  var p = wkPct(r), miss = r.late+r.open, n = r.ok+miss+(r.wait||0);
+  var cls = p==null ? "n" : p>=90 ? "g" : p>=70 ? "y" : "r";
+  var vd = !r.total ? (r.postp ? "לא היו משימות עם יעד השבוע" : "לא היו משימות השבוע") : p==null ? "היעדים עוד לא הגיעו" : !miss ? "עמד בכל היעדים 👍" : "לא עמד ב-"+miss+" מתוך "+(r.ok+miss)+" יעדים";
+  var h = '<div class="wrow"><button type="button"'+(key ? ' data-wk="'+esc(key)+'" aria-expanded="'+(!!open)+'"' : ' tabindex="-1" style="cursor:default"')+'>' +
+    '<span class="top"><span class="nm">'+esc(r.name)+'</span><span class="pct '+cls+' num">'+(p==null ? "–" : '<bdi>'+p+'%</bdi> בזמן')+'</span></span>' +
+    (n ? '<span class="wbar" aria-hidden="true"><i class="wa" style="width:'+(100*r.ok/n)+'%"></i><i class="wb" style="width:'+(100*miss/n)+'%"></i><i class="wc" style="width:'+(100*(r.wait||0)/n)+'%"></i></span>' : '') +
+    '<span class="vd">'+esc(vd)+'</span>' +
+    '<span class="st num"><span><b>'+r.total+'</b> משימות</span><span><b>'+r.ok+'</b> בזמן</span>' +
+      (r.late ? '<span><b>'+r.late+'</b> באיחור</span>' : '') + (r.open ? '<span><b>'+r.open+'</b> לא בוצעו</span>' : '') +
+      (r.wait ? '<span><b>'+r.wait+'</b> לפני היעד</span>' : '') + (r.postp ? '<span><b>'+r.postp+'</b> נדחו</span>' : '') +
+      (r.over ? '<span>חריגה: <b>'+esc(wkDur(r.over))+'</b></span>' : '') + '</span>' +
+    (key && r.items && r.items.length ? '<span class="more">'+(open ? "הסתר פירוט" : "פירוט המשימות")+'</span>' : '') +
+    '</button>';
+  if(open && r.items && r.items.length) h += '<div class="items">'+r.items.map(wkItem).join("")+(r.more ? '<div class="it"><small>ועוד '+r.more+' משימות</small></div>' : '')+'</div>';
+  return h+'</div>';
+}
+
+/* the worker's own weekly report: his manager's phone sends it every Sunday at 09:00 (only his part) */
+var view = "list", wkIdx = 0;
+function weeks(){ var a=[]; try{ a = JSON.parse(st.weekly||"[]"); }catch(e){} return a.filter(function(r){ return r && r.ws; }).sort(function(a,b){ return b.ws-a.ws; }); }
+function wkBtn(){
+  var w = weeks(), r = w[0], seen = 0; try{ seen = +(localStorage.getItem("rs-wk-seen")||0); }catch(e){}
+  return '<button class="wkbtn" id="wkopen" type="button"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>' +
+    '<span class="tx"><b>דו״ח ביצוע שבועי</b><small class="num">'+(r ? "שבוע "+esc(wkRange(r))+(wkPct(r)!=null ? ' · <bdi>'+wkPct(r)+'%</bdi> בזמן' : "") : "מתעדכן בכל יום ראשון ב-09:00")+'</small></span>' +
+    (r && r.ws>seen ? '<span class="new">חדש</span>' : '') + '</button>';
+}
+function renderWeekly(){
+  var w = weeks(), r = w[wkIdx];
+  var h = '<header><div><h1>דו״ח ביצוע שבועי</h1><div class="sub">'+esc(st.name||"")+'</div></div></header>';
+  if(!r){
+    h += '<div class="empty"><div class="e">📊</div><h3>עוד אין דו״ח</h3><p>בכל יום ראשון ב-09:00 יגיע לכאן הדו״ח של השבוע שעבר: כמה משימות היו לך, כמה בוצעו בזמן, כמה באיחור וכמה נדחו.</p></div>';
+  } else {
+    h += '<div class="wknav"><button type="button" id="wkold" aria-label="שבוע קודם"'+(wkIdx>=w.length-1?" disabled":"")+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>' +
+      '<div class="lb"><b class="num">'+esc(wkRange(r))+'</b><small class="num">עודכן ביום ראשון '+esc(wkDM(r.at))+' ב-09:00</small></div>' +
+      '<button type="button" id="wknew" aria-label="שבוע הבא"'+(wkIdx<=0?" disabled":"")+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button></div>';
+    h += wkTiles(r) + wkRow(r, true, null);
+    h += '<p class="sub" style="margin:0">בזמן = דיווחת "בוצע" עד היעד. כשהמנהל מאשר הארכה, היעד זז והמשימה נספרת כ"נדחתה".</p>';
+  }
+  h += '<button class="b" id="wkback" type="button">חזרה למשימות</button>';
+  app.innerHTML = h;
+}
+
+function load(){ if(!A) return; try{ st = JSON.parse(A.workerState()||"{}"); }catch(e){} if(!st.tasks) st.tasks=[]; }
+
+function renderJoin(err){
+  app.innerHTML =
+    '<header><h1>ראש שקט'+verTag()+'</h1></header>' +
+    '<div class="join">' +
+      '<div class="card"><div class="ttl">הצטרפות לצוות</div>' +
+      '<div class="sub">המנהל שלך שלח לך קוד בן 8 ספרות. הקלד אותו כאן, ומעכשיו המשימות ממנו יגיעו לאפליקציה עם התראה.</div>' +
+      '<input id="code" class="code num" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="••••••••" aria-label="קוד הצטרפות">' +
+      '<button class="b primary" id="join" type="button">הצטרפות</button>' +
+      '<p class="err" id="err" role="alert">'+esc(err||"")+'</p></div>' +
+      '<button class="link" id="mgr" type="button">אני המנהל, חזרה למסך המנהל</button>' +
+    '</div>';
+  var c=document.getElementById("code"), b=document.getElementById("join");
+  c.addEventListener("input", function(){ c.value=c.value.replace(/\D/g,"").slice(0,8); });
+  b.addEventListener("click", function(){
+    var v=c.value.trim();
+    if(!/^\d{8}$/.test(v)){ document.getElementById("err").textContent="הקוד צריך להיות 8 ספרות."; return; }
+    b.disabled=true; b.textContent="מתחבר…"; document.getElementById("err").textContent="";
+    try{ A.workerJoin(v); }catch(e){ b.disabled=false; b.textContent="הצטרפות"; }
+  });
+  document.getElementById("mgr").addEventListener("click", function(){ try{ A.setMode("manager"); }catch(e){} });
+  setTimeout(function(){ c.focus(); }, 100);
+}
+window.onWorkerJoin = function(json){
+  var r={}; try{ r=JSON.parse(json||"{}"); }catch(e){}
+  if(r.ok){ load(); render(); toast("מחובר ל"+(r.mName||"מנהל")+" ✓"); return; }
+  renderJoin(r.error==="notfound" ? "הקוד לא נמצא או שפג תוקפו (12 שעות). בקש מהמנהל קוד חדש." : r.error==="code" ? "הקוד צריך להיות 8 ספרות." : "אין חיבור לאינטרנט. נסה שוב.");
+};
+
+function toInput(t){ var d=new Date(t); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes()); }
+var CARDCLS = {done:" done", no:" no", ext:" ext", extok:" extok", extno:" bad", rej:" bad"};
+function card(t){
+  var late = t.due && t.due < Date.now() && t.st!=="done" && t.st!=="ext";
+  var soon = t.due && !late && t.due-Date.now() < 86400000*1.5;
+  var meta = '';
+  if(t.due) meta += '<span class="chip '+(late?"late":soon?"soon":"plain")+' num">'+esc(dueLabel(t.due))+'</span>';
+  if(t.st==="done") meta += '<span class="chip ok">דיווחת: בוצע · ממתין לאישור</span>';
+  else if(t.st==="no") meta += '<span class="chip no">דיווחת: לא בוצע</span>';
+  else if(t.st==="ext") meta += '<span class="chip ext num">ביקשת הארכה עד '+esc(t.xd?dueLabel(t.xd):"")+' · ממתין לאישור</span>';
+  else if(t.st==="extok") meta += '<span class="chip ok">✅ ההארכה אושרה</span>';
+  else if(t.st==="extno") meta += '<span class="chip bad">ההארכה לא אושרה</span>';
+  else if(t.st==="rej") meta += '<span class="chip bad">המנהל לא אישר את הביצוע</span>';
+  var h = '<div class="card'+(CARDCLS[t.st]||"")+'" data-id="'+esc(t.id)+'"><div class="ttl">'+esc(t.title)+'</div>' + (meta?'<div class="meta">'+meta+'</div>':'');
+  if(t.note && (t.st==="done"||t.st==="no"||t.st==="ext")) h += '<div class="note">💬 '+esc(t.note)+'</div>';
+  var sending = busy[t.id] ? " disabled" : "", lbl = function(x){ return busy[t.id] ? "שולח…" : x; };
+  if(openNo===t.id && boxKind==="done"){
+    h += '<div class="box"><div class="boxh">✅ סימון בוצע</div><textarea id="nt" maxlength="800" placeholder="הערות למנהל (לא חובה)"></textarea>' +
+      '<div class="btns"><button class="b ok" type="button" data-a="send"'+sending+'>'+lbl("שליחה")+'</button><button class="b" type="button" data-a="cancel">ביטול</button></div></div>';
+  } else if(openNo===t.id && boxKind==="no"){
+    h += '<div class="box"><div class="boxh">❌ לא בוצע</div><textarea id="nt" maxlength="800" placeholder="מה חסר או מה הבעיה?"></textarea>' +
+      '<div class="btns"><button class="b no" type="button" data-a="send"'+sending+'>'+lbl("שליחה")+'</button><button class="b" type="button" data-a="cancel">ביטול</button></div></div>';
+  } else if(openNo===t.id && boxKind==="ext"){
+    h += '<div class="box"><div class="boxh">⏳ בקשה להארכת זמן</div>' +
+      '<label for="nd">תאריך יעד חדש</label><input id="nd" type="datetime-local" min="'+esc(toInput(Date.now()))+'">' +
+      '<label for="nt">למה לא הספקת?</label><textarea id="nt" maxlength="800" placeholder="הסבר קצר למנהל"></textarea>' +
+      '<div class="btns"><button class="b primary" type="button" data-a="send"'+sending+'>'+lbl("שליחת בקשה לאישור")+'</button><button class="b" type="button" data-a="cancel">ביטול</button></div></div>';
+  } else if(t.st!=="done"){
+    h += '<div class="btns"><button class="b ok" type="button" data-a="done"'+sending+'>✅ בוצע</button><button class="b no" type="button" data-a="no"'+sending+'>❌ לא בוצע</button>' +
+      (t.st!=="ext" ? '<button class="b ext wide" type="button" data-a="ext"'+sending+'>⏳ בקשה להארכת זמן</button>' : '') + '</div>';
+  } else {
+    h += '<button class="link" type="button" data-a="no" style="align-self:flex-start">משהו השתנה? דווח שלא בוצע</button>';
+  }
+  return h + '</div>';
+}
+function render(){
+  if(!st.joined){ renderJoin(); return; }
+  if(view==="wk"){ renderWeekly(); return; }
+  var waiting = function(t){ return t.st==="done" || t.st==="ext"; };
+  var open = st.tasks.filter(function(t){ return !waiting(t); }).sort(function(a,b){ return (a.due||9e15)-(b.due||9e15); });
+  var wait = st.tasks.filter(waiting);
+  var lateN = open.filter(function(t){ return t.due && t.due<Date.now(); }).length;
+  var h = '<header><div><h1>המשימות שלי'+verTag()+'</h1><div class="sub">'+esc(st.name||"")+(st.mName?" · משימות מ"+esc(st.mName):"")+'</div></div></header>';
+  h += '<div id="perm"></div>';
+  h += '<div class="sum"><div class="big num">'+(open.length ? open.length+" פתוחות" : "אין משימות פתוחות")+'</div><div class="sm">'+(lateN?lateN+" באיחור · ":"")+(wait.length?wait.length+" ממתינות לאישור":"כל דיווח שלך מגיע ישר למנהל")+'</div></div>';
+  h += wkBtn();
+  if(open.length){ h += '<h2>לביצוע</h2>' + open.map(card).join(""); }
+  if(wait.length){ h += '<h2 class="wait">דיווחת, ממתינות לאישור</h2>' + wait.map(card).join(""); }
+  if(!open.length && !wait.length) h += '<div class="empty"><div class="e">🎉</div><h3>הכול בוצע</h3><p>משימה חדשה תגיע לכאן עם התראה.</p></div>';
+  h += '<div class="foot"><span class="num">'+(st.lastSync ? "עודכן "+esc(ago(st.lastSync)) : "")+'</span><span><button class="link" id="sync" type="button">רענון</button> · <button class="link" id="leave" type="button">התנתקות</button></span></div>';
+  var keep = document.getElementById("nt"), kv = keep ? keep.value : null, kd = document.getElementById("nd"), kdv = kd ? kd.value : null;
+  app.innerHTML = h;
+  if(kv!=null && document.getElementById("nt")) document.getElementById("nt").value = kv;
+  if(kdv!=null && document.getElementById("nd")) document.getElementById("nd").value = kdv;
+  renderPerm();
+}
+var leaveArmed=false;
+app.addEventListener("click", function(ev){
+  var b=ev.target.closest("button"); if(!b) return;
+  if(b.id==="sync"){ toast("מבקש עדכון מהמנהל…"); try{ A.workerPoll(true); }catch(e){} return; }
+  if(b.id==="leave"){ if(!leaveArmed){ leaveArmed=true; b.textContent="להתנתק? לחץ שוב"; setTimeout(function(){ leaveArmed=false; render(); },4000); return; } try{ A.workerLeave(); }catch(e){} load(); render(); return; }
+  if(b.id==="permfix"){ try{ A.fixNotifications(); }catch(e){} return; }
+  if(b.id==="wkopen"){ view="wk"; wkIdx=0; var w0=weeks()[0]; if(w0){ try{ localStorage.setItem("rs-wk-seen", String(w0.ws)); }catch(e){} } render(); window.scrollTo(0,0); return; }
+  if(b.id==="wkback"){ view="list"; render(); window.scrollTo(0,0); return; }
+  if(b.id==="wkold"){ wkIdx++; render(); return; }
+  if(b.id==="wknew"){ wkIdx=Math.max(0,wkIdx-1); render(); return; }
+  var c=b.closest(".card"); if(!c) return; var id=c.dataset.id, a=b.dataset.a;
+  if(a==="done" || a==="no" || a==="ext"){ openNo=id; boxKind=a; render(); var f=document.getElementById(a==="ext"?"nd":"nt"); if(f) f.focus(); }
+  else if(a==="cancel"){ openNo=null; boxKind=null; render(); }
+  else if(a==="send"){
+    var v=((document.getElementById("nt")||{}).value||"").trim(), t=null;
+    st.tasks.forEach(function(x){ if(x.id===id) t=x; });
+    if(boxKind==="no" && !v){ toast("כתוב בקצרה מה הבעיה"); return; }
+    if(boxKind==="ext"){
+      var dv=(document.getElementById("nd")||{}).value||"", d=dv ? new Date(dv).getTime() : 0;
+      if(!d){ toast("בחר תאריך יעד חדש"); return; }
+      if(d <= Date.now()){ toast("תאריך היעד החדש צריך להיות בעתיד"); return; }
+      if(t && t.due && d <= t.due){ toast("תאריך היעד החדש צריך להיות אחרי "+dueLabel(t.due)); return; }
+      if(!v){ toast("כתוב למה לא הספקת"); return; }
+      busy[id]=true; lastKind="ext"; render(); try{ A.workerExt(id, String(d), v); }catch(e){ busy[id]=false; render(); }
+      return;
+    }
+    busy[id]=true; lastKind=boxKind; render(); try{ A.workerReply(id, boxKind==="no"?"no":"done", v); }catch(e){ busy[id]=false; render(); }
+  }
+});
+var lastKind = null;
+window.onWorkerReplied = function(id, ok){
+  busy[id]=false;
+  if(ok){ if(openNo===id){ openNo=null; boxKind=null; } load(); render(); toast(lastKind==="ext" ? "הבקשה נשלחה למנהל לאישור ✓" : "הדיווח נשלח למנהל ✓"); }
+  else { render(); toast("השליחה לא הצליחה. בדוק אינטרנט ונסה שוב."); }
+};
+function renderPerm(){
+  var el=document.getElementById("perm"); if(!el || !A) return; var ok=true;
+  try{ ok = A.notificationsAllowed(); }catch(e){}
+  el.innerHTML = ok ? "" : '<div class="banner"><p>ההתראות כבויות, ולכן לא תשמע כשמגיעה משימה חדשה.</p><button class="link" id="permfix" type="button">להפעלה</button></div>';
+}
+window.onNativePending = function(){ load(); render(); };
+window.onNativeResume = function(){ load(); try{ if(A.takeOpenWeekly && A.takeOpenWeekly() && st.joined){ view="wk"; wkIdx=0; } }catch(e){} render(); try{ if(st.joined) A.workerPoll(false); }catch(e){} };
+window.onNativeBack = function(){ if(view==="wk"){ view="list"; render(); return true; } if(openNo){ openNo=null; boxKind=null; render(); return true; } return false; };
+setInterval(function(){ if(!document.hidden && st.joined && !openNo) render(); }, 60000);
+
+if(!A){ app.innerHTML = '<div class="empty"><h3>פתח את המסך הזה מתוך אפליקציית ראש שקט</h3></div>'; return; }
+load();
+try{ if(A.takeOpenWeekly && A.takeOpenWeekly() && st.joined) view = "wk"; }catch(e){}
+render();
+})();
+</script>
+</body>
+</html>

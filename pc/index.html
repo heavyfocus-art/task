@@ -214,17 +214,14 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 <div class="pair" id="pair" hidden>
   <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><h1>ראש שקט</h1><small>במחשב</small></div></div>
   <form class="card" id="pair-form" autocomplete="off">
-    <h2>חיבור המחשב לטלפון</h2>
-    <ol class="steps">
-      <li>בטלפון, פתח את ראש שקט ולחץ על <b>העובדים שלי</b> (סמל האנשים למעלה)</li>
-      <li>גלול ל<b>המחשב שלי</b> ולחץ <b>חיבור</b></li>
-      <li>הקלד כאן את הקוד בן 8 הספרות שמופיע בטלפון</li>
-    </ol>
+    <h2>חיבור למחשב</h2>
+    <p class="hint"><b style="color:var(--ink)">עובד?</b> הקלד את הקוד שקיבלת מהמנהל, ותראה כאן את המשימות שלך.</p>
+    <p class="hint"><b style="color:var(--ink)">מנהל?</b> בטלפון: העובדים שלי ← המחשב שלי ← חיבור, והקלד כאן את הקוד שמופיע.</p>
     <label for="code" class="hint">קוד חיבור</label>
     <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000">
     <p class="err" id="pair-err" role="alert"></p>
     <button class="btn primary" id="pair-go" type="submit">חיבור</button>
-    <p class="hint">הכול מוצפן. רק המחשב הזה והטלפון שלך יכולים לקרוא את המשימות. במחשב משותף, נתק בסיום העבודה (בהגדרות).</p>
+    <p class="hint">הכול מוצפן, ורק מי שקיבל את הקוד יכול לקרוא את המשימות. במחשב משותף, התנתק בסיום העבודה.</p>
   </form>
 </div>
 
@@ -521,7 +518,9 @@ function join(code){
       txt.split("\n").forEach(function(l){ if(!l.trim()) return; try{ var m = JSON.parse(l); if(m.event==="message") envs.push(JSON.parse(m.message)); }catch(e){} });
       return Promise.all(envs.map(function(e){ return openEnv(key, e); })).then(function(list){
         var found = null;
-        list.forEach(function(j){ if(j && j.kind==="pc" && ID_RE.test(j.m||"") && ID_RE.test(j.t||"") && ID_RE.test(j.id||"") && j.key && unb64u(j.key).length===32) found = j; });
+        list.forEach(function(j){ if(!j || !j.key || unb64u(j.key).length!==32 || !ID_RE.test(j.m||"")) return;
+          if(j.kind==="pc" && ID_RE.test(j.t||"") && ID_RE.test(j.id||"")) found = j;                       // the manager's own computer
+          else if(!j.kind && ID_RE.test(j.w||"") && /^[A-Za-z0-9_-]{4,64}$/.test(j.id||"")) found = j; });   // a worker's code
         if(!found) throw "notfound";
         return found;
       });
@@ -536,6 +535,7 @@ $("pair-form").addEventListener("submit", function(ev){
   if(!SUB){ $("pair-err").textContent = "הדפדפן הזה לא תומך בהצפנה. נסה Chrome או Edge."; return; }
   var b = $("pair-go"); b.disabled = true; b.textContent = "מתחבר…";
   join(code).then(function(j){
+    if(j.kind!=="pc"){ sv("rsw-cfg", {m:j.m, w:j.w, id:j.id, key:j.key, name:j.name||"", mName:j.mName||"", at:Date.now()}); location.href = "w.html"; return; }
     cfg = {m:j.m, t:j.t, id:j.id, key:j.key, mName:j.mName||"", at:Date.now()}; sv(CFGK, cfg);
     snap = null; pend = []; out = []; sv(SNAPK, null); sv(PENDK, pend); saveOut();
     toPhone({j:1});
@@ -677,6 +677,7 @@ function worker(id){ var ws = snap && snap.workers || []; for(var i=0;i<ws.lengt
 function nameOf(t){ var w = t.assignee && worker(t.assignee); return w ? w.name : (t.assigneeName || "עובד"); }
 function firstName(n){ return String(n||"").trim().split(/\s+/)[0] || ""; }
 function linkedW(id){ var w = id && worker(id); return w && w.linked && w.topic && w.key ? w : null; }
+function feedW(id){ var w = id && worker(id); return w && (w.linked || w.feed) && w.topic && w.key ? w : null; }
 function myName(){ return (snap && snap.me && snap.me.name) || (cfg && cfg.mName) || ""; }
 function stOf(t){ if(t.done) return "done"; if(t.reported) return "review"; if(t.ext && t.ext.st==="pending") return "extreq"; if(t.rej) return "rej";
   if(t.fb && t.fb.s==="no") return "no"; if(t.ext && t.ext.st==="ok") return "extok"; return "open"; }
@@ -685,7 +686,7 @@ function wTask(t){ if(!t.tok) return null; var s0 = stOf(t), w = {id:t.id, tok:t
   if(s0==="extreq") w.xd = t.ext.due; return w; }
 function pushW(w, obj){ if(w && w.topic && w.key && obj) queue(w.topic, w.key, obj); }
 function syncOut(b, a){
-  var bw = b && !b.done ? linkedW(b.assignee) : null, aw = a ? linkedW(a.assignee) : null;
+  var bw = b && !b.done ? feedW(b.assignee) : null, aw = a ? feedW(a.assignee) : null;
   if(bw && (!aw || aw.id!==bw.id)) pushW(bw, {op:"rm", id:b.id, r:"del"});
   if(!aw) return;
   if(a.done){ if(b && !b.done && bw && bw.id===aw.id) pushW(aw, {op:"rm", id:a.id, r:"ok"}); return; }
@@ -708,8 +709,9 @@ function sendToWorker(t, reminder, forceWa){
   var w = worker(t.assignee); if(!w){ toast("העובד הזה כבר לא ברשימה."); return false; }
   if(!t.tok){ toast("אי אפשר לשלוח מהמחשב לפני שהטלפון עדכן את המשימה. נסה שוב בעוד רגע."); return false; }
   doOp({k:"sent", id:t.id});
-  var lw = linkedW(w.id);
-  if(lw){ if(reminder){ var x = wTask(view[t.id]||t); if(x) pushW(lw, {op:"up", t:x}); } if(!forceWa && !w.wa) return true; }
+  var fw = feedW(w.id);
+  if(fw && reminder){ var x = wTask(view[t.id]||t); if(x) pushW(fw, {op:"up", t:x}); }
+  if(linkedW(w.id) && !forceWa && !w.wa) return true;
   openWa(w.phone, taskMessage(view[t.id]||t, w, reminder)); return false;
 }
 function matchPerson(text){
@@ -1014,7 +1016,8 @@ function startApp(){
   rebuild(); render(); refreshKids(); flush(); poll();
 }
 if(cfg && cfg.key && cfg.m && cfg.t && cfg.id) startApp();
-else { $("pair").hidden = false; setTimeout(function(){ $("code").focus(); }, 50); }
+else if(ld("rsw-cfg")) location.replace("w.html");
+else { $("pair").hidden = false; try{ var pm = sessionStorage.getItem("rs-msg"); if(pm){ $("pair-err").textContent = pm; sessionStorage.removeItem("rs-msg"); } }catch(e){} setTimeout(function(){ $("code").focus(); }, 50); }
 window.__rs = {view:function(){ return view; }, pend:function(){ return pend; }};
 })();
 </script>
