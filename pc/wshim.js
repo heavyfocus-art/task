@@ -5,7 +5,7 @@
    to the manager's inbox sealed with the task's own token. Nothing leaves unsealed. */
 (function(){
   "use strict";
-  var VERSION = "22";
+  var VERSION = "23";
   var CFG = "rsw-cfg", TASKS = "rsw-tasks", WEEK = "rsw-weekly", LAST = "rsw-last";
   function ld(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
   function sv(k, v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
