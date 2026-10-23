@@ -206,6 +206,26 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 #code{font:inherit;font-size:34px;font-weight:700;letter-spacing:.25em;text-align:center;direction:ltr;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:50;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font-size:15px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .toast button{color:var(--signal);font-weight:700}
+/* version 26: urgent, recurring, checklist, photo, export, load */
+.chip.urgc{background:var(--danger);color:#fff}
+.row.urgent{box-shadow:inset -4px 0 0 var(--danger)}
+.group.urgent h2{color:var(--danger)}
+.tile.urg b{color:var(--danger)}
+.opts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.opts button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px;font-size:14px;font-weight:600;min-height:32px}
+.opts button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.opts button[data-o="urg"][aria-pressed="true"]{background:var(--danger);border-color:var(--danger);color:#fff}
+.opts button:disabled{opacity:.4;cursor:default}
+#ck-in{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-height:72px;resize:vertical}
+.towho button .ld{font-size:12px;font-weight:600;opacity:.75;margin-inline-start:4px}
+.towho button .ld.busy{color:var(--danger);opacity:1}
+.towho button[aria-pressed="true"] .ld{color:inherit}
+.chk{display:flex;gap:10px;align-items:center;font-weight:600;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--accent)}
+.chk small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.ckst{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
+.ckst .y{color:var(--ok);font-weight:600}
+.wkx{display:flex;gap:8px}.wkx .btn{flex:1}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -242,10 +262,16 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
     <main>
       <form class="card composer" id="form" autocomplete="off">
         <div class="crow">
-          <input id="new-task" type="text" placeholder="למשל: דני מחר ב-9 להחליף זמזם בצומת הרצל" aria-label="משימה חדשה">
+          <input id="new-task" type="text" placeholder="למשל: דני מחר ב-9 להחליף זמזם בצומת הרצל · אפשר גם &quot;דחוף&quot; או &quot;כל שבוע&quot;" aria-label="משימה חדשה">
           <button class="btn primary" id="add" type="submit" disabled>+ הוספה</button>
         </div>
         <div class="towho" id="towho"></div>
+        <div class="opts" id="opts" role="group" aria-label="אפשרויות למשימה">
+          <button type="button" data-o="urg" aria-pressed="false">🚨 דחוף</button>
+          <button type="button" data-o="ck" aria-pressed="false">☑ רשימת בדיקה</button>
+          <button type="button" data-o="ph" aria-pressed="false">📷 תמונה בדיווח</button>
+        </div>
+        <textarea id="ck-in" hidden aria-label="סעיפי רשימת הבדיקה" placeholder="סעיף בכל שורה, למשל:&#10;בקר&#10;ראשי רמזור&#10;גלאים"></textarea>
         <div class="preview" id="preview"></div>
       </form>
       <div class="tiles" id="tiles"></div>
@@ -268,6 +294,10 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
       <button type="button" data-q="tmr">מחר 09:00</button>
       <button type="button" data-q="none">בלי מועד</button>
     </div>
+    <label class="chk"><input type="checkbox" id="edit-urg"><span>🚨 משימה דחופה<small>ראשונה ברשימה, ואצל עובד עם האפליקציה מצלצלת כמו שעון מעורר</small></span></label>
+    <label class="chk" id="edit-phq-f"><input type="checkbox" id="edit-phq"><span>📷 תמונה בדיווח<small>העובד יוכל לצלם או לצרף תמונה כשהוא מדווח (באפליקציה בטלפון)</small></span></label>
+    <div class="field"><label for="edit-rpt">חוזרת</label><select id="edit-rpt"><option value="">לא חוזרת</option><option value="d">כל יום</option><option value="wd">כל יום עבודה (א׳–ה׳)</option><option value="w">כל שבוע</option><option value="m">כל חודש</option></select><p class="hint" id="edit-rpt-h"></p></div>
+    <div class="field"><label for="edit-ck">☑ רשימת בדיקה · שורה לכל סעיף</label><textarea id="edit-ck" placeholder="בקר&#10;ראשי רמזור&#10;גלאים"></textarea><div class="ckst" id="edit-ck-st"></div></div>
     <div class="actions">
       <button class="btn primary" id="edit-save" type="button">שמירה</button>
       <button class="btn ghost" id="edit-cancel" type="button">ביטול</button>
@@ -288,7 +318,7 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
     </div>
     <div id="wk-body" style="display:flex;flex-direction:column;gap:10px"></div>
     <p class="hint">בזמן = העובד דיווח "בוצע" עד היעד. הדו״ח מחושב בטלפון ומתעדכן כאן כשהטלפון שולח עדכון.</p>
-    <button class="btn ghost" id="wk-close" type="button">סגירה</button>
+    <div class="wkx"><button class="btn ghost" id="wk-xlsx" type="button">📥 ייצוא לאקסל</button><button class="btn ghost" id="wk-close" type="button">סגירה</button></div>
   </div>
 </div>
 
@@ -296,6 +326,7 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="set-h">
     <h3 id="set-h">הגדרות</h3>
     <p class="hint" id="set-info"></p>
+    <button class="btn ghost" id="exp-all" type="button">📥 ייצוא המשימות לאקסל</button>
     <button class="btn ghost" id="set-resync" type="button">בקש מהטלפון לשלוח הכול מחדש</button>
     <button class="btn danger" id="set-off" type="button">ניתוק המחשב הזה</button>
     <p class="hint">ניתוק מוחק מהמחשב את המשימות ואת מפתח ההצפנה. כדי לחבר שוב צריך קוד חדש מהטלפון.</p>
@@ -468,6 +499,43 @@ function wkRow(r, open, key){
   return h+'</div>';
 }
 
+/* ---------- urgent, recurring, checklist, photo (same rules as the phone, version 26) ---------- */
+var REP_L = {d:"כל יום", wd:"כל יום עבודה", w:"כל שבוע", m:"כל חודש"};
+function nextOcc(t, rep){
+  var d = new Date(t);
+  if(rep==="m"){ var day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth()+1);
+    d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth()+1, 0).getDate())); return d.getTime(); }
+  d.setDate(d.getDate() + (rep==="w" ? 7 : 1));
+  if(rep==="wd") while(d.getDay()===5 || d.getDay()===6) d.setDate(d.getDate()+1);
+  return d.getTime();
+}
+/* "כל יום", "כל בוקר", "כל יום עבודה", "כל שבוע", "כל חודש", "כל יום ראשון" … */
+function parseRep(text){
+  var s = " "+text+" ", rep = null;
+  s = s.replace(/(^|\s)כל\s+(?:יום\s+(ראשון|שני|שלישי|רביעי|חמישי|שישי)|(שבת))(?=\s)/, function(_,a,d1){ rep = "w"; return a+(d1 ? "ביום "+d1 : "בשבת"); });
+  if(!rep) s = s.replace(/(^|\s)כל\s+(יום עבודה|ימי עבודה|יום|בוקר|שבוע|חודש)(?=\s)/, function(_,a,w){
+    rep = w==="שבוע" ? "w" : w==="חודש" ? "m" : /עבודה/.test(w) ? "wd" : "d"; return a+(w==="בוקר" ? "בבוקר" : ""); });
+  return {rep:rep, text:s.replace(/\s+/g," ").trim()};
+}
+function parseUrg(text){
+  var u = false, s = (" "+text+" ").replace(/(^|\s)(דחוף|דחופה|בדחיפות)(?=[\s,.!?])/g, function(_,a){ u = true; return a; });
+  return {urg:u, text:s.replace(/\s+/g," ").trim()};
+}
+/* a recurring task written without a time starts at the next 09:00 */
+function firstDue(rep){ var now = new Date(), d = atTime(now,9,0); if(d<=now) d = addDays(d,1);
+  if(rep==="wd") while(d.getDay()===5 || d.getDay()===6) d = addDays(d,1); return d.getTime(); }
+function ckOf(t){ return Array.isArray(t && t.ck) ? t.ck : []; }
+function ckDone(t){ var n = ckOf(t).length; return Array.isArray(t.ckd) ? t.ckd.filter(function(i){ return i>=0 && i<n; }).length : 0; }
+function ckParse(v){ return String(v||"").split(/\n+/).map(function(x){ return x.replace(/^[\s\-–•☐☑✓✔*]+/,"").trim().slice(0,120); }).filter(Boolean).slice(0,25); }
+
+function parseExtras(text){ var u = parseUrg(text), r = parseRep(u.text); return {urg:u.urg, rep:r.rep, text:r.text}; }
+function dlOf(t){ return t.dl!==undefined ? t.dl : (t.due||null); }
+function finAt(t){
+  if(t.reported) return t.reportedAt || t.doneAt || null;
+  if(t.done) return (t.reportedAt && (!t.doneAt || t.reportedAt <= t.doneAt)) ? t.reportedAt : (t.doneAt || null);
+  return null;
+}
+
 /* ---------- crypto: AES-256-GCM, the same scheme as the phone app and the task page ---------- */
 var SUB = window.crypto && crypto.subtle, TE = new TextEncoder(), TD = new TextDecoder();
 function b64u(buf){ var b=new Uint8Array(buf), x=""; for(var i=0;i<b.length;i++) x+=String.fromCharCode(b[i]); return btoa(x).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
@@ -615,7 +683,7 @@ function readReports(){
     if(fbs[m.id]) return; var x = kids[m.env.k]; if(!x) return;
     return openEnv(x.key, m.env).then(function(o){ if(!o) return;
       var s = o.s==="no" ? "no" : o.s==="ext" ? "ext" : "done";
-      fbs[m.id] = {id:x.id, s:s, note:String(o.n||"").slice(0,1000), at:m.at, d:+o.d||0}; ch = true; });
+      fbs[m.id] = {id:x.id, s:s, note:String(o.n||"").slice(0,1000), at:m.at, d:+o.d||0, c:Array.isArray(o.c) ? o.c.map(Number) : null, p:o.p===1}; ch = true; });
   }); }, Promise.resolve()).then(function(){ if(ch){ rebuild(); render(); } return ch; });
 }
 function applyFb(t, x){
@@ -623,7 +691,8 @@ function applyFb(t, x){
   if(x.s==="ext"){ if(!x.d || (t.ext && t.ext.at===x.at)) return; t.ext = {due:x.d, note:x.note, at:x.at, st:"pending"}; t.rej = null; t.fb = null; t.reported = false; t._fresh = true; return; }
   if(t.fb && t.fb.at===x.at) return;
   if(t.fb && t.fb.at > x.at) return;
-  t.fb = {s:x.s==="no"?"no":"done", note:x.note, at:x.at}; t.rej = null; if(t.ext && t.ext.st==="pending") t.ext.st = "moot";
+  t.fb = {s:x.s==="no"?"no":"done", note:x.note, at:x.at}; t.rej = null;
+  if(x.c) t.ckd = x.c.filter(function(i){ return i>=0 && i<ckOf(t).length; }); if(x.p) t._php = true; if(t.ext && t.ext.st==="pending") t.ext.st = "moot";
   if(t.fb.s==="done"){ t.reported = true; t.reportedAt = x.at; } else { t.reported = false; t.reportedAt = null; }
   t._fresh = true;
 }
@@ -641,9 +710,12 @@ function rebuild(){
 function applyLocal(o, mark){
   var t = view[o.id];
   switch(o.k){
-    case "add": if(t) return; view[o.id] = {id:o.id, title:o.title, due:o.due||null, assignee:o.assignee||null, assigneeName:o.assigneeName||null, done:false, createdAt:o.at, sentAt:o.sentAt||null, tok:o.tok||null}; break;
+    case "add": if(t) return; view[o.id] = {id:o.id, title:o.title, due:o.due||null, assignee:o.assignee||null, assigneeName:o.assigneeName||null, done:false, createdAt:o.at, sentAt:o.sentAt||null, tok:o.tok||null,
+        urg:!!o.urg||null, rep:o.rep||null, ck:(o.ck&&o.ck.length)?o.ck:null, phq:!!o.phq||null}; break;
     case "edit": if(!t) return; if(o.title!=null) t.title = o.title; if(o.due!==undefined) t.due = o.due||null;
-      if(o.assignee!==undefined){ t.assignee = o.assignee||null; t.assigneeName = o.assigneeName||null; } if(o.tok && !t.tok) t.tok = o.tok; if(o.sentAt) t.sentAt = o.sentAt; break;
+      if(o.assignee!==undefined){ t.assignee = o.assignee||null; t.assigneeName = o.assigneeName||null; } if(o.tok && !t.tok) t.tok = o.tok; if(o.sentAt) t.sentAt = o.sentAt;
+      if(o.urg!==undefined) t.urg = !!o.urg||null; if(o.phq!==undefined) t.phq = !!o.phq||null; if(o.rep!==undefined && !t.repNext) t.rep = o.rep||null;
+      if(o.ck!==undefined){ var nc = (o.ck&&o.ck.length) ? o.ck : null; if(JSON.stringify(nc)!==JSON.stringify(t.ck||null)){ t.ck = nc; t.ckd = null; } } break;
     case "decide": if(!t || t.done) return;
       if(o.kind==="okdone"){ t.done = true; t.doneAt = o.at; }
       else if(o.kind==="rejdone"){ t.reported = false; t.reportedAt = null; t.rej = {at:o.at, why:"done"}; }
@@ -683,7 +755,9 @@ function stOf(t){ if(t.done) return "done"; if(t.reported) return "review"; if(t
   if(t.fb && t.fb.s==="no") return "no"; if(t.ext && t.ext.st==="ok") return "extok"; return "open"; }
 var WST = {review:"done", extreq:"ext", no:"no", extok:"extok", open:"open"};
 function wTask(t){ if(!t.tok) return null; var s0 = stOf(t), w = {id:t.id, tok:t.tok, title:t.title, due:t.due||null, st: s0==="rej" ? (t.rej.why==="ext"?"extno":"rej") : (WST[s0]||"open")};
-  if(s0==="extreq") w.xd = t.ext.due; return w; }
+  if(s0==="extreq") w.xd = t.ext.due;
+  if(t.urg) w.u = 1; if(ckOf(t).length) w.ck = ckOf(t).slice(); if(t.phq) w.ph = 1; if(t.rep && REP_L[t.rep]) w.rp = REP_L[t.rep];
+  return w; }
 function pushW(w, obj){ if(w && w.topic && w.key && obj) queue(w.topic, w.key, obj); }
 function syncOut(b, a){
   var bw = b && !b.done ? feedW(b.assignee) : null, aw = a ? feedW(a.assignee) : null;
@@ -691,14 +765,17 @@ function syncOut(b, a){
   if(!aw) return;
   if(a.done){ if(b && !b.done && bw && bw.id===aw.id) pushW(aw, {op:"rm", id:a.id, r:"ok"}); return; }
   var x = wTask(a), y = b ? wTask(b) : null; if(!x) return;
-  if(!y || b.done || !bw || bw.id!==aw.id || x.title!==y.title || x.due!==y.due || x.st!==y.st) pushW(aw, {op:"up", t:x});
+  if(!y || b.done || !bw || bw.id!==aw.id || x.title!==y.title || x.due!==y.due || x.st!==y.st || x.u!==y.u || x.ph!==y.ph || JSON.stringify(x.ck||null)!==JSON.stringify(y.ck||null)) pushW(aw, {op:"up", t:x});
 }
 var FORM_URL = "https://heavyfocus-art.github.io/task/";
 function formLink(t){ return FORM_URL+"#s."+cfg.m+"."+t.tok; }
 function taskMessage(t, w, reminder){
   var L = [], mn = myName();
+  if(t.urg) L.push("🚨 *דחוף*");
   L.push(reminder ? "היי "+firstName(w.name)+", תזכורת למשימה:" : "היי "+firstName(w.name)+", משימה חדשה"+(mn?" מ"+mn:"")+":");
   L.push("*"+t.title+"*");
+  if(t.rep && REP_L[t.rep]) L.push("🔁 משימה קבועה: "+REP_L[t.rep]);
+  ckOf(t).forEach(function(c){ L.push("☐ "+c); });
   if(t.due){ var d = new Date(t.due), dl = dayLabel(t.due), dm = d.getDate()+"."+(d.getMonth()+1); L.push("📅 תאריך יעד: "+(dl===dm ? dm : dl+" "+dm)+" בשעה "+hm(d)); }
   L.push(""); L.push("כשסיימת, או אם יש בעיה:"); L.push("*לחץ כאן* 👈 "+formLink(t));
   return L.join("\n");
@@ -732,12 +809,17 @@ function inView(t){ return filter==="all" ? true : filter==="me" ? !t.assignee :
 var ROWCLS = {review:" reported", no:" issue", extreq:" extreq", rej:" rej", extok:" extok"};
 function rowHtml(t){
   var s0 = stOf(t), chips = "", now = Date.now();
+  if(t.urg && !t.done) chips += '<span class="chip urgc">🚨 דחוף</span>';
   if(t._p) chips += '<span class="chip pend">⏳ ממתין לטלפון</span>';
   if(s0==="review") chips += '<span class="chip okc">בוצע · '+esc(relLabel(t.reportedAt||now))+'</span>';
   else if(s0==="no") chips += '<span class="chip noc">לא בוצע · '+esc(relLabel(t.fb.at))+'</span>';
   else if(s0==="extreq") chips += '<span class="chip extc num">⏳ מבקש הארכה עד '+esc(whenLabel(t.ext.due))+'</span>';
   else if(s0==="rej") chips += '<span class="chip rejc">'+(t.rej.why==="ext"?"הארכה לא אושרה":"ביצוע לא אושר")+'</span>';
   else if(s0==="extok") chips += '<span class="chip okc">הארכה אושרה</span>';
+  if(t.rep && REP_L[t.rep] && !t.repNext) chips += '<span class="chip plain">🔁 '+esc(REP_L[t.rep])+'</span>';
+  if(ckOf(t).length) chips += '<span class="chip plain num">☑ '+ckDone(t)+'/'+ckOf(t).length+'</span>';
+  if((t.ph && t.ph.length) || t._php) chips += '<span class="chip plain" title="התמונה נשמרת בטלפון שלך">📷 תמונה בטלפון</span>';
+  else if(t.phq && !t.done) chips += '<span class="chip plain">📷 מבקש תמונה</span>';
   var extNote = s0==="extreq" || (s0==="rej" && t.rej && t.rej.why==="ext");
   var nt = t.done ? "" : extNote ? (t.ext && t.ext.note) : (t.fb && t.fb.note);
   var due = "";
@@ -748,7 +830,7 @@ function rowHtml(t){
   if(s0==="review") acts = '<button class="abtn ok" type="button" data-act="okdone">✓ מאשר ביצוע</button><button class="abtn no" type="button" data-act="rejdone">✗ לא מאשר</button>';
   else if(s0==="extreq") acts = '<button class="abtn ok" type="button" data-act="okext">✓ מאשר הארכה</button><button class="abtn no" type="button" data-act="rejext">✗ לא מאשר</button>';
   else if(!t.done && t.assignee && worker(t.assignee)) acts = '<button class="abtn wa" type="button" data-act="remind">'+(t.due && t.due < now ? "שלח תזכורת" : "שלח שוב")+'</button>';
-  return '<div class="row'+(t.done?" done":"")+(ROWCLS[s0]||"")+'" data-id="'+esc(t.id)+'">' +
+  return '<div class="row'+(t.done?" done":"")+(ROWCLS[s0]||"")+(t.urg && !t.done ? " urgent" : "")+'" data-id="'+esc(t.id)+'">' +
     '<button class="check" type="button" data-act="toggle" aria-label="'+(t.done?"סמן כפתוחה":s0==="review"?"אשר ביצוע":"סמן כבוצעה")+'">'+CHECK+'</button>' +
     '<button class="body" type="button" data-act="edit"><span class="title">'+esc(t.title)+'</span>'+(chips?'<span class="chips">'+chips+'</span>':'')+(nt?'<span class="fbnote">💬 '+esc(nt)+'</span>':'')+'</button>' +
     '<span class="cell who">'+(t.assignee ? (lw?'<span class="chip app" title="מחובר לאפליקציה">📱</span> ':'')+esc(nameOf(t)) : '<span class="cell muted">שלי</span>')+'</span>' +
@@ -770,8 +852,8 @@ function renderPeople(){
   var h = '<span class="h">עובדים</span>' + btn("all","כולם",l) + btn("me","שלי",l.filter(function(t){ return !t.assignee; }));
   ws.forEach(function(w){ h += btn(w.id, w.name, l.filter(function(t){ return t.assignee===w.id; })); });
   $("people").innerHTML = h;
-  var th = '<span>למי:</span><button type="button" data-u="">לי</button>';
-  ws.forEach(function(w){ th += '<button type="button" data-u="'+esc(w.id)+'">'+esc(w.name)+'</button>'; });
+  var th = '<span id="towho-h">למי:</span><button type="button" data-u="">לי<small class="ld num" data-l=""></small></button>';
+  ws.forEach(function(w){ th += '<button type="button" data-u="'+esc(w.id)+'">'+esc(w.name)+'<small class="ld num" data-l="'+esc(w.id)+'"></small></button>'; });
   $("towho").innerHTML = th; syncTowho();
 }
 function render(){
@@ -786,15 +868,18 @@ function render(){
   var issues = inSt("no").sort(function(a,b){ return (a.fb.at||0)-(b.fb.at||0); });
   open = open.filter(function(t){ var k = stOf(t); return k==="open" || k==="extok"; });
   var done = list.filter(function(t){ return t.done; }).sort(function(a,b){ return (b.doneAt||0)-(a.doneAt||0); });
-  var timed = open.filter(function(t){ return t.due; }).sort(function(a,b){ return a.due-b.due; });
+  var urgent = open.filter(function(t){ return t.urg; }).sort(function(a,b){ return (a.due||9e15)-(b.due||9e15); });
+  var timedAll = open.filter(function(t){ return t.due; }), lateAll = timedAll.filter(function(t){ return t.due<now; }), todayAll = timedAll.filter(function(t){ return t.due>=now && dayDiff(t.due)===0; });
+  var timed = open.filter(function(t){ return t.due && !t.urg; }).sort(function(a,b){ return a.due-b.due; });
   var late = timed.filter(function(t){ return t.due<now; });
   var today = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)===0; });
   var tmr = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)===1; });
   var later = timed.filter(function(t){ return t.due>=now && dayDiff(t.due)>1; });
-  var none = open.filter(function(t){ return !t.due; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  var none = open.filter(function(t){ return !t.due && !t.urg; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
   $("tiles").innerHTML =
-    '<div class="card tile late"><span>באיחור</span><b class="num">'+late.length+'</b></div>' +
-    '<div class="card tile"><span>להיום</span><b class="num">'+(today.length+late.length)+'</b></div>' +
+    '<div class="card tile late"><span>באיחור</span><b class="num">'+lateAll.length+'</b></div>' +
+    '<div class="card tile"><span>להיום</span><b class="num">'+(todayAll.length+lateAll.length)+'</b></div>' +
+    (urgent.length ? '<div class="card tile urg"><span>🚨 דחופות</span><b class="num">'+urgent.length+'</b></div>' : '') +
     '<div class="card tile"><span>פתוחות</span><b class="num">'+open.length+'</b></div>' +
     '<div class="card tile rev"><span>בוצעו, לבדיקה שלך</span><b class="num">'+checking.length+'</b></div>' +
     (extreqs.length ? '<div class="card tile ext"><span>בקשות הארכה</span><b class="num">'+extreqs.length+'</b></div>' : '');
@@ -804,16 +889,16 @@ function render(){
   } else if(!list.length){
     outH = '<section class="card empty"><h2>'+(filter==="all" ? "עוד אין משימות" : filter==="me" ? "אין לך משימות" : "ל"+esc(worker(filter).name)+" אין משימות")+'</h2><p>כתוב משימה בשורה למעלה. אם תתחיל בשם של עובד, היא תישלח אליו.</p></section>';
   } else {
-    outH += group("extreq","בקשות להארכת זמן",extreqs) + group("review","בוצעו, לבדיקה שלך",checking) + group("rej","לא אושרו",rejs) + group("issue","לא בוצעו, עם הערות",issues) +
+    outH += group("urgent","🚨 דחופות",urgent) + group("extreq","בקשות להארכת זמן",extreqs) + group("review","בוצעו, לבדיקה שלך",checking) + group("rej","לא אושרו",rejs) + group("issue","לא בוצעו, עם הערות",issues) +
       group("late","באיחור",late) + group("today","היום",today) + group("tmr","מחר",tmr) + group("later","בהמשך",later) + group("none","בלי מועד",none);
-    if(!open.length && !checking.length && !issues.length && !extreqs.length && !rejs.length) outH += '<section class="card empty"><h2>הכול בוצע</h2><p>אין משימות פתוחות כאן.</p></section>';
+    if(!open.length && !urgent.length && !checking.length && !issues.length && !extreqs.length && !rejs.length) outH += '<section class="card empty"><h2>הכול בוצע</h2><p>אין משימות פתוחות כאן.</p></section>';
     if(done.length){
       outH += '<section class="group"><div class="donebar"><h2>הושלמו ב-7 הימים האחרונים <span class="c num">'+done.length+'</span></h2><span><button class="linkbtn" type="button" data-act="toggle-done">'+(showDone?"הסתר":"הצג")+'</button>'+(showDone?' · <button class="linkbtn" type="button" data-act="clear-done">'+(clearArmed?"למחוק? לחץ שוב":"מחק הכול")+'</button>':'')+'</span></div>' +
         (showDone ? '<div class="card list">'+done.map(rowHtml).join("")+'</div>' : '') + '</section>';
     }
   }
   $("lists").innerHTML = outH;
-  document.title = (late.length ? "("+late.length+") " : "") + "ראש שקט";
+  document.title = (lateAll.length ? "("+lateAll.length+") " : "") + "ראש שקט";
 }
 function renderSync(){
   if(!cfg) return;
@@ -871,30 +956,67 @@ var inp = $("new-task");
 function syncTowho(){
   var iv = inp.value, m = iv.trim() ? matchPerson(iv) : null, eff = m ? m.w.id : (target||"");
   Array.prototype.forEach.call($("towho").querySelectorAll("button"), function(b){ b.setAttribute("aria-pressed", String(b.dataset.u===eff)); });
+  syncOpts(!!eff); syncLoad();
 }
+/* load: open tasks each person has on the day of the task being written (today by default) */
+function loadOn(wid, day0, except){
+  var d1 = addDays(day0, 1).getTime(), d0 = day0.getTime(), isToday = d0 === startOfDay(new Date()).getTime();
+  return all().filter(function(t){ return t.id!==except && !t.done && !t.reported && (t.assignee||"")===(wid||"") && t.due && t.due < d1 && (t.due >= d0 || isToday); }).length;
+}
+function dayWord(day0){ var n = dayDiff(day0.getTime()); return n===0 ? "היום" : n===1 ? "מחר" : n>1 && n<7 ? "ב"+WD[day0.getDay()] : "ב-"+day0.getDate()+"."+(day0.getMonth()+1); }
+function syncLoad(){
+  var h = $("towho-h"); if(!h) return;
+  var v = inp.value.trim(), due = null;
+  if(v){ try{ var x = parseExtras(resolveInput(v).text), p = parseTask(x.text); due = p.due || (x.rep ? firstDue(x.rep) : null); }catch(e){} }
+  var day0 = startOfDay(due ? new Date(due) : new Date());
+  h.textContent = "למי (עומס "+dayWord(day0)+"):";
+  Array.prototype.forEach.call($("towho").querySelectorAll(".ld"), function(el){ var n = loadOn(el.dataset.l, day0); el.textContent = n ? "· "+n : "· פנוי"; el.classList.toggle("busy", n>=4); });
+}
+/* 🚨 / ☑ / 📷 for the task being written */
+var opt = {urg:false, ck:false, ph:false};
+function syncOpts(forWorker){
+  if(forWorker===undefined){ var iv = inp.value, m = iv.trim() ? matchPerson(iv) : null; forWorker = !!(m || target); }
+  Array.prototype.forEach.call($("opts").querySelectorAll("button"), function(b){
+    var k = b.dataset.o, on = opt[k] || (k==="urg" && inp.value.trim() && parseUrg(resolveInput(inp.value.trim()).text).urg);
+    b.setAttribute("aria-pressed", String(!!on));
+    if(k==="ph"){ b.disabled = !forWorker; b.title = forWorker ? "" : "תמונה בדיווח היא למשימות של עובדים"; }
+  });
+  $("ck-in").hidden = !opt.ck;
+}
+$("opts").addEventListener("click", function(ev){
+  var b = ev.target.closest("button[data-o]"); if(!b || b.disabled) return; var k = b.dataset.o;
+  opt[k] = !opt[k]; syncOpts(); updatePreview();
+  if(k==="ck" && opt.ck) setTimeout(function(){ $("ck-in").focus(); }, 30); else inp.focus();
+});
 $("towho").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-u]"); if(!b) return; target = b.dataset.u||null; syncTowho(); updatePreview(); inp.focus(); });
 function resolveInput(v){ var m = matchPerson(v); return {w: m ? m.w : (target ? worker(target) : null), text: m ? m.rest : v}; }
 function updatePreview(){
   var v = inp.value.trim(); $("add").disabled = !v; syncTowho();
   if(!v){ $("preview").innerHTML = ""; return; }
-  var r = resolveInput(v), p = parseTask(r.text);
+  var r = resolveInput(v), x = parseExtras(r.text), p = parseTask(x.text);
+  if(x.rep && !p.due) p.due = firstDue(x.rep);
+  var ckn = opt.ck ? ckParse($("ck-in").value).length : 0;
+  var ex = (x.urg || opt.urg ? '<span class="chip urgc">🚨 דחוף</span>' : '') + (x.rep ? '<span class="chip plain">🔁 '+esc(REP_L[x.rep])+'</span>' : '') + (ckn ? '<span class="chip plain num">☑ '+ckn+' סעיפים</span>' : '') + (opt.ph && r.w ? '<span class="chip plain">📷 תמונה</span>' : '');
   var how = r.w ? (linkedW(r.w.id) && !r.w.wa ? "לאפליקציה של "+r.w.name : "ל"+r.w.name+" בוואטסאפ") : "לרשימה שלך";
-  $("preview").innerHTML = '<span class="chip app">'+esc(how)+'</span>' + (p.due ? '<span class="chip soon num">'+esc(whenLabel(p.due))+'</span><span class="num">'+esc(relLabel(p.due))+'</span>' : '<span>בלי מועד. אפשר להוסיף "מחר ב-10" או "בעוד שעה".</span>');
+  $("preview").innerHTML = ex + '<span class="chip app">'+esc(how)+'</span>' + (p.due ? '<span class="chip soon num">'+esc(whenLabel(p.due))+'</span><span class="num">'+esc(relLabel(p.due))+'</span>' : '<span>בלי מועד. אפשר להוסיף "מחר ב-10" או "בעוד שעה".</span>');
 }
 inp.addEventListener("input", updatePreview);
 $("form").addEventListener("submit", function(ev){
   ev.preventDefault();
   var v = inp.value.trim(); if(!v || !cfg) return;
-  var r = resolveInput(v), p = parseTask(r.text), now = Date.now();
+  var r = resolveInput(v), x = parseExtras(r.text), p = parseTask(x.text), now = Date.now();
+  if(x.rep && !p.due) p.due = firstDue(x.rep);
   var o = {k:"add", id:uid(), title:p.title, due:p.due, at:now};
-  if(r.w){ o.assignee = r.w.id; o.assigneeName = r.w.name; o.sentAt = now; o.tok = randStr(10); }
+  if(x.urg || opt.urg) o.urg = true; if(x.rep) o.rep = x.rep;
+  var ckIn = opt.ck ? ckParse($("ck-in").value) : []; if(ckIn.length) o.ck = ckIn;
+  if(r.w){ o.assignee = r.w.id; o.assigneeName = r.w.name; o.sentAt = now; o.tok = randStr(10); if(opt.ph) o.phq = true; }
   doOp(o);
   if(r.w){
     var lw = linkedW(r.w.id);
     if(lw && !r.w.wa){ var id0 = o.id; toast("📱 נשלחה לאפליקציה של "+r.w.name, "גם וואטסאפ", function(){ openWa(r.w.phone, taskMessage(view[id0], r.w, false)); }); }
     else { openWa(r.w.phone, taskMessage(view[o.id], r.w, false)); toast("נשמרה ונפתחה בוואטסאפ ל"+r.w.name); }
   } else toast(p.due ? "נוספה · "+whenLabel(p.due) : "נוספה לרשימה");
-  inp.value = ""; updatePreview();
+  inp.value = ""; opt = {urg:false, ck:false, ph:false}; $("ck-in").value = ""; updatePreview(); syncOpts();
 });
 
 /* ---------- edit ---------- */
@@ -905,7 +1027,8 @@ function openEdit(id){
   $("edit-del").classList.remove("armed"); $("edit-del").textContent = "מחיקה";
   $("edit-title").value = t.title; $("edit-due").value = toLocalInput(t.due);
   var o = '<option value="">אני</option>';
-  workers().forEach(function(w){ o += '<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>'; });
+  var ld0 = startOfDay(t.due ? new Date(t.due) : new Date()), ldw = dayWord(ld0);
+  workers().forEach(function(w){ var n = loadOn(w.id, ld0, t.id); o += '<option value="'+esc(w.id)+'">'+esc(w.name)+' · '+(n ? n+" משימות "+ldw : "פנוי "+ldw)+'</option>'; });
   if(t.assignee && !worker(t.assignee)) o += '<option value="'+esc(t.assignee)+'">'+esc(nameOf(t))+' (הוסר)</option>';
   $("edit-who").innerHTML = o; $("edit-who").value = t.assignee || "";
   var s0 = stOf(t), fbx = $("edit-fb"), dx = $("edit-dec");
@@ -920,9 +1043,18 @@ function openEdit(id){
   er.textContent = "העובד סיים? סמן בירוק";
   $("edit-wa").hidden = !(t.assignee && worker(t.assignee) && !t.done && !t.reported);
   $("edit-wa").textContent = (t.due && t.due < Date.now()) ? "שלח תזכורת בוואטסאפ" : "שלח שוב בוואטסאפ";
+  $("edit-urg").checked = !!t.urg; $("edit-phq").checked = !!t.phq; $("edit-phq-f").hidden = !t.assignee;
+  $("edit-rpt").value = (t.rep && REP_L[t.rep] && !t.repNext) ? t.rep : ""; $("edit-rpt").disabled = !!t.repNext; syncRptHint();
+  var ck = ckOf(t); $("edit-ck").value = ck.join("\n");
+  $("edit-ck-st").innerHTML = ck.length && Array.isArray(t.ckd) ? ck.map(function(c,i){ var y = t.ckd.indexOf(i)>=0; return '<span class="'+(y?"y":"")+'">'+(y?"☑ ":"☐ ")+esc(c)+'</span>'; }).join("") + '<span>'+esc(nameOf(t))+' סימן '+ckDone(t)+' מתוך '+ck.length+'</span>' : "";
   $("edit-ov").hidden = false; $("edit-title").focus();
 }
 function closeEdit(){ $("edit-ov").hidden = true; editing = null; }
+function syncRptHint(){ var r = $("edit-rpt").value, v = $("edit-due").value, due = v ? new Date(v).getTime() : null;
+  $("edit-rpt-h").textContent = $("edit-rpt").disabled ? "המשימה הבאה בתור כבר נוצרה. כדי לשנות את החזרה, ערוך אותה." : !r ? "" : "כשהמשימה תאושר, או כשהמועד יעבור, הטלפון ייצור לבד את הבאה בתור"+(due ? ": "+whenLabel(nextOcc(due, r)) : " (בלי מועד, תתחיל מחר ב-09:00)")+"."; }
+$("edit-rpt").addEventListener("change", syncRptHint);
+$("edit-due").addEventListener("input", syncRptHint);
+$("edit-who").addEventListener("change", function(){ $("edit-phq-f").hidden = !this.value; });
 $("edit-quick").addEventListener("click", function(ev){
   var b = ev.target.closest("button"); if(!b) return; var now = new Date(), d = null;
   if(b.dataset.q==="1h") d = new Date(now.getTime()+3600000);
@@ -938,11 +1070,18 @@ $("edit-save").addEventListener("click", function(){
   if(title !== old.title){ o.title = title; changed = true; }
   if(due !== (old.due||null)){ o.due = due; changed = true; }
   if(moved){ var nw = who && worker(who); o.assignee = who; o.assigneeName = nw ? nw.name : null; changed = true; if(who){ o.sentAt = Date.now(); if(!old.tok) o.tok = randStr(10); } }
+  var rpt = $("edit-rpt").value || null; if(rpt && !due && !old.due){ due = firstDue(rpt); o.due = due; changed = true; }
+  var urg = $("edit-urg").checked, phq = !!(who && $("edit-phq").checked), ckN = ckParse($("edit-ck").value), notify = false;
+  if(urg !== !!old.urg){ o.urg = urg; changed = true; if(urg) notify = true; }
+  if(phq !== !!old.phq){ o.phq = phq; changed = true; if(phq) notify = true; }
+  if(!old.repNext && (rpt||null) !== (old.rep||null)){ o.rep = rpt; changed = true; }
+  if(JSON.stringify(ckN) !== JSON.stringify(ckOf(old))){ o.ck = ckN; changed = true; notify = true; }
+  var sendIt = moved || o.title!==undefined || o.due!==undefined || notify;
   closeEdit();
   if(!changed){ toast("לא שונה כלום"); return; }
   doOp(o);
   var t2 = view[id], w2 = t2 && t2.assignee && worker(t2.assignee);
-  if(w2){ var ao = linkedW(w2.id) && !w2.wa; if(!ao) openWa(w2.phone, taskMessage(t2, w2, false)); toast(ao ? "📱 נשמר ועודכן באפליקציה של "+w2.name : "נשמר ונפתח בוואטסאפ ל"+w2.name); }
+  if(w2 && sendIt){ var ao = linkedW(w2.id) && !w2.wa; if(!ao) openWa(w2.phone, taskMessage(t2, w2, false)); toast(ao ? "📱 נשמר ועודכן באפליקציה של "+w2.name : "נשמר ונפתח בוואטסאפ ל"+w2.name); }
   else toast("נשמר");
 });
 $("edit-cancel").addEventListener("click", closeEdit);
@@ -983,6 +1122,94 @@ $("wk-ov").addEventListener("click", function(ev){
   if(ev.target===this){ this.hidden = true; return; }
   var b = ev.target.closest("[data-wk]"); if(!b) return; wkExp[b.dataset.wk] = !wkExp[b.dataset.wk]; renderWeekly();
 });
+
+var CRC_T = (function(){ var t = []; for(var n=0;n<256;n++){ var c = n; for(var k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n] = c>>>0; } return t; })();
+function crc32(b){ var c = 0xFFFFFFFF; for(var i=0;i<b.length;i++) c = CRC_T[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(files){
+  function u16(v){ return [v&255,(v>>>8)&255]; } function u32(v){ return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255]; }
+  var parts = [], central = [], off = 0;
+  files.forEach(function(f){
+    var nm = TE.encode(f.name), data = typeof f.data==="string" ? TE.encode(f.data) : f.data, crc = crc32(data), sz = data.length;
+    var hdr = new Uint8Array([].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0x21),u32(crc),u32(sz),u32(sz),u16(nm.length),u16(0)));
+    parts.push(hdr, nm, data);
+    central.push(new Uint8Array([].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0x21),u32(crc),u32(sz),u32(sz),u16(nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off))), nm);
+    off += hdr.length+nm.length+sz;
+  });
+  var cdStart = off, cdLen = 0; central.forEach(function(x){ parts.push(x); cdLen += x.length; });
+  parts.push(new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cdLen),u32(cdStart),u16(0))));
+  var total = 0; parts.forEach(function(p){ total += p.length; });
+  var out = new Uint8Array(total), o = 0; parts.forEach(function(p){ out.set(p,o); o += p.length; }); return out;
+}
+function xEsc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,""); }
+function colName(i){ var s = ""; i++; while(i>0){ var m = (i-1)%26; s = String.fromCharCode(65+m)+s; i = Math.floor((i-1)/26); } return s; }
+/* sheets: [{name, cols:[widths], rows:[[header…], [cell…]…]}]; a cell is text, a number, or null */
+function xlsx(sheets){
+  var files = [];
+  files.push({name:"[Content_Types].xml", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map(function(s,i){ return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join("")+'</Types>'});
+  files.push({name:"_rels/.rels", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'});
+  files.push({name:"xl/workbook.xml", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView/></bookViews><sheets>'+sheets.map(function(s,i){ return '<sheet name="'+xEsc(s.name.slice(0,31))+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; }).join("")+'</sheets></workbook>'});
+  files.push({name:"xl/_rels/workbook.xml.rels", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map(function(s,i){ return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'; }).join("")+'<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'});
+  files.push({name:"xl/styles.xml", data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2D4BE0"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="4"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="164" applyNumberFormat="1"/><xf applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs></styleSheet>'});
+  sheets.forEach(function(s, si){
+    var nc = s.rows.length ? s.rows[0].length : 1;
+    var x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView rightToLeft="1" workbookViewId="0"'+(si===0?' tabSelected="1"':'')+'><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>';
+    x += '<cols>'+(s.cols||[]).map(function(w,i){ return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'; }).join("")+'</cols><sheetData>';
+    s.rows.forEach(function(r, ri){
+      x += '<row r="'+(ri+1)+'">';
+      r.forEach(function(v, ci){
+        if(v==null || v==="") return;
+        var ref = colName(ci)+(ri+1);
+        if(typeof v==="number" && isFinite(v)) x += '<c r="'+ref+'"'+(ri===0?' s="1"':(v%1?' s="2"':''))+'><v>'+v+'</v></c>';
+        else x += '<c r="'+ref+'" t="inlineStr" s="'+(ri===0?1:3)+'"><is><t xml:space="preserve">'+xEsc(v)+'</t></is></c>';
+      });
+      x += '</row>';
+    });
+    x += '</sheetData>'+(s.rows.length>1 ? '<autoFilter ref="A1:'+colName(nc-1)+s.rows.length+'"/>' : '')+'</worksheet>';
+    files.push({name:"xl/worksheets/sheet"+(si+1)+".xml", data:x});
+  });
+  return zipStore(files);
+}
+function fmtD(t){ if(!t) return ""; var d = new Date(t); return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()+" "+hm(d); }
+function hrs(ms){ return ms ? Math.round(ms/360000)/10 : 0; }
+function weeklyXlsx(r){
+  var sum = [["עובד","סה״כ משימות","בזמן","באיחור","לא בוצעו","נדחו","אחוז בזמן","חריגה (שעות)"]];
+  var det = [["עובד","משימה","יעד","בוצע","מצב","חריגה (שעות)","נדחתה (פעמים)"]];
+  var ST = {ok:"בזמן", late:"באיחור", open:"לא בוצע", wait:"לפני היעד", moved:"נדחתה לשבוע אחר"};
+  r.rows.forEach(function(x){
+    var p = wkPct(x); sum.push([x.name, x.total, x.ok, x.late, x.open, x.postp, p==null ? "" : p/100, hrs(x.over)]);
+    x.items.forEach(function(it){ det.push([x.name, it.ti, fmtD(it.dl), fmtD(it.fin), ST[it.st]||"", it.over ? hrs(it.over) : "", it.pp||""]); });
+  });
+  var tot = wkTotals(r), pt = (tot.ok+tot.late+tot.open) ? Math.round(100*tot.ok/(tot.ok+tot.late+tot.open))/100 : "";
+  sum.push(["סה״כ", tot.total, tot.ok, tot.late, tot.open, tot.postp, pt, hrs(tot.over)]);
+  sum.forEach(function(row, i){ if(i>0 && typeof row[6]==="number") row[6] = Math.round(row[6]*100)+"%"; });
+  return xlsx([{name:"סיכום "+wkRange(r).replace(/ /g,""), cols:[18,14,10,10,10,10,12,14], rows:sum}, {name:"פירוט", cols:[16,40,18,18,16,14,14], rows:det}]);
+}
+function statusText(t){
+  var s0 = stOf(t);
+  if(t.done) return "אושרה"; if(s0==="review") return "בוצעה, ממתינה לאישור"; if(s0==="extreq") return "מבקש הארכה";
+  if(s0==="rej") return t.rej.why==="ext" ? "הארכה לא אושרה" : "ביצוע לא אושר"; if(s0==="no") return "לא בוצעה";
+  return t.due && t.due < Date.now() ? "באיחור" : "פתוחה";
+}
+function allTasksXlsx(){
+  var src = {}; all().forEach(function(t){ src[t.id] = t; });
+  var rows = [["משימה","עובד","נוצרה","יעד","מצב","דווח בוצע","אושרה","בזמן?","חריגה (שעות)","נדחתה (פעמים)","דחופה","חוזרת","רשימת בדיקה","הערת העובד"]];
+  Object.keys(src).map(function(k){ return src[k]; }).sort(function(a,b){ return (dlOf(b)||b.createdAt||0)-(dlOf(a)||a.createdAt||0); }).forEach(function(t){
+    var dl = dlOf(t), f = finAt(t), late = dl ? (f ? f-dl : Date.now()-dl) : 0;
+    rows.push([t.title, t.assignee ? nameOf(t) : "אני", fmtD(t.createdAt), fmtD(dl), statusText(t),
+      fmtD(t.reportedAt), fmtD(t.doneAt), !dl ? "" : f ? (f<=dl ? "כן" : "לא") : (dl < Date.now() ? "לא" : ""),
+      late>0 && dl ? hrs(late) : "", (t.pl||[]).length || "", t.urg ? "כן" : "", REP_L[t.rep]||"",
+      ckOf(t).length ? ckDone(t)+"/"+ckOf(t).length : "", (t.fb && t.fb.note) || ""]);
+  });
+  return xlsx([{name:"משימות", cols:[40,14,17,17,20,17,17,8,12,12,8,14,12,40], rows:rows}]);
+}
+function offerFile(name, bytes){
+  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([bytes], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+}
+$("wk-xlsx").addEventListener("click", function(){ var r = wkPages[wkIdx]; if(!r){ toast("אין עדיין דו״ח לייצא"); return; }
+  try{ offerFile("דוח שבועי "+wkRange(r).replace(/ /g,"")+".xlsx", weeklyXlsx(r)); toast("📥 הקובץ ירד לתיקיית ההורדות"); }catch(e){ toast("הייצוא נכשל"); } });
+$("exp-all").addEventListener("click", function(){
+  try{ var d = new Date(); offerFile("משימות ראש שקט "+d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()+".xlsx", allTasksXlsx()); $("set-ov").hidden = true; toast("📥 הקובץ ירד. במחשב: משימות פתוחות ומה שהושלם ב-7 הימים האחרונים"); }catch(e){ toast("הייצוא נכשל"); } });
 
 /* ---------- settings ---------- */
 var offArmed = false;

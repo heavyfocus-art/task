@@ -5,7 +5,7 @@
    to the manager's inbox sealed with the task's own token. Nothing leaves unsealed. */
 (function(){
   "use strict";
-  var VERSION = "23";
+  var VERSION = "26";
   var CFG = "rsw-cfg", TASKS = "rsw-tasks", WEEK = "rsw-weekly", LAST = "rsw-last";
   function ld(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } }
   function sv(k, v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -46,6 +46,10 @@
       if(t.tok) n.tok = t.tok;
       if(t.due!=null) n.due = +t.due; else delete n.due;
       if(t.xd!=null) n.xd = +t.xd; else delete n.xd;
+      if(t.u===1) n.u = 1; else delete n.u;
+      if(Array.isArray(t.ck) && t.ck.length){ if(JSON.stringify(t.ck)!==JSON.stringify(n.ck||null)) delete n.cd; n.ck = t.ck; } else { delete n.ck; delete n.cd; }
+      if(t.ph===1) n.ph = 1; else delete n.ph;
+      if(t.rp) n.rp = String(t.rp); else delete n.rp;
       var st = t.st || "open", was = old ? (old.st || "open") : "";
       // the manager's view wins, except that my own fresh report isn't undone by an older echo
       var ownFresh = old && (was==="done" || was==="no" || was==="ext") && Date.now() - (old.at||0) <= 10*60000;
@@ -79,6 +83,7 @@
     var s = status==="no" ? "no" : status==="ext" ? "ext" : "done";
     if(s==="ext" && !(extDue > Date.now())) return Promise.resolve(false);
     var plain = {s:s, n:String(note||"").trim()}; if(s==="ext") plain.d = extDue;
+    if(s!=="ext" && Array.isArray(t.ck)) plain.c = (t.cd||[]).filter(function(i){ return i>=0 && i<t.ck.length; });
     return Promise.all([sha("rs-task:"+t.tok), sha("rs-kid:"+t.tok)]).then(function(r){
       return seal(new Uint8Array(r[0]), plain).then(function(env){ env.k = b64u(r[1]).slice(0,10); return post(cfg.m, env); });
     }).then(function(ok){
@@ -95,6 +100,9 @@
     workerJoin: function(){}, setMode: function(){ location.href = "./"; },
     workerReply: function(id, status, note){ reply(id, status, note, 0).then(function(ok){ done(id, ok); }); },
     workerExt: function(id, due, note){ reply(id, "ext", note, +due||0).then(function(ok){ done(id, ok); }); },
+    workerCheck: function(id, i, on){ var t = tasks[id]; if(!t || !Array.isArray(t.ck) || i<0 || i>=t.ck.length) return;
+      var cd = (t.cd||[]).filter(function(x){ return x!==i && x>=0 && x<t.ck.length; }); if(on) cd.push(i); t.cd = cd; save(); },
+    openUrl: function(u){ window.open(u, "_blank", "noopener"); },
     workerPoll: function(resync){ if(resync) toManager({r:1, pc:1}); poll(); },
     workerLeave: function(){ leave(""); },
     notificationsAllowed: function(){ return true; }, fixNotifications: function(){},

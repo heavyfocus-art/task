@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta name="robots" content="noindex">
-<script src="wshim.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<script src="wshim.js"></script>
 <title>ראש שקט · המשימות שלי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap">
@@ -133,6 +133,23 @@ textarea{min-height:70px;resize:vertical}
 .it:first-child{border-top:0}
 .it .m{flex:1;min-width:0;display:flex;flex-direction:column;overflow-wrap:anywhere}
 .it small{color:var(--muted);font-size:13px}
+/* v24 */
+.chip.urg{background:var(--danger);color:#fff}
+.card.urg{border:2px solid var(--danger)}
+.cks{display:flex;flex-direction:column;gap:6px}
+.cks .ckh{font-size:14px;font-weight:700;color:var(--muted)}
+.ck{display:flex;align-items:center;gap:10px;text-align:right;border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--bg);font-size:16px;width:100%}
+.ck .bx{width:24px;height:24px;flex:0 0 24px;border-radius:7px;border:2px solid var(--muted);display:grid;place-items:center;font-size:15px;font-weight:700;color:#fff}
+.ck[aria-pressed="true"] .bx{background:var(--ok);border-color:var(--ok)}
+.ck[aria-pressed="true"] .tx{color:var(--muted);text-decoration:line-through}
+.ck .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.ph{display:flex;align-items:center;gap:10px}
+.ph img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.ph .b{flex:1}
+.hint{font-size:13px;color:var(--muted)}
+.verb{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,var(--accent) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:var(--r);padding:10px 12px;font-size:15px}
+.verb p{margin:0;flex:1;min-width:0}
+.verb button{flex:0 0 auto;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 12px;font-weight:700;font-size:14px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -269,10 +286,28 @@ window.onWorkerJoin = function(json){
 
 function toInput(t){ var d=new Date(t); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes()); }
 var CARDCLS = {done:" done", no:" no", ext:" ext", extok:" extok", extno:" bad", rej:" bad"};
+function ckNote(t){ var ck = Array.isArray(t.ck) ? t.ck : [], n = (Array.isArray(t.cd) ? t.cd : []).filter(function(i){ return i<ck.length; }).length;
+  return ck.length ? '<div class="hint">סימנת '+n+' מתוך '+ck.length+' סעיפים ברשימת הבדיקה'+(n<ck.length ? '. אפשר לשלוח גם כך, המנהל יראה מה סומן.' : ' ✓')+'</div>' : ''; }
+/* a photo for the report (only when the manager turned it on) */
+function phBox(t){
+  if(!t.ph) return '';
+  if(!A.workerPickPhoto) return '<div class="hint">📷 המנהל ביקש תמונה. אפשר לצרף אותה מהאפליקציה בטלפון.</div>';
+  var u = ""; try{ u = A.workerPhotoThumb(t.id) || ""; }catch(e){}
+  if(u) return '<div class="ph"><img alt="התמונה שצירפת" src="'+esc(u)+'"><button class="b" type="button" data-a="phpick">החלפה</button><button class="b" type="button" data-a="phdel">הסרה</button></div>';
+  return '<button class="b" type="button" data-a="phpick">📷 צילום או תמונה מהגלריה</button>';
+}
+/* a newer version is on the download page */
+var DL = "https://heavyfocus-art.github.io/task/app/";
+function verBanner(){
+  var lv = 0, mv = parseInt(VER,10)||0; try{ lv = A.latestVersion ? (parseInt(A.latestVersion(),10)||0) : 0; }catch(e){}
+  if(!(lv && mv && lv > mv)) return '';
+  return '<div class="verb"><p>🆕 יש גרסה חדשה של ראש שקט ('+lv+'). אצלך מותקנת '+mv+'.</p><button type="button" id="verget">להורדה</button></div>';
+}
+window.onLatestVersion = function(){ if(!openNo) render(); };
 function card(t){
   var late = t.due && t.due < Date.now() && t.st!=="done" && t.st!=="ext";
   var soon = t.due && !late && t.due-Date.now() < 86400000*1.5;
-  var meta = '';
+  var meta = t.u && t.st!=="done" ? '<span class="chip urg">🚨 דחוף</span>' : '';
   if(t.due) meta += '<span class="chip '+(late?"late":soon?"soon":"plain")+' num">'+esc(dueLabel(t.due))+'</span>';
   if(t.st==="done") meta += '<span class="chip ok">דיווחת: בוצע · ממתין לאישור</span>';
   else if(t.st==="no") meta += '<span class="chip no">דיווחת: לא בוצע</span>';
@@ -280,14 +315,19 @@ function card(t){
   else if(t.st==="extok") meta += '<span class="chip ok">✅ ההארכה אושרה</span>';
   else if(t.st==="extno") meta += '<span class="chip bad">ההארכה לא אושרה</span>';
   else if(t.st==="rej") meta += '<span class="chip bad">המנהל לא אישר את הביצוע</span>';
-  var h = '<div class="card'+(CARDCLS[t.st]||"")+'" data-id="'+esc(t.id)+'"><div class="ttl">'+esc(t.title)+'</div>' + (meta?'<div class="meta">'+meta+'</div>':'');
+  if(t.rp) meta += '<span class="chip plain">🔁 '+esc(t.rp)+'</span>';
+  var ck = Array.isArray(t.ck) ? t.ck : [], cd = Array.isArray(t.cd) ? t.cd : [];
+  if(ck.length) meta += '<span class="chip plain num">☑ '+cd.filter(function(i){ return i<ck.length; }).length+'/'+ck.length+'</span>';
+  var h = '<div class="card'+(CARDCLS[t.st]||"")+(t.u && t.st!=="done" ? " urg" : "")+'" data-id="'+esc(t.id)+'"><div class="ttl">'+esc(t.title)+'</div>' + (meta?'<div class="meta">'+meta+'</div>':'');
+  if(ck.length && t.st!=="done") h += '<div class="cks"><div class="ckh">רשימת בדיקה</div>'+ck.map(function(c,i){ var on = cd.indexOf(i)>=0;
+      return '<button class="ck" type="button" data-a="ck" data-i="'+i+'" aria-pressed="'+on+'"><span class="bx" aria-hidden="true">'+(on?"✓":"")+'</span><span class="tx">'+esc(c)+'</span></button>'; }).join("")+'</div>';
   if(t.note && (t.st==="done"||t.st==="no"||t.st==="ext")) h += '<div class="note">💬 '+esc(t.note)+'</div>';
   var sending = busy[t.id] ? " disabled" : "", lbl = function(x){ return busy[t.id] ? "שולח…" : x; };
   if(openNo===t.id && boxKind==="done"){
-    h += '<div class="box"><div class="boxh">✅ סימון בוצע</div><textarea id="nt" maxlength="800" placeholder="הערות למנהל (לא חובה)"></textarea>' +
+    h += '<div class="box"><div class="boxh">✅ סימון בוצע</div>'+ckNote(t)+'<textarea id="nt" maxlength="800" placeholder="הערות למנהל (לא חובה)"></textarea>'+phBox(t)+'' +
       '<div class="btns"><button class="b ok" type="button" data-a="send"'+sending+'>'+lbl("שליחה")+'</button><button class="b" type="button" data-a="cancel">ביטול</button></div></div>';
   } else if(openNo===t.id && boxKind==="no"){
-    h += '<div class="box"><div class="boxh">❌ לא בוצע</div><textarea id="nt" maxlength="800" placeholder="מה חסר או מה הבעיה?"></textarea>' +
+    h += '<div class="box"><div class="boxh">❌ לא בוצע</div><textarea id="nt" maxlength="800" placeholder="מה חסר או מה הבעיה?"></textarea>'+phBox(t)+'' +
       '<div class="btns"><button class="b no" type="button" data-a="send"'+sending+'>'+lbl("שליחה")+'</button><button class="b" type="button" data-a="cancel">ביטול</button></div></div>';
   } else if(openNo===t.id && boxKind==="ext"){
     h += '<div class="box"><div class="boxh">⏳ בקשה להארכת זמן</div>' +
@@ -306,11 +346,11 @@ function render(){
   if(!st.joined){ renderJoin(); return; }
   if(view==="wk"){ renderWeekly(); return; }
   var waiting = function(t){ return t.st==="done" || t.st==="ext"; };
-  var open = st.tasks.filter(function(t){ return !waiting(t); }).sort(function(a,b){ return (a.due||9e15)-(b.due||9e15); });
+  var open = st.tasks.filter(function(t){ return !waiting(t); }).sort(function(a,b){ return ((b.u?1:0)-(a.u?1:0)) || (a.due||9e15)-(b.due||9e15); });
   var wait = st.tasks.filter(waiting);
   var lateN = open.filter(function(t){ return t.due && t.due<Date.now(); }).length;
   var h = '<header><div><h1>המשימות שלי'+verTag()+'</h1><div class="sub">'+esc(st.name||"")+(st.mName?" · משימות מ"+esc(st.mName):"")+'</div></div></header>';
-  h += '<div id="perm"></div>';
+  h += '<div id="perm"></div>' + verBanner();
   h += '<div class="sum"><div class="big num">'+(open.length ? open.length+" פתוחות" : "אין משימות פתוחות")+'</div><div class="sm">'+(lateN?lateN+" באיחור · ":"")+(wait.length?wait.length+" ממתינות לאישור":"כל דיווח שלך מגיע ישר למנהל")+'</div></div>';
   h += wkBtn();
   if(open.length){ h += '<h2>לביצוע</h2>' + open.map(card).join(""); }
@@ -328,12 +368,16 @@ app.addEventListener("click", function(ev){
   var b=ev.target.closest("button"); if(!b) return;
   if(b.id==="sync"){ toast("מבקש עדכון מהמנהל…"); try{ A.workerPoll(true); }catch(e){} return; }
   if(b.id==="leave"){ if(!leaveArmed){ leaveArmed=true; b.textContent="להתנתק? לחץ שוב"; setTimeout(function(){ leaveArmed=false; render(); },4000); return; } try{ A.workerLeave(); }catch(e){} load(); render(); return; }
+  if(b.id==="verget"){ try{ A.openUrl(DL); }catch(e){} toast("אחרי ההורדה: הקבצים שלי ← הורדות ← RoshShaket.apk"); return; }
   if(b.id==="permfix"){ try{ A.fixNotifications(); }catch(e){} return; }
   if(b.id==="wkopen"){ view="wk"; wkIdx=0; var w0=weeks()[0]; if(w0){ try{ localStorage.setItem("rs-wk-seen", String(w0.ws)); }catch(e){} } render(); window.scrollTo(0,0); return; }
   if(b.id==="wkback"){ view="list"; render(); window.scrollTo(0,0); return; }
   if(b.id==="wkold"){ wkIdx++; render(); return; }
   if(b.id==="wknew"){ wkIdx=Math.max(0,wkIdx-1); render(); return; }
   var c=b.closest(".card"); if(!c) return; var id=c.dataset.id, a=b.dataset.a;
+  if(a==="ck"){ var i=+b.dataset.i, on=b.getAttribute("aria-pressed")!=="true"; try{ A.workerCheck(id, i, on); }catch(e){} load(); render(); return; }
+  if(a==="phpick"){ try{ A.workerPickPhoto(id); }catch(e){ toast("לא הצלחתי לפתוח מצלמה או גלריה"); } return; }
+  if(a==="phdel"){ try{ A.workerPhotoClear(id); }catch(e){} render(); return; }
   if(a==="done" || a==="no" || a==="ext"){ openNo=id; boxKind=a; render(); var f=document.getElementById(a==="ext"?"nd":"nt"); if(f) f.focus(); }
   else if(a==="cancel"){ openNo=null; boxKind=null; render(); }
   else if(a==="send"){
@@ -353,6 +397,7 @@ app.addEventListener("click", function(ev){
   }
 });
 var lastKind = null;
+window.onWorkerPhoto = function(id, ok){ if(!ok) toast("התמונה לא נשמרה. נסה שוב"); render(); };
 window.onWorkerReplied = function(id, ok){
   busy[id]=false;
   if(ok){ if(openNo===id){ openNo=null; boxKind=null; } load(); render(); toast(lastKind==="ext" ? "הבקשה נשלחה למנהל לאישור ✓" : "הדיווח נשלח למנהל ✓"); }
@@ -364,7 +409,7 @@ function renderPerm(){
   el.innerHTML = ok ? "" : '<div class="banner"><p>ההתראות כבויות, ולכן לא תשמע כשמגיעה משימה חדשה.</p><button class="link" id="permfix" type="button">להפעלה</button></div>';
 }
 window.onNativePending = function(){ load(); render(); };
-window.onNativeResume = function(){ load(); try{ if(A.takeOpenWeekly && A.takeOpenWeekly() && st.joined){ view="wk"; wkIdx=0; } }catch(e){} render(); try{ if(st.joined) A.workerPoll(false); }catch(e){} };
+window.onNativeResume = function(){ try{ if(A.checkLatest) A.checkLatest(); }catch(e){} load(); try{ if(A.takeOpenWeekly && A.takeOpenWeekly() && st.joined){ view="wk"; wkIdx=0; } }catch(e){} render(); try{ if(st.joined) A.workerPoll(false); }catch(e){} };
 window.onNativeBack = function(){ if(view==="wk"){ view="list"; render(); return true; } if(openNo){ openNo=null; boxKind=null; render(); return true; } return false; };
 setInterval(function(){ if(!document.hidden && st.joined && !openNo) render(); }, 60000);
 
@@ -372,6 +417,7 @@ if(!A){ app.innerHTML = '<div class="empty"><h3>פתח את המסך הזה מת
 load();
 try{ if(A.takeOpenWeekly && A.takeOpenWeekly() && st.joined) view = "wk"; }catch(e){}
 render();
+try{ if(A.checkLatest) A.checkLatest(); }catch(e){}
 })();
 </script>
 </body>
