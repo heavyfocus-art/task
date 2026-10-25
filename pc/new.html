@@ -6,23 +6,29 @@
 <meta name="robots" content="noindex">
 <title>ראש שקט</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Secular+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap">
 <style>
 *,*::before,*::after{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
 :root{
-  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#141B2D; --muted:#5D6780; --line:#D8DDE8;
-  --accent:#2D4BE0; --accent-ink:#FFFFFF; --signal:#FFC23D; --signal-ink:#2A1E00;
-  --danger:#C93A31; --danger-soft:#FBE7E5; --ok:#1C8F62; --ok-soft:#DDF3E8; --warn:#B5560F; --warn-soft:#FBECDD; --overlay:rgba(14,20,36,.45);
-  --font-display:"Secular One","Assistant",system-ui,sans-serif;
-  --font-body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
-  --r:14px;
+  --bg:#F4F6FA; --surface:#FFFFFF; --ink:#14213D; --muted:#5B6472; --line:#DDE2EA; --soft:#F7F9FC;
+  --accent:#1F4FD1; --accent-ink:#FFFFFF; --signal:#FFC23D; --signal-ink:#2A1E00;
+  --danger:#C42B3C; --danger-soft:#FDE8EA; --ok:#0F7B4C; --ok-soft:#DFF3E9; --warn:#B45309; --warn-soft:#FFF1E0; --overlay:rgba(14,20,36,.45);
+  /* status colours (white text on all of them, in both themes) */
+  --st-new:#5B6472; --st-late:#C42B3C; --st-rev:#6D3FC0; --st-ext:#1F4FD1; --st-no:#B45309; --st-rej:#9F1D2C; --st-extok:#0F766E; --st-done:#0F7B4C;
+  /* the dark side panel */
+  --side:#14213D; --side-2:#1E2E52; --side-on:#2B4475; --side-ink:#E6EBF4; --side-muted:#AEB9CF; --side-line:#2B3A5E; --brand:#F2B33D;
+  --font-display:"Heebo",system-ui,sans-serif;
+  --font-body:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --r:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
-  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6); color-scheme:dark }}
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#9AA3B8; --line:#283149; --soft:#1B2338;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6);
+  --side:#080C17; --side-2:#141C30; --side-on:#22325A; --side-line:#1D2740; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#949DB3; --line:#283149;
-  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6); color-scheme:dark }
+  --bg:#0D1220; --surface:#171E30; --ink:#E7EBF5; --muted:#9AA3B8; --line:#283149; --soft:#1B2338;
+  --accent:#8096FF; --accent-ink:#0D1220; --danger:#FF7468; --danger-soft:#3A1E22; --ok:#43CC93; --ok-soft:#12342A; --warn:#F0A060; --warn-soft:#3A2717; --overlay:rgba(0,0,0,.6);
+  --side:#080C17; --side-2:#141C30; --side-on:#22325A; --side-line:#1D2740; color-scheme:dark }
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;direction:rtl}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
@@ -30,13 +36,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .num{font-variant-numeric:tabular-nums}
 h1,h2,h3{margin:0}
 
-/* top bar */
-.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding:14px max(16px,3vw);background:var(--surface);border-bottom:1px solid var(--line)}
+/* brand */
 .brand{display:flex;align-items:center;gap:12px}
-.mark{width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:0 0 40px}
+.mark{width:40px;height:40px;border-radius:11px;background:var(--brand);color:#14213D;display:grid;place-items:center;flex:0 0 40px}
 .mark svg{width:22px;height:22px}
-.brand h1{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1}
-.brand small{display:block;font-size:13px;color:var(--muted);font-weight:600}
+.brand h1{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1.1}
+.brand small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+
+/* the main header: view tabs + search + sync + actions */
+.mhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px;border-bottom:1px solid var(--line)}
+.hact{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-bottom:10px}
 .syncp{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-size:14px;font-weight:600;max-width:100%}
 .syncp .d{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 8px}
 .syncp.wait{background:color-mix(in srgb,var(--signal) 30%,var(--surface));color:var(--signal-ink)}
@@ -44,7 +53,7 @@ h1,h2,h3{margin:0}
 :root[data-theme="dark"] .syncp.wait{color:var(--signal)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .syncp.wait{color:var(--signal)}}
 .tact{display:flex;gap:10px;flex-wrap:wrap}
-.btn{border-radius:12px;padding:0 16px;min-height:44px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn{border-radius:8px;padding:0 16px;min-height:44px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.primary{background:var(--accent);color:var(--accent-ink)}
 .btn.ghost{border:1px solid var(--line);background:var(--surface)}
 .btn.danger{color:var(--danger);border:1px solid var(--danger)}
@@ -54,23 +63,31 @@ h1,h2,h3{margin:0}
 .btn svg{width:18px;height:18px}
 .icon{width:44px;padding:0}
 
-/* layout */
-.shell{display:flex;flex-wrap:wrap;gap:24px;padding:24px max(16px,2vw) 60px;max-width:1720px;margin:0 auto}
-aside{flex:1 1 210px;display:flex;flex-direction:column;gap:16px;align-self:flex-start}
-main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
+/* layout: dark side panel + the board */
+.frame{display:flex;flex-wrap:wrap;min-height:100vh}
+.side{flex:1 1 240px;max-width:100%;background:var(--side);color:var(--side-ink);padding:22px 12px 18px;display:flex;flex-direction:column;gap:22px}
+@media (min-width:900px){ .side{position:sticky;top:0;height:100vh;overflow-y:auto;max-width:260px} }
+.side .brand{padding:0 8px}
+.side .brand small{color:var(--side-muted)}
+main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:18px;padding:18px max(16px,2.2vw) 60px;container:board / inline-size}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-.people{padding:10px;display:flex;flex-direction:column;gap:2px}
-.people .h{font-size:13px;color:var(--muted);font-weight:700;padding:6px 10px}
-.pbtn{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border-radius:10px;text-align:right;width:100%;font-size:15px}
-.pbtn:hover{background:var(--bg)}
-.pbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pbtn .n{color:var(--muted);font-weight:700;font-size:14px}
+.people,.quick-f{display:flex;flex-direction:column;gap:2px}
+.people .h,.quick-f .h{font-size:12px;color:var(--side-muted);font-weight:700;padding:4px 12px 6px;letter-spacing:.02em}
+.pbtn,.qbtn{display:flex;align-items:center;gap:9px;min-height:40px;padding:0 12px;border-radius:8px;text-align:right;width:100%;font-size:15px;font-weight:500;color:var(--side-ink)}
+.pbtn:hover,.qbtn:hover{background:var(--side-2)}
+.pbtn .nm,.qbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbtn .n,.qbtn .n{color:var(--side-muted);font-weight:700;font-size:13px}
 .pbtn .d{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:transparent}
-.pbtn .d.late{background:var(--danger)}.pbtn .d.g{background:var(--ok)}
-.pbtn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--accent);font-weight:700}
-.pbtn[aria-pressed="true"] .n{color:var(--accent)}
-.side-note{padding:14px 16px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
-.side-note b{color:var(--ink);font-size:15px}
+.pbtn .d.late{background:#FF7A6E}.pbtn .d.g{background:#5FD3A2}
+.pbtn[aria-pressed="true"],.qbtn[aria-pressed="true"]{background:var(--side-on);color:#FFFFFF;font-weight:700}
+.pbtn[aria-pressed="true"] .n,.qbtn[aria-pressed="true"] .n{color:#FFFFFF}
+.qbtn .n.hot{color:#FF9A90}.qbtn .n.okn{color:#B9A2FF}.qbtn .n.wn{color:#FFC27A}
+.qbtn .sq{width:10px;height:10px;border-radius:3px;flex:0 0 10px;background:var(--side-muted)}
+.side .av.me{background:var(--brand);color:#14213D}
+.side-note{padding:12px 12px 0;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--side-muted);border-top:1px solid var(--side-line)}
+.side-note b{color:var(--side-ink);font-size:14px}
+.side .kbdh{color:var(--side-ink);border-color:var(--side-line)}
+.side button:focus-visible{outline-color:var(--brand)}
 
 /* composer */
 .composer{padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -87,36 +104,52 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .tile{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .tile span{font-size:14px;color:var(--muted);font-weight:600}
-.tile b{font-family:var(--font-display);font-weight:400;font-size:32px;line-height:1.1}
+.tile b{font-family:var(--font-display);font-weight:800;font-size:32px;line-height:1.1}
 .tile.late b{color:var(--danger)}.tile.rev{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}.tile.rev b,.tile.rev span{color:var(--ok)}
 .tile.ext b{color:var(--accent)}
 
-/* groups */
-.group{display:flex;flex-direction:column;gap:8px}
-.group h2{font-size:14px;font-weight:700;color:var(--muted);display:flex;gap:8px;align-items:center;letter-spacing:.02em}
-.group h2 .c{font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink)}
-.group.late h2{color:var(--danger)}.group.review h2{color:var(--ok)}.group.issue h2{color:var(--warn)}.group.extreq h2{color:var(--accent)}.group.rej h2{color:var(--danger)}
+/* groups (Monday style: coloured group title, column header, status pills, status bar) */
+.group{display:flex;flex-direction:column;gap:8px;--gc:var(--st-new)}
+.group h2{font-size:18px;font-weight:800;color:var(--gc);display:flex;gap:10px;align-items:center}
+.group h2::before{content:"";width:12px;height:12px;border-radius:3px;background:var(--gc);flex:0 0 12px}
+.group h2 .c{font-weight:600;font-size:13px;color:var(--muted)}
+.group.late,.group.urgent{--gc:var(--st-late)}.group.review{--gc:var(--st-rev)}.group.issue{--gc:var(--st-no)}.group.extreq{--gc:var(--st-ext)}.group.rej{--gc:var(--st-rej)}
+.group.today{--gc:var(--accent)}.group.tmr{--gc:var(--st-extok)}.group.week{--gc:var(--st-extok)}.group.later,.group.none{--gc:var(--st-new)}
 .list{overflow:hidden}
-.row{display:grid;grid-template-columns:24px 36px minmax(0,1fr) 120px 150px minmax(0,auto);gap:4px 14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.row,.thead,.gfoot{display:grid;grid-template-columns:24px 30px minmax(180px,1fr) 130px 136px 130px 96px 200px;column-gap:10px;align-items:center;padding:0 14px}
+.row{min-height:56px;padding-top:8px;padding-bottom:8px;border-top:1px solid var(--line)}
+.row:hover{background:var(--soft)}
+.thead{min-height:38px;background:var(--soft);font-size:13px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line)}
+.thead span:nth-child(n+4){text-align:center}
+.thead + .row,.row:first-child{border-top:0}
 .row.sel{outline:2px solid var(--accent);outline-offset:-2px}
 .selbox{width:20px;height:20px;accent-color:var(--accent);margin:0;cursor:pointer}
-.row:first-child{border-top:0}
-.row.reported,.row.extok{background:var(--ok-soft)}
-.row.issue{background:var(--warn-soft)}
-.row.extreq{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
-.row.rej{background:var(--danger-soft)}
 .check{width:28px;height:28px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center}
 .check svg{width:16px;height:16px;opacity:0}
 .row.done .check{background:var(--ok);border-color:var(--ok)}
 .row.done .check svg{opacity:1;stroke:var(--surface)}
-.row.reported .check{border-color:var(--ok)}
-.row.reported .check svg{opacity:.55;stroke:var(--ok)}
-.body{text-align:right;display:flex;flex-direction:column;gap:3px;padding:2px 0;min-width:0}
+.row.reported .check{border-color:var(--st-rev)}
+.row.reported .check svg{opacity:.7;stroke:var(--st-rev)}
+.body{text-align:right;display:flex;flex-direction:column;gap:4px;padding:2px 0;min-width:0}
 .body .title{font-weight:600;overflow-wrap:anywhere}
 .row.done .title{text-decoration:line-through;color:var(--muted);font-weight:400}
-.fbnote{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
-.cell{font-size:15px;min-width:0}
+.fbnote{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted)}
+.cell{font-size:14px;min-width:0}
 .cell.muted{color:var(--muted)}
+.cell.who{display:flex;align-items:center;gap:8px}
+.cell.who .wn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell.st,.cell.due,.cell.pg{display:flex;justify-content:center}
+.pill{display:inline-flex;align-items:center;justify-content:center;width:100%;max-width:136px;min-height:32px;padding:2px 8px;border-radius:6px;color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:1.2}
+.s-new{background:var(--st-new)}.s-late{background:var(--st-late)}.s-rev{background:var(--st-rev)}.s-ext{background:var(--st-ext)}.s-no{background:var(--st-no)}.s-rej{background:var(--st-rej)}.s-extok{background:var(--st-extok)}.s-done{background:var(--st-done)}
+.pg .pgb{display:flex;align-items:center;gap:6px;width:100%}
+.pg .pgb i{flex:1;height:7px;border-radius:4px;background:var(--line);overflow:hidden;display:block}
+.pg .pgb i b{display:block;height:100%;border-radius:4px;background:var(--st-done)}
+.pg .pgb small{font-size:12px;color:var(--muted);min-width:30px;font-weight:600}
+.pg .z{color:var(--muted)}
+.gfoot{min-height:44px;border-top:1px solid var(--line)}
+.gfoot .bat{grid-column:5;display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--line)}
+.gfoot .bat i{display:block;height:100%}
+.gfoot .gl{grid-column:1 / 5;font-size:13px;color:var(--muted)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-weight:600;font-size:13px;white-space:nowrap}
 .chip.soon{background:var(--signal);color:var(--signal-ink)}
@@ -128,21 +161,30 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .chip.rejc{background:var(--danger);color:#fff}
 .chip.app{background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent)}
 .chip.pend{background:color-mix(in srgb,var(--signal) 35%,var(--surface));color:var(--signal-ink)}
-.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.abtn{border-radius:10px;min-height:38px;padding:0 12px;font-weight:700;font-size:14px;border:1.5px solid var(--line);background:var(--surface);white-space:nowrap}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.abtn{border-radius:8px;min-height:36px;padding:0 10px;font-weight:700;font-size:13px;border:1.5px solid var(--line);background:var(--surface);white-space:nowrap}
 .abtn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
 .abtn.no{border-color:var(--danger);color:var(--danger)}
 .abtn.wa{border-color:#1FA855;color:#167A3E}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .abtn.wa{color:#43CC93}}
 :root[data-theme="dark"] .abtn.wa{color:#43CC93}
-@media (max-width:860px){
-  .row{grid-template-columns:24px 36px minmax(0,1fr)}
-  .row .cell,.row .acts{grid-column:3}
-  .row .acts{justify-content:flex-start}
-  .row .cell.who:empty,.row .cell.due:empty{display:none}
+@container board (max-width:1030px){
+  .row,.thead,.gfoot{grid-template-columns:24px 30px minmax(150px,1fr) 120px 124px 124px 176px}
+  .row .cell.pg,.thead span:nth-child(7){display:none}
+  .gfoot .bat{grid-column:5}
+}
+@container board (max-width:760px){
+  .thead,.gfoot{display:none}
+  .row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+  .row .body{flex:1 1 calc(100% - 90px)}
+  .row > .cell,.row > .acts{flex:0 0 auto}
+  .row > .cell.who{margin-inline-start:64px}
+  .row .pill{width:auto;min-height:28px}
+  .row .cell.pg{display:flex;width:120px}
+  .row .cell.pg:has(.z){display:none}
 }
 .empty{padding:24px 20px;display:flex;flex-direction:column;gap:8px}
-.empty h2{font-family:var(--font-display);font-weight:400;font-size:22px}
+.empty h2{font-family:var(--font-display);font-weight:800;font-size:22px}
 .empty p{margin:0;color:var(--muted)}
 .donebar{display:flex;justify-content:space-between;align-items:center}
 .linkbtn{color:var(--accent);font-weight:700;font-size:14px;padding:4px 2px}
@@ -151,7 +193,7 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .overlay{position:fixed;inset:0;background:var(--overlay);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
 .sheet{background:var(--surface);width:100%;max-width:560px;border-radius:20px;display:flex;flex-direction:column;gap:14px;padding:22px;max-height:92vh;overflow:auto}
 .sheet.wide{max-width:720px}
-.sheet h3{font-family:var(--font-display);font-weight:400;font-size:24px}
+.sheet h3{font-family:var(--font-display);font-weight:800;font-size:24px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:13px;color:var(--muted);font-weight:700}
 .field textarea,.field input,.field select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
@@ -202,7 +244,7 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 /* pairing */
 .pair{max-width:520px;margin:0 auto;padding:48px 16px;display:flex;flex-direction:column;gap:20px}
 .pair .card{padding:22px;display:flex;flex-direction:column;gap:14px}
-.pair h2{font-family:var(--font-display);font-weight:400;font-size:26px}
+.pair h2{font-family:var(--font-display);font-weight:800;font-size:26px}
 .steps{margin:0;padding-inline-start:22px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 .steps b{color:var(--ink)}
 #code{font:inherit;font-size:34px;font-weight:700;letter-spacing:.25em;text-align:center;direction:ltr;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px}
@@ -230,28 +272,20 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .wkx{display:flex;gap:8px}.wkx .btn{flex:1}
 
 /* ===== desktop board (version 28): views, filters, bulk, kanban, control room ===== */
-.views{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:12px;flex-wrap:wrap}
-.views button{min-height:40px;padding:0 16px;border-radius:9px;font-weight:600;font-size:15px;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+.views{display:flex;gap:26px;flex-wrap:wrap}
+.views button{min-height:46px;padding:0 2px;font-weight:600;font-size:15px;color:var(--muted);display:inline-flex;align-items:center;gap:8px;border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0}
+.views button:hover{color:var(--ink)}
 .views button svg{width:18px;height:18px}
-.views button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0 12px;min-height:44px;flex:0 1 260px;min-width:170px}
+.views button[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 12px;min-height:40px;flex:0 1 260px;min-width:170px}
 .search svg{width:18px;height:18px;flex:0 0 18px;color:var(--muted)}
 .search input{border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);outline:none;width:100%;min-width:0}
 .search kbd,.kbdh{font:inherit;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px;line-height:1.6}
-.topmid{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:1 1 auto;justify-content:center}
-.quick-f{padding:10px;display:flex;flex-direction:column;gap:2px}
-.quick-f .h{font-size:13px;color:var(--muted);font-weight:700;padding:6px 10px}
-.qbtn{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border-radius:10px;width:100%;font-size:15px;text-align:right}
-.qbtn:hover{background:var(--bg)}
-.qbtn .nm{flex:1}
-.qbtn .n{font-weight:700;font-size:14px;color:var(--muted)}
-.qbtn .n.hot{color:var(--danger)}.qbtn .n.okn{color:var(--ok)}.qbtn .n.wn{color:var(--warn)}
-.qbtn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--accent);font-weight:700}
 .av{width:28px;height:28px;border-radius:50%;flex:0 0 28px;display:inline-grid;place-items:center;color:#fff;font-weight:700;font-size:13px;line-height:1}
 .av.lg{width:36px;height:36px;flex-basis:36px;font-size:15px}
 .av.me{background:var(--ink);color:var(--bg)}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
-.toolbar h2{font-family:var(--font-display);font-weight:400;font-size:26px;line-height:1.1}
+.toolbar h2{font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1.1}
 .toolbar .sub{font-size:14px;color:var(--muted)}
 .seg{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);padding:3px;border-radius:11px;flex-wrap:wrap}
 .seg > span{font-size:13px;color:var(--muted);font-weight:700;padding:0 8px}
@@ -285,16 +319,16 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 
 /* kanban */
 .board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(200px,1fr);gap:14px;overflow-x:auto;padding-bottom:10px;align-items:start}
-.kcol{background:color-mix(in srgb,var(--line) 45%,var(--bg));border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:220px;transition:background .12s,border-color .12s}
+.kcol{background:color-mix(in srgb,var(--line) 45%,var(--bg));border:1px solid var(--line);border-top:6px solid var(--kc,var(--st-new));border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:220px;transition:background .12s,border-color .12s}
 .kcol.over{background:color-mix(in srgb,var(--accent) 14%,var(--bg));border-color:var(--accent);border-style:dashed}
-.kcol.review{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
-.kcol.review.over{border-color:var(--ok)}
 .khead{display:flex;align-items:center;gap:8px;padding:4px 4px 2px;min-height:36px}
-.khead h3{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.khead h3{font-size:16px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .khead .c{font-size:13px;font-weight:700;background:var(--surface);border-radius:999px;padding:1px 9px;color:var(--muted)}
 .khead .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
 .ksub{font-size:13px;color:var(--muted);padding:0 4px;margin-top:-6px}
-.kcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;cursor:grab;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:grab;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+.kcard:hover{border-color:color-mix(in srgb,var(--muted) 45%,var(--line))}
+.kcard .pill{width:auto;max-width:none;align-self:flex-start;min-height:26px;font-size:12px;border-radius:5px}
 .kcard:active{cursor:grabbing}
 .kcard.dragging{opacity:.45}
 .kcard .chip{white-space:normal;max-width:100%}
@@ -309,14 +343,14 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:20px}
 .kacts .abtn{flex:1;min-height:36px}
 .kmore{font-size:13px;color:var(--muted);text-align:center;padding:4px}
 .kempty{font-size:14px;color:var(--muted);text-align:center;padding:18px 8px;border:1.5px dashed var(--line);border-radius:12px}
-.okall{min-height:42px;border-radius:10px;background:var(--ok);color:#fff;font-weight:700;font-size:15px}
+.okall{min-height:44px;border-radius:8px;background:var(--ok);color:#fff;font-weight:700;font-size:15px}
 
 /* control room */
 .dtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .dtile{padding:14px 16px;display:flex;flex-direction:column;gap:2px;text-align:right}
 button.dtile:hover{border-color:var(--accent)}
 .dtile span{font-size:14px;color:var(--muted);font-weight:600}
-.dtile b{font-family:var(--font-display);font-weight:400;font-size:36px;line-height:1.1}
+.dtile b{font-family:var(--font-display);font-weight:800;font-size:36px;line-height:1.1}
 .dtile small{font-size:13px;color:var(--muted)}
 .dtile.ok b{color:var(--ok)}.dtile.bad b{color:var(--danger)}.dtile.wn b{color:var(--warn)}.dtile.ac b{color:var(--accent)}
 .dgrid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
@@ -355,6 +389,49 @@ button.wtr:hover{background:var(--bg);border-radius:10px}
 .trend .col.cur b{color:var(--accent)}
 .trendx{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px;font-size:12px;color:var(--muted);text-align:center;margin-top:-6px}
 @media (max-width:700px){ .wtr{grid-template-columns:minmax(100px,1fr) repeat(4,44px)} .wtr .pbar,.wtr .ph5{display:none} }
+.panel .dwrap{display:flex;flex-wrap:wrap;align-items:center;gap:24px}
+.donut{position:relative;width:180px;height:180px;border-radius:50%;flex:0 0 180px}
+.donut .hole{position:absolute;inset:32px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut .hole b{font-size:34px;font-weight:800;line-height:1}
+.donut .hole span{font-size:13px;color:var(--muted)}
+.dleg{display:flex;flex-direction:column;gap:6px;min-width:190px;flex:1}
+.dleg button{display:flex;align-items:center;gap:10px;font-size:14px;min-height:34px;padding:0 8px;border-radius:8px;text-align:right}
+.dleg button:hover{background:var(--soft)}
+.dleg i,.legend i{width:12px;height:12px;border-radius:3px;display:block;flex:0 0 12px}
+.dleg b{margin-inline-start:auto;font-weight:800}
+.loadr{display:flex;align-items:center;gap:10px;width:100%;text-align:right;padding:6px;border-radius:8px}
+button.loadr:hover{background:var(--soft)}
+.loadr .nm{width:120px;flex:0 0 120px;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loadr .sb{flex:1;display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--soft)}
+.loadr .sb i{display:block;height:100%}
+.loadr > b{min-width:28px;text-align:center;font-weight:800}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* calendar */
+.calnav{display:flex;gap:8px;align-items:center}
+.calnav .tbtn{min-height:44px;min-width:44px;justify-content:center}
+.calwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--line)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;min-width:820px}
+.cal .dh{background:var(--soft);padding:8px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
+.cday{background:var(--surface);min-height:116px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cday.wk{background:var(--soft)}
+.cday.out{background:color-mix(in srgb,var(--line) 40%,var(--bg))}
+.cday.out .dn{color:var(--muted)}
+.cday.over{outline:2px dashed var(--accent);outline-offset:-3px;background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+.cday .dn{font-size:13px;font-weight:700;width:26px;height:26px;display:inline-grid;place-items:center;border-radius:50%}
+.cday.today .dn{background:var(--accent);color:var(--accent-ink)}
+.cev{display:flex;align-items:center;gap:5px;width:100%;min-height:26px;padding:2px 7px;border-radius:5px;color:#fff;font-size:12px;font-weight:600;text-align:right;cursor:grab;min-width:0}
+.cev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.cev small{font-size:11px;font-weight:700;flex:0 0 auto}
+.cev.done span{text-decoration:line-through}
+.cev.dragging{opacity:.45}
+.cev:active{cursor:grabbing}
+.nodue{display:flex;flex-direction:column;gap:10px;padding:14px 16px}
+.nodue h3{font-size:16px;font-weight:800}
+.nodue .cevs{display:flex;flex-wrap:wrap;gap:6px}
+.nodue .cev{width:auto;max-width:300px}
+.nodue.over{outline:2px dashed var(--accent);outline-offset:-3px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -375,30 +452,29 @@ button.wtr:hover{background:var(--bg);border-radius:10px}
 </div>
 
 <div id="app" hidden>
-  <header class="topbar">
-    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><h1>ראש שקט</h1><small id="who-am-i">במחשב</small></div></div>
-    <div class="topmid">
+<div class="frame">
+  <aside class="side">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><h1>ראש שקט</h1><small id="who-am-i">במחשב</small></div></div>
+    <nav class="quick-f" id="quick" aria-label="סינון לפי מצב"></nav>
+    <nav class="people" id="people" aria-label="סינון לפי עובד"></nav>
+    <div class="side-note"><b>קיצורי מקלדת</b><span><span class="kbdh">N</span> משימה חדשה · <span class="kbdh">/</span> חיפוש · <span class="kbdh">1</span>–<span class="kbdh">4</span> תצוגות · <span class="kbdh">Esc</span> סגירה</span></div>
+    <div class="side-note"><b>איך זה עובד</b><span>מה שתעשה כאן מגיע לעובדים מיד, ולרשימה בטלפון כשתפתח בו את האפליקציה. משימה שעוד לא עודכנה בטלפון מסומנת "ממתין לטלפון".</span></div>
+  </aside>
+  <main>
+    <header class="mhead">
       <nav class="views" id="views" aria-label="תצוגה">
         <button type="button" data-view="table" aria-pressed="true" title="קיצור: 1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"/></svg>טבלה</button>
         <button type="button" data-view="kanban" aria-pressed="false" title="קיצור: 2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg>קנבן</button>
-        <button type="button" data-view="dash" aria-pressed="false" title="קיצור: 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>חדר בקרה</button>
+        <button type="button" data-view="cal" aria-pressed="false" title="קיצור: 3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>לוח שנה</button>
+        <button type="button" data-view="dash" aria-pressed="false" title="קיצור: 4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>חדר בקרה</button>
       </nav>
-      <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="חיפוש משימה או עובד" aria-label="חיפוש משימה או עובד"><kbd aria-hidden="true">/</kbd></label>
-    </div>
-    <span class="syncp wait" id="syncp" role="status"><span class="d" aria-hidden="true"></span><span id="sync-t">מתחבר…</span></span>
-    <div class="tact">
-      <button class="btn ghost" id="wk-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>דו״ח ביצוע שבועי</button>
-      <button class="btn ghost icon" id="set-btn" type="button" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
-    </div>
-  </header>
-  <div class="shell">
-    <aside>
-      <nav class="card quick-f" id="quick" aria-label="סינון לפי מצב"></nav>
-      <nav class="card people" id="people" aria-label="סינון לפי עובד"></nav>
-      <div class="card side-note"><b>קיצורי מקלדת</b><span><span class="kbdh">N</span> משימה חדשה · <span class="kbdh">/</span> חיפוש · <span class="kbdh">1</span> <span class="kbdh">2</span> <span class="kbdh">3</span> תצוגות · <span class="kbdh">Esc</span> סגירה</span></div>
-      <div class="card side-note"><b>איך זה עובד</b><span>מה שתעשה כאן מגיע לעובדים מיד, ולרשימה בטלפון כשתפתח בו את האפליקציה. משימה שעוד לא עודכנה בטלפון מסומנת "ממתין לטלפון".</span></div>
-    </aside>
-    <main>
+      <div class="hact">
+        <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="חיפוש משימה או עובד" aria-label="חיפוש משימה או עובד"><kbd aria-hidden="true">/</kbd></label>
+        <span class="syncp wait" id="syncp" role="status"><span class="d" aria-hidden="true"></span><span id="sync-t">מתחבר…</span></span>
+        <button class="btn ghost" id="wk-btn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>דו״ח ביצוע שבועי</button>
+        <button class="btn ghost icon" id="set-btn" type="button" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
+    </header>
       <form class="card composer" id="form" autocomplete="off">
         <div class="crow">
           <input id="new-task" type="text" placeholder="למשל: דני מחר ב-9 להחליף זמזם בצומת הרצל · אפשר גם &quot;דחוף&quot; או &quot;כל שבוע&quot;" aria-label="משימה חדשה">
@@ -432,9 +508,22 @@ button.wtr:hover{background:var(--bg);border-radius:10px}
         </div>
         <div class="board" id="board"></div>
       </section>
+      <section id="v-cal" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="toolbar">
+          <div><h2 id="c-h"></h2><div class="sub" id="c-sub">גוררים משימה ליום אחר כדי לשנות לה את המועד</div></div>
+          <div class="calnav">
+            <button type="button" class="tbtn" id="c-prev" aria-label="החודש הקודם"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="tbtn" id="c-today">החודש</button>
+            <button type="button" class="tbtn" id="c-next" aria-label="החודש הבא"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          </div>
+        </div>
+        <div class="legend" id="c-leg"></div>
+        <div class="calwrap"><div class="cal" id="cal"></div></div>
+        <div id="c-nodue"></div>
+      </section>
       <section id="v-dash" hidden style="display:flex;flex-direction:column;gap:16px"></section>
-    </main>
-  </div>
+  </main>
+</div>
 </div>
 
 <div class="overlay" id="edit-ov" hidden>
@@ -962,7 +1051,7 @@ function matchPerson(text){
 var filter = "all", target = null, showDone = false, clearArmed = false;
 var UIK = "rspc-ui", WKHK = "rspc-wkh";
 var ui = Object.assign({view:"table", by:"status", km:"status"}, ld(UIK) || {});
-if(["table","kanban","dash"].indexOf(ui.view) < 0) ui.view = "table";
+if(["table","kanban","cal","dash"].indexOf(ui.view) < 0) ui.view = "table";
 if(["status","worker","due"].indexOf(ui.by) < 0) ui.by = "status";
 if(["status","worker"].indexOf(ui.km) < 0) ui.km = "status";
 function saveUi(){ sv(UIK, {view:ui.view, by:ui.by, km:ui.km}); }
@@ -988,8 +1077,9 @@ var QF = [
   {k:"review", l:"ממתינות לאישורך",    f:function(t){ return !t.done && stOf(t)==="review"; }, c:"okn"},
   {k:"decide", l:"בקשות והערות",       f:function(t){ var s = stOf(t); return !t.done && (s==="extreq" || s==="no" || s==="rej"); }, c:"wn"},
   {k:"quiet",  l:"בלי תגובה מהעובד",   f:function(t){ return quietMs(t) > 0; }, c:"wn"},
-  {k:"urgent", l:"🚨 דחופות",          f:function(t){ return !t.done && !!t.urg; }, c:"hot"}
+  {k:"urgent", l:"דחופות",          f:function(t){ return !t.done && !!t.urg; }, c:"hot"}
 ];
+var QSQ = {all:"#8FA0C4", today:"#6F8BFF", late:"var(--st-late)", review:"#8B63E0", decide:"#D9792A", quiet:"#E3B341", urgent:"#FF5A5F"};
 function qOf(k){ for(var i=0;i<QF.length;i++) if(QF[i].k===k) return QF[i]; return QF[0]; }
 function qfn(t){ return qOf(qf).f(t); }
 function inWho(t){ return filter==="all" ? true : filter==="me" ? !t.assignee : t.assignee===filter; }
@@ -1009,11 +1099,10 @@ function chipsOf(t){
   var s0 = stOf(t), chips = "", now = Date.now();
   if(t.urg && !t.done) chips += '<span class="chip urgc">🚨 דחוף</span>';
   if(t._p) chips += '<span class="chip pend">⏳ ממתין לטלפון</span>';
-  if(s0==="review") chips += '<span class="chip okc">בוצע · '+esc(relLabel(t.reportedAt||now))+'</span>';
-  else if(s0==="no") chips += '<span class="chip noc">לא בוצע · '+esc(relLabel(t.fb.at))+'</span>';
-  else if(s0==="extreq") chips += '<span class="chip extc num">⏳ מבקש הארכה עד '+esc(whenLabel(t.ext.due))+'</span>';
-  else if(s0==="rej") chips += '<span class="chip rejc">'+(t.rej.why==="ext"?"הארכה לא אושרה":"ביצוע לא אושר")+'</span>';
-  else if(s0==="extok") chips += '<span class="chip okc">הארכה אושרה</span>';
+  if(s0==="review") chips += '<span class="chip plain">✓ דיווח '+esc(relLabel(t.reportedAt||now))+'</span>';
+  else if(s0==="no") chips += '<span class="chip plain">עדכן '+esc(relLabel(t.fb.at))+'</span>';
+  else if(s0==="extreq") chips += '<span class="chip extc num">⏳ עד '+esc(whenLabel(t.ext.due))+'</span>';
+  else if(s0==="rej") chips += '<span class="chip plain">'+(t.rej.why==="ext"?"ההארכה לא אושרה":"הביצוע לא אושר")+' · '+esc(relLabel(t.rej.at))+'</span>';
   var q = quietMs(t); if(q) chips += '<span class="chip pend" title="נשלחה לעובד ועוד לא היה ממנו עדכון">🔕 אין תגובה · נשלחה '+esc(relLabel(t.sentAt||t.createdAt))+'</span>';
   if(t.rep && REP_L[t.rep] && !t.repNext) chips += '<span class="chip plain">🔁 '+esc(REP_L[t.rep])+'</span>';
   if(ckOf(t).length) chips += '<span class="chip plain num">☑ '+ckDone(t)+'/'+ckOf(t).length+'</span>';
@@ -1034,19 +1123,36 @@ function actsOf(t){
   return "";
 }
 var ROWCLS = {review:" reported", no:" issue", extreq:" extreq", rej:" rej", extok:" extok"};
+/* one status per task, Monday style: a coloured pill */
+var STL = {late:"באיחור", rev:"ממתין לאישורך", ext:"מבקש הארכה", no:"לא בוצע", rej:"לא אושר", extok:"הארכה אושרה", "new":"פתוחה", done:"אושר"};
+var STORD = ["late","rev","ext","no","rej","extok","new","done"];
+var STVAR = {late:"--st-late", rev:"--st-rev", ext:"--st-ext", no:"--st-no", rej:"--st-rej", extok:"--st-extok", "new":"--st-new", done:"--st-done"};
+function stKey(t){ if(t.done) return "done"; var s = stOf(t); if(s==="review") return "rev"; if(s==="extreq") return "ext"; if(s==="rej") return "rej"; if(s==="no") return "no"; if(isLate(t)) return "late"; if(s==="extok") return "extok"; return "new"; }
+function pill(t){ var k = stKey(t); return '<span class="pill s-'+k+'">'+STL[k]+'</span>'; }
+function stCount(items){ var c = {}; STORD.forEach(function(k){ c[k] = 0; }); items.forEach(function(t){ c[stKey(t)]++; }); return c; }
+function battery(items){
+  var c = stCount(items), n = items.length || 1, segs = "", lab = [];
+  STORD.forEach(function(k){ if(!c[k]) return; segs += '<i class="s-'+k+'" style="width:'+(100*c[k]/n)+'%" title="'+STL[k]+': '+c[k]+'"></i>'; lab.push(STL[k]+" "+c[k]); });
+  return '<span class="bat" role="img" aria-label="'+esc("מצב: "+lab.join(", "))+'">'+segs+'</span>';
+}
+function progOf(t){ if(t.done || stOf(t)==="review") return 100; var n = ckOf(t).length; return n ? Math.round(100*ckDone(t)/n) : null; }
+var THEAD = '<div class="thead" aria-hidden="true"><span></span><span></span><span>משימה</span><span>אחראי</span><span>סטטוס</span><span>מועד</span><span>התקדמות</span><span></span></div>';
+function gfoot(items){ var c = stCount(items), kinds = STORD.filter(function(k){ return c[k]; }).length; if(kinds < 2) return ""; return '<div class="gfoot"><span class="gl num">'+items.length+(items.length===1 ? " משימה" : " משימות")+'</span>'+battery(items)+'</div>'; }
 function rowHtml(t){
-  var s0 = stOf(t), chips = chipsOf(t), nt = noteOf(t), lw = t.assignee && linkedW(t.assignee), on = !!sel[t.id];
+  var s0 = stOf(t), chips = chipsOf(t), nt = noteOf(t), lw = t.assignee && linkedW(t.assignee), on = !!sel[t.id], pg = progOf(t);
   return '<div class="row'+(t.done?" done":"")+(ROWCLS[s0]||"")+(t.urg && !t.done ? " urgent" : "")+(on?" sel":"")+'" data-id="'+esc(t.id)+'">' +
     '<input type="checkbox" class="selbox" data-sel aria-label="בחירה: '+esc(t.title)+'"'+(on?" checked":"")+(t.done?" disabled":"")+'>' +
     '<button class="check" type="button" data-act="toggle" aria-label="'+(t.done?"סמן כפתוחה":s0==="review"?"אשר ביצוע":"סמן כבוצעה")+'">'+CHECK+'</button>' +
     '<button class="body" type="button" data-act="edit"><span class="title">'+esc(t.title)+'</span>'+(chips?'<span class="chips">'+chips+'</span>':'')+(nt?'<span class="fbnote">💬 '+esc(nt)+'</span>':'')+'</button>' +
-    '<span class="cell who">'+(t.assignee ? (lw?'<span class="chip app" title="מחובר לאפליקציה">📱</span> ':'')+esc(nameOf(t)) : '<span class="cell muted">שלי</span>')+'</span>' +
-    '<span class="cell due">'+dueChip(t)+'</span>' +
+    '<span class="cell who">'+(t.assignee ? avatar(t.assignee, nameOf(t))+'<span class="wn">'+esc(nameOf(t))+'</span>'+(lw?'<span title="מחובר לאפליקציה" aria-label="מחובר לאפליקציה">📱</span>':'') : avatar("", myName())+'<span class="wn muted">שלי</span>')+'</span>' +
+    '<span class="cell st">'+pill(t)+'</span>' +
+    '<span class="cell due">'+(dueChip(t) || '<span class="muted" style="color:var(--muted)">בלי מועד</span>')+'</span>' +
+    '<span class="cell pg">'+(pg==null ? '<span class="z">–</span>' : '<span class="pgb" title="'+(ckOf(t).length && !t.done && stOf(t)!=="review" ? "רשימת בדיקה: "+ckDone(t)+" מתוך "+ckOf(t).length : "הושלם")+'"><i><b style="width:'+pg+'%"></b></i><small class="num">'+pg+'%</small></span>')+'</span>' +
     '<span class="acts">'+actsOf(t)+'</span></div>';
 }
 function group(cls, title, items){
   if(!items.length) return "";
-  return '<section class="group '+cls+'"><h2>'+title+' <span class="c num">'+items.length+'</span></h2><div class="card list">'+items.map(rowHtml).join("")+'</div></section>';
+  return '<section class="group '+cls+'"><h2>'+title+' <span class="c num">'+items.length+(items.length===1 ? " משימה" : " משימות")+'</span></h2><div class="card list">'+THEAD+items.map(rowHtml).join("")+gfoot(items)+'</div></section>';
 }
 function pri(t, now){ var s = stOf(t); return s==="extreq" ? 0 : s==="review" ? 1 : t.urg ? 2 : (t.due && t.due < now) ? 3 : (s==="no" || s==="rej") ? 4 : 5; }
 function byPri(list){ var now = Date.now(); return list.slice().sort(function(a,b){ return (pri(a,now)-pri(b,now)) || ((a.due||9e15)-(b.due||9e15)) || ((b.createdAt||0)-(a.createdAt||0)); }); }
@@ -1057,7 +1163,7 @@ function renderQuick(){
   var base = all().filter(inWho), h = '<span class="h">מצב</span>';
   QF.forEach(function(q){
     var n = base.filter(q.k==="all" ? function(t){ return !t.done; } : q.f).length;
-    h += '<button type="button" class="qbtn" data-q="'+q.k+'" aria-pressed="'+(qf===q.k)+'"><span class="nm">'+q.l+'</span><span class="n num'+(n && q.c ? " "+q.c : "")+'">'+n+'</span></button>';
+    h += '<button type="button" class="qbtn" data-q="'+q.k+'" aria-pressed="'+(qf===q.k)+'"><span class="sq" aria-hidden="true" style="background:'+(QSQ[q.k]||"var(--side-muted)")+'"></span><span class="nm">'+q.l+'</span><span class="n num'+(n && q.c ? " "+q.c : "")+'">'+n+'</span></button>';
   });
   $("quick").innerHTML = h;
 }
@@ -1123,7 +1229,7 @@ function wgroup(o, items){
     (p!=null ? '<span class="chip '+(p>=90?"okc":p>=70?"plain":"late")+' num"><bdi>'+p+'%</bdi> בזמן השבוע</span>' : '');
   return '<section class="card wgroup"><div class="wgh">'+avatar(o.id, o.name, "lg")+'<span class="nm">'+esc(o.name)+'</span>'+(lw?'<span class="chip app" title="מחובר לאפליקציה">📱 אפליקציה</span>':'')+'<span class="meta">'+meta+'</span><span class="sp"></span>' +
     '<span class="ld">עומס היום <span class="lbar" aria-hidden="true"><i class="'+(td>=5?"hi":td<=1?"lo":"")+'" style="width:'+Math.min(100, td*100/6)+'%"></i></span><b class="num">'+(td ? td+" משימות" : "פנוי")+'</b></span></div>' +
-    (items.length ? items.map(rowHtml).join("") : '<div class="wempty">אין משימות פתוחות</div>') + '</section>';
+    (items.length ? THEAD+items.map(rowHtml).join("")+gfoot(items) : '<div class="wempty">אין משימות פתוחות</div>') + '</section>';
 }
 function tableByWorker(open){
   var ws = workers(), known = {}, h = "";
@@ -1156,8 +1262,8 @@ function renderTable(list){
     h = ui.by==="worker" ? tableByWorker(open) : ui.by==="due" ? tableByDue(open) : tableByStatus(open);
     if(!open.length && qf==="all") h += '<section class="card empty"><h2>הכול בוצע</h2><p>אין משימות פתוחות כאן.</p></section>';
     if(done.length){
-      h += '<section class="group"><div class="donebar"><h2>הושלמו ב-7 הימים האחרונים <span class="c num">'+done.length+'</span></h2><span><button class="linkbtn" type="button" data-act="toggle-done">'+(showDone?"הסתר":"הצג")+'</button>'+(showDone?' · <button class="linkbtn" type="button" data-act="clear-done">'+(clearArmed?"למחוק? לחץ שוב":"מחק הכול")+'</button>':'')+'</span></div>' +
-        (showDone ? '<div class="card list">'+done.map(rowHtml).join("")+'</div>' : '') + '</section>';
+      h += '<section class="group" style="--gc:var(--st-done)"><div class="donebar"><h2>הושלמו ב-7 הימים האחרונים <span class="c num">'+done.length+'</span></h2><span><button class="linkbtn" type="button" data-act="toggle-done">'+(showDone?"הסתר":"הצג")+'</button>'+(showDone?' · <button class="linkbtn" type="button" data-act="clear-done">'+(clearArmed?"למחוק? לחץ שוב":"מחק הכול")+'</button>':'')+'</span></div>' +
+        (showDone ? '<div class="card list">'+THEAD+done.map(rowHtml).join("")+'</div>' : '') + '</section>';
     }
   }
   $("lists").innerHTML = h;
@@ -1227,18 +1333,18 @@ $("bulk").addEventListener("click", function(ev){
 
 /* ---- kanban ---- */
 var KCOLS = [
-  {k:"open",   l:"פתוחות",               dot:"var(--accent)", e:"אין משימות פתוחות"},
-  {k:"late",   l:"באיחור",               dot:"var(--danger)", e:"אין משימות באיחור 👍"},
-  {k:"decide", l:"בקשות והערות",          dot:"var(--warn)",   e:"אין בקשות או הערות מהעובדים"},
-  {k:"review", l:"ממתין לאישורך",          dot:"var(--ok)",     e:"אין מה לאשר כרגע"},
-  {k:"done",   l:"אושרו ב-7 ימים",        dot:"var(--muted)",  e:"עוד לא אושרו משימות"}
+  {k:"open",   l:"פתוחות",               dot:"var(--st-new)",  e:"אין משימות פתוחות"},
+  {k:"late",   l:"באיחור",               dot:"var(--st-late)", e:"אין משימות באיחור 👍"},
+  {k:"decide", l:"בקשות והערות",          dot:"var(--st-no)",   e:"אין בקשות או הערות מהעובדים"},
+  {k:"review", l:"ממתין לאישורך",          dot:"var(--st-rev)",  e:"אין מה לאשר כרגע"},
+  {k:"done",   l:"אושרו ב-7 ימים",        dot:"var(--st-done)", e:"עוד לא אושרו משימות"}
 ];
 function kcolOf(t){ if(t.done) return "done"; var s = stOf(t); if(s==="review") return "review"; if(s==="extreq" || s==="no" || s==="rej") return "decide"; if(t.due && t.due < Date.now()) return "late"; return "open"; }
 function kcard(t, showWho){
   var c = chipsOf(t), nt = noteOf(t), a = actsOf(t);
   var who = !showWho ? "<span></span>" : t.assignee ? '<span class="kwho">'+avatar(t.assignee, nameOf(t))+esc(firstName(nameOf(t)))+'</span>' : '<span class="kwho">'+avatar("", myName())+'שלי</span>';
   return '<article class="kcard'+(t.done?" done":"")+(t.urg && !t.done ? " urgent" : "")+'" draggable="'+(t.done?"false":"true")+'" data-id="'+esc(t.id)+'">' +
-    (c ? '<div class="chips">'+c+'</div>' : '') +
+    pill(t) + (c ? '<div class="chips">'+c+'</div>' : '') +
     '<button class="ktitle" type="button" data-act="edit" draggable="'+(t.done?"false":"true")+'">'+esc(t.title)+'</button>' +
     (nt ? '<div class="knote">💬 '+esc(nt)+'</div>' : '') +
     '<div class="kmeta">'+who+dueChip(t)+'</div>' +
@@ -1253,7 +1359,7 @@ function renderKanban(list){
     cols.forEach(function(o){
       var items = byPri(open.filter(function(t){ return (t.assignee||"")===o.id; }));
       var td = loadOn(o.id, startOfDay(new Date())), late = items.filter(isLate).length;
-      h += '<section class="kcol" data-col="w:'+esc(o.id)+'" aria-label="'+esc(o.name)+'"><div class="khead">'+avatar(o.id, o.name)+'<h3>'+esc(o.name)+'</h3><span class="c num">'+items.length+'</span></div>' +
+      h += '<section class="kcol" style="--kc:'+(o.id ? avColor(o.id) : "var(--ink)")+'" data-col="w:'+esc(o.id)+'" aria-label="'+esc(o.name)+'"><div class="khead">'+avatar(o.id, o.name)+'<h3>'+esc(o.name)+'</h3><span class="c num">'+items.length+'</span></div>' +
         '<div class="ksub num">'+(td ? "היום: "+td+" משימות" : "היום: פנוי")+(late ? ' · <b style="color:var(--danger)">'+late+' באיחור</b>' : '')+'</div>' +
         (items.length ? items.map(function(t){ return kcard(t, false); }).join("") : '<div class="kempty">גרור לכאן משימה כדי להעביר אותה '+(o.id ? "ל"+esc(firstName(o.name)) : "אליך")+'</div>') + '</section>';
     });
@@ -1267,7 +1373,7 @@ function renderKanban(list){
     var doneMore = Math.max(0, by.done.length-25); by.done = by.done.slice(0,25);
     KCOLS.forEach(function(c){
       var items = by[c.k];
-      h += '<section class="kcol'+(c.k==="review"?" review":"")+'" data-col="'+c.k+'" aria-label="'+esc(c.l)+'"><div class="khead"><span class="dot" style="background:'+c.dot+'" aria-hidden="true"></span><h3>'+esc(c.l)+'</h3><span class="c num">'+(items.length+(c.k==="done"?doneMore:0))+'</span></div>' +
+      h += '<section class="kcol" style="--kc:'+c.dot+'" data-col="'+c.k+'" aria-label="'+esc(c.l)+'"><div class="khead"><h3>'+esc(c.l)+'</h3><span class="c num">'+(items.length+(c.k==="done"?doneMore:0))+'</span></div>' +
         (c.k==="review" && items.length > 1 ? '<button class="okall" type="button" data-act="okall">✓ אשר את כל ה-'+items.length+'</button>' : '') +
         (items.length ? items.map(function(t){ return kcard(t, true); }).join("") : '<div class="kempty">'+esc(c.e)+'</div>') +
         (doneMore && c.k==="done" ? '<div class="kmore">ועוד '+doneMore+'</div>' : '') + '</section>';
@@ -1331,6 +1437,85 @@ function dropTo(id, col){
     ev.preventDefault(); var id = dragging; dragging = null; clearOver(); renderLater = false;
     dropTo(id, col.dataset.col); render();
   });
+})();
+
+/* ---- calendar: the month, each task on its due day; drag a task to another day to move its date ---- */
+var WDH = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+var MON = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+var calM = (function(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+var calDrag = null;
+function cevHtml(t, showTime){
+  var k = stKey(t), w = t.assignee ? firstName(nameOf(t)) : "";
+  var tip = t.title + (t.assignee ? " · "+nameOf(t) : " · שלי") + " · " + STL[k] + (t.due ? " · "+whenLabel(t.due) : "");
+  return '<button type="button" class="cev s-'+k+(t.done?" done":"")+'" data-id="'+esc(t.id)+'" data-act="edit" draggable="'+(t.done?"false":"true")+'" title="'+esc(tip)+'">' +
+    (showTime && t.due ? '<small class="num">'+hm(new Date(t.due))+'</small>' : '') + '<span>'+(t.urg && !t.done ? "🚨 " : "")+esc(t.title)+'</span>' + (w ? '<small>'+esc(w)+'</small>' : '') + '</button>';
+}
+function renderCal(list){
+  var y = calM.getFullYear(), m = calM.getMonth(), first = new Date(y, m, 1), start = addDays(first, -first.getDay());
+  var dim = new Date(y, m+1, 0).getDate(), weeks = Math.ceil((first.getDay() + dim)/7);
+  $("c-h").textContent = MON[m]+" "+y;
+  if(!snap && !pend.length){
+    $("cal").innerHTML = ""; $("c-leg").innerHTML = ""; $("c-sub").textContent = "";
+    $("c-nodue").innerHTML = '<section class="card empty"><h2>ממתין למשימות מהטלפון…</h2><p>פתח את ראש שקט בטלפון. ברגע שהוא נפתח, המשימות יופיעו כאן לבד.</p></section>'; return;
+  }
+  var byDay = {}, nodue = [], inMonth = 0;
+  list.forEach(function(t){
+    if(!t.due){ if(!t.done) nodue.push(t); return; }
+    var d = new Date(t.due), k = startOfDay(d).getTime(); (byDay[k] = byDay[k] || []).push(t);
+    if(d.getMonth()===m && d.getFullYear()===y && !t.done) inMonth++;
+  });
+  var today0 = startOfDay(new Date()).getTime(), h = "";
+  WDH.forEach(function(d){ h += '<div class="dh">'+d+'</div>'; });
+  for(var i=0;i<weeks*7;i++){
+    var d = addDays(start, i), k = startOfDay(d).getTime(), items = (byDay[k]||[]).sort(function(a,b){ return (a.done?1:0)-(b.done?1:0) || a.due-b.due; });
+    var cls = "cday" + (d.getMonth()!==m ? " out" : "") + (d.getDay()>=5 ? " wk" : "") + (k===today0 ? " today" : "");
+    h += '<div class="'+cls+'" data-day="'+k+'"><span class="dn num"'+(k===today0 ? ' aria-label="היום"' : '')+'>'+d.getDate()+'</span>'+items.map(function(t){ return cevHtml(t, true); }).join("")+'</div>';
+  }
+  $("cal").innerHTML = h;
+  $("c-sub").textContent = (inMonth ? inMonth+" משימות פתוחות החודש · " : "") + "גוררים משימה ליום אחר כדי לשנות לה את המועד";
+  $("c-leg").innerHTML = STORD.map(function(k){ return '<span><i class="s-'+k+'"></i>'+STL[k]+'</span>'; }).join("");
+  nodue.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  $("c-nodue").innerHTML = '<section class="card nodue" data-day="none"><h3>בלי מועד <span class="num" style="color:var(--muted);font-weight:600">'+nodue.length+'</span></h3>' +
+    (nodue.length ? '<p class="hint">גוררים משימה ליום בלוח כדי לתת לה מועד (09:00).</p><div class="cevs">'+nodue.map(function(t){ return cevHtml(t, false); }).join("")+'</div>'
+                  : '<p class="hint">לכל המשימות יש מועד. גוררים לכאן משימה כדי להוריד לה את המועד.</p>') + '</section>';
+}
+function moveDue(id, day){
+  var t = view[id]; if(!t || t.done) return;
+  var before = t.due || null, due;
+  if(day==="none"){ if(!before) return; due = null; }
+  else { var d0 = new Date(+day), od = before ? new Date(before) : null; due = atTime(d0, od ? od.getHours() : 9, od ? od.getMinutes() : 0).getTime(); }
+  if(due === before) return;
+  doOp({k:"edit", id:id, due:due});
+  var t2 = view[id], w = t2 && t2.assignee && worker(t2.assignee), r = t2 ? waReach(t2) : "";
+  var msg = due ? "המועד עבר ל"+whenLabel(due) : "המועד הוסר";
+  if(r==="wa") toast(msg+". ל"+firstName(w.name)+" אין אפליקציה", "עדכן אותו בוואטסאפ", function(){ var x = view[id]; if(x) openWa(w.phone, taskMessage(x, w, false)); });
+  else toast(msg+(r==="app" ? " · "+firstName(w.name)+" קיבל עדכון באפליקציה" : ""), "ביטול", function(){ doOp({k:"edit", id:id, due:before}); });
+}
+(function(){
+  var box = $("v-cal");
+  function clearOver(){ Array.prototype.forEach.call(box.querySelectorAll(".over"), function(c){ c.classList.remove("over"); }); }
+  box.addEventListener("dragstart", function(ev){
+    var c = ev.target.closest && ev.target.closest(".cev"); if(!c || c.getAttribute("draggable")!=="true") return;
+    calDrag = c.dataset.id; dragging = calDrag; c.classList.add("dragging");
+    try{ ev.dataTransfer.setData("text/plain", calDrag); ev.dataTransfer.effectAllowed = "move"; }catch(e){}
+  });
+  box.addEventListener("dragend", function(ev){
+    var c = ev.target.closest && ev.target.closest(".cev"); if(c) c.classList.remove("dragging");
+    calDrag = null; dragging = null; clearOver(); if(renderLater){ renderLater = false; render(); }
+  });
+  box.addEventListener("dragover", function(ev){
+    if(!calDrag) return; var d = ev.target.closest("[data-day]"); if(!d) return;
+    ev.preventDefault(); if(!d.classList.contains("over")){ clearOver(); d.classList.add("over"); }
+  });
+  box.addEventListener("dragleave", function(ev){ var d = ev.target.closest("[data-day]"); if(d && !d.contains(ev.relatedTarget)) d.classList.remove("over"); });
+  box.addEventListener("drop", function(ev){
+    var d = ev.target.closest("[data-day]"); if(!d || !calDrag) return;
+    ev.preventDefault(); var id = calDrag; calDrag = null; dragging = null; clearOver(); renderLater = false;
+    moveDue(id, d.dataset.day); render();
+  });
+  $("c-prev").addEventListener("click", function(){ calM = new Date(calM.getFullYear(), calM.getMonth()-1, 1); render(); });
+  $("c-next").addEventListener("click", function(){ calM = new Date(calM.getFullYear(), calM.getMonth()+1, 1); render(); });
+  $("c-today").addEventListener("click", function(){ var d = new Date(); calM = new Date(d.getFullYear(), d.getMonth(), 1); render(); });
 })();
 
 /* ---- control room ---- */
@@ -1410,7 +1595,31 @@ function renderDash(){
   }
   th += '</section>';
 
-  h += '<div class="dgrid">'+ah+'<div style="display:flex;flex-direction:column;gap:16px">'+wh+th+'</div></div>';
+  /* the open tasks by status: a donut, each slice opens the matching list */
+  var QK = {late:"late", rev:"review", ext:"decide", no:"decide", rej:"decide", extok:"all", "new":"all"};
+  var sc = stCount(open), tot = open.length, acc = 0, stops = [], lg = "", al = [];
+  STORD.forEach(function(k){ if(k==="done" || !sc[k]) return; var a = acc, b = acc + 100*sc[k]/tot; acc = b;
+    stops.push("var("+STVAR[k]+") "+a.toFixed(2)+"% "+b.toFixed(2)+"%"); al.push(STL[k]+" "+sc[k]);
+    lg += '<button type="button" data-goq="'+QK[k]+'"><i class="s-'+k+'"></i><span>'+STL[k]+'</span><b class="num">'+sc[k]+'</b></button>'; });
+  var dn = '<section class="card panel"><div class="ph"><h3>מצב המשימות הפתוחות</h3></div>' + (tot ?
+    '<div class="dwrap"><div class="donut" role="img" aria-label="'+esc(tot+" פתוחות: "+al.join(", "))+'" style="background:conic-gradient('+stops.join(",")+')"><div class="hole"><b class="num">'+tot+'</b><span>פתוחות</span></div></div><div class="dleg">'+lg+'</div></div>'
+    : '<div class="allgood">אין משימות פתוחות 👍</div>') + '</section>';
+
+  /* workload: one stacked bar per person */
+  var LO = STORD.filter(function(k){ return k!=="done"; }), owners = ws.map(function(w){ return {id:w.id, name:w.name}; });
+  if(open.some(function(t){ return !t.assignee; })) owners.push({id:"", name:"שלי"});
+  var per = owners.map(function(o){ var mine = open.filter(function(t){ return (t.assignee||"")===o.id; }); return {o:o, n:mine.length, c:stCount(mine)}; });
+  var maxN = Math.max.apply(null, [1].concat(per.map(function(x){ return x.n; })));
+  var lh = '<section class="card panel"><div class="ph"><h3>עומס לפי עובד</h3><span class="hint">משימות פתוחות</span></div>';
+  if(!per.length) lh += '<p class="hint">עוד אין עובדים. מוסיפים אותם בטלפון, במסך "העובדים שלי".</p>';
+  per.forEach(function(x){
+    var segs = "", lab = [];
+    LO.forEach(function(k){ if(!x.c[k]) return; segs += '<i class="s-'+k+'" style="width:'+(100*x.c[k]/maxN)+'%" title="'+STL[k]+': '+x.c[k]+'"></i>'; lab.push(STL[k]+" "+x.c[k]); });
+    lh += '<button type="button" class="loadr" data-w="'+esc(x.o.id)+'">'+avatar(x.o.id, x.o.id ? x.o.name : myName())+'<span class="nm">'+esc(x.o.name)+'</span><span class="sb" role="img" aria-label="'+esc(x.o.name+": "+(lab.join(", ")||"אין משימות פתוחות"))+'">'+segs+'</span><b class="num">'+x.n+'</b></button>';
+  });
+  lh += '<div class="legend">'+LO.map(function(k){ return '<span><i class="s-'+k+'"></i>'+STL[k]+'</span>'; }).join("")+'</div></section>';
+
+  h += '<div class="dgrid"><div style="display:flex;flex-direction:column;gap:16px">'+ah+dn+'</div><div style="display:flex;flex-direction:column;gap:16px">'+lh+wh+th+'</div></div>';
   box.innerHTML = h;
 }
 
@@ -1419,12 +1628,13 @@ function render(){
   if(!cfg) return;
   if(dragging){ renderLater = true; return; }
   renderSync(); renderPeople(); renderQuick();
-  ["table","kanban","dash"].forEach(function(v){ $("v-"+v).hidden = ui.view!==v; });
+  ["table","kanban","cal","dash"].forEach(function(v){ $("v-"+v).hidden = ui.view!==v; });
   Array.prototype.forEach.call($("views").querySelectorAll("[data-view]"), function(b){ b.setAttribute("aria-pressed", String(b.dataset.view===ui.view)); });
   $("form").hidden = ui.view==="dash";
   renderBanner();
   if(ui.view==="table") renderTable(all().filter(inView));
   else if(ui.view==="kanban") renderKanban(ui.km==="worker" ? all().filter(function(t){ return matchQ(t) && qfn(t); }) : all().filter(inView));
+  else if(ui.view==="cal") renderCal(all().filter(inView));
   else renderDash();
   renderBulk();
   var lateAll = all().filter(isLate);
@@ -1448,7 +1658,7 @@ function renderSync(){
 }
 setInterval(function(){ if(cfg && !document.hidden) render(); }, 30000);
 
-function setView(v){ if(["table","kanban","dash"].indexOf(v) < 0) return; ui.view = v; saveUi(); render(); }
+function setView(v){ if(["table","kanban","cal","dash"].indexOf(v) < 0) return; ui.view = v; saveUi(); render(); }
 $("views").addEventListener("click", function(ev){ var b = ev.target.closest("[data-view]"); if(b) setView(b.dataset.view); });
 $("t-by").addEventListener("click", function(ev){ var b = ev.target.closest("[data-by]"); if(!b) return; ui.by = b.dataset.by; saveUi(); render(); });
 $("k-by").addEventListener("click", function(ev){ var b = ev.target.closest("[data-km]"); if(!b) return; ui.km = b.dataset.km; saveUi(); render(); });
@@ -1481,7 +1691,7 @@ function onAct(ev){
   if(ev.target.matches && ev.target.matches("[data-sel]")){ onSel(ev); return; }
   var b = ev.target.closest("button"); if(!b) return;
   if(b.dataset.goq){ qf = b.dataset.goq; filter = "all"; target = null; setView("table"); updatePreview(); return; }
-  if(b.dataset.w!==undefined && b.classList.contains("wtr")){ filter = b.dataset.w || "me"; target = b.dataset.w || null; qf = "all"; setView("table"); updatePreview(); return; }
+  if(b.dataset.w!==undefined && (b.classList.contains("wtr") || b.classList.contains("loadr"))){ filter = b.dataset.w || "me"; target = b.dataset.w || null; qf = "all"; setView("table"); updatePreview(); return; }
   var act = b.dataset.act, row = b.closest("[data-id]"), id = row && row.dataset.id, t = id && view[id];
   if(act==="toggle-done"){ showDone = !showDone; clearArmed = false; render(); return; }
   if(act==="clear-done"){ if(!clearArmed){ clearArmed = true; render(); return; } clearArmed = false;
@@ -1501,7 +1711,7 @@ function onAct(ev){
   else if(act==="remind"){ var ao = sendToWorker(t, !!((t.due && t.due < Date.now()) || quietMs(t)), false); if(ao) toast("📱 נשלח שוב לאפליקציה של "+nameOf(t), "גם וואטסאפ", function(){ sendToWorker(view[id], true, true); }); }
   else if(act==="edit") openEdit(id);
 }
-["lists","board","v-dash"].forEach(function(k){ $(k).addEventListener("click", onAct); });
+["lists","board","v-dash","v-cal"].forEach(function(k){ $(k).addEventListener("click", onAct); });
 function decide(id, kind){
   var t = view[id]; if(!t || t.done) return;
   doOp({k:"decide", id:id, kind:kind});
@@ -1800,7 +2010,8 @@ document.addEventListener("keydown", function(ev){
   else if(ev.code==="KeyN"){ ev.preventDefault(); if(ui.view==="dash") setView("table"); $("new-task").focus(); }
   else if(ev.code==="Digit1") setView("table");
   else if(ev.code==="Digit2") setView("kanban");
-  else if(ev.code==="Digit3") setView("dash");
+  else if(ev.code==="Digit3") setView("cal");
+  else if(ev.code==="Digit4") setView("dash");
 });
 
 /* ---------- toast ---------- */
