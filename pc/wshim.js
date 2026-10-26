@@ -62,6 +62,11 @@
       old2.forEach(function(x){ if(x && x.ws!==r.ws && next.length < 8) next.push(x); }); sv(WEEK, next); }
     else if(op==="bye"){ leave("המנהל ניתק את החיבור. כדי לחבר שוב צריך קוד חדש ממנו."); return "stop"; }
     else if(op==="pcbye"){ leave("המנהל ניתק את המחשב הזה. כדי לחבר שוב צריך קוד חדש ממנו."); return "stop"; }
+    else if(op==="mgr" && /^[A-Za-z0-9_-]{12,64}$/.test(msg.mt||"")){
+      // he is now a manager: this computer moves to his manager screen (same key, his own topic)
+      ["rspc-snap","rspc-pend","rspc-out"].forEach(function(k){ sv(k, null); });
+      sv("rspc-cfg", {m:cfg.m, t:msg.mt, id:cfg.id, key:cfg.key, w:cfg.w, mgr:1, role:String(msg.role||"dept"), name:cfg.name||"", mName:cfg.mName||"", at:Date.now()});
+      sv(CFG, null); location.replace("./"); return "stop"; }
   }
 
   var polling = false;
