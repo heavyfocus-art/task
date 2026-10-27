@@ -101,6 +101,24 @@
       });
     };
     this.session = function(){ return sess; };
+    /* storage: upload one file, and short-lived links to view private files */
+    function spath(p){ return String(p).split("/").map(encodeURIComponent).join("/"); }
+    this.storageUpload = function(bucket, path, blob, ctype){
+      return token().then(function(t){
+        return fetch(base+"/storage/v1/object/"+bucket+"/"+spath(path), {method:"POST", headers:{"apikey":key, "Authorization":"Bearer "+(t || key), "Content-Type":ctype || "application/octet-stream", "x-upsert":"true"}, body:blob})
+          .then(function(r){ return readJson(r).then(function(j){ return r.ok ? {data:j, error:null} : {data:null, error:err(j && (j.message || j.error) || ("HTTP "+r.status), r.status)}; }); },
+            function(e){ return {data:null, error:err("Failed to fetch: "+(e && e.message || ""), 0)}; });
+      });
+    };
+    this.storageSign = function(bucket, paths, expiresIn){
+      return token().then(function(t){
+        return fetch(base+"/storage/v1/object/sign/"+bucket, {method:"POST", headers:{"apikey":key, "Authorization":"Bearer "+(t || key), "Content-Type":"application/json"}, body:JSON.stringify({expiresIn:expiresIn || 3600, paths:paths})})
+          .then(function(r){ return readJson(r).then(function(j){
+            if(!r.ok || !Array.isArray(j)) return {data:null, error:err(j && (j.message || j.error) || ("HTTP "+r.status), r.status)};
+            return {data:j.filter(function(x){ return x && x.signedURL; }).map(function(x){ return {path:x.path, url:/^https?:/.test(x.signedURL) ? x.signedURL : base+"/storage/v1"+x.signedURL}; }), error:null}; }); },
+            function(e){ return {data:null, error:err("Failed to fetch: "+(e && e.message || ""), 0)}; });
+      });
+    };
   }
   window.RSDB = RSDB;
 })();
