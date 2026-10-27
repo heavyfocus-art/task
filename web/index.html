@@ -933,6 +933,7 @@ function sv(k, v){ try{ if(v==null) localStorage.removeItem(k); else localStorag
 var SB_URL = "https://ozfztdfrewfzfwwiakja.supabase.co";
 var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96Znp0ZGZyZXdmemZ3d2lha2phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNjEyNDYsImV4cCI6MjEwODYzNzI0Nn0.h33Qd7bCCoZ7Ko4T-2bgAbk-C-D7KVRUin6dnuCHNe4";
 var MAIL_DOMAIN = "roshshaket.com";
+var LOGIN_FN = "clever-handler"; /* the logins service in Supabase (Edge Function) */
 var sb = null;
 try{ if(window.RSDB) sb = new window.RSDB(window.RS_SB_URL || SB_URL, SB_KEY, {storageKey:"rs-db-auth"}); }catch(e){ sb = null; }
 var cfg = null, snap = null, pend = [], out = [], netOk = true, authUid = null;
@@ -2009,7 +2010,7 @@ function renderOrg(){
       else if(lg.dataset.lg==="rm"){
         if(lgRmArmed!==lw.id){ lgRmArmed = lw.id; renderOrg(); return; }
         lgRmArmed = null; lg.disabled = true;
-        sb.fn("admin-users", {action:"remove", person:lw.id}).then(function(r){
+        sb.fn(LOGIN_FN, {action:"remove", person:lw.id}).then(function(r){
           if(r.error){ toast("⚠️ "+loginErr(r.error)); renderOrg(); return; }
           toast("🚫 "+lw.name+" כבר לא יכול להיכנס למערכת"); reload(0); });
       }
@@ -2018,7 +2019,7 @@ function renderOrg(){
     if(pd){ var pid0 = pd.dataset.wdel, pw1 = worker(pid0); if(!pw1) return;
       if(pDelArmed!==pid0){ pDelArmed = pid0; renderOrg(); var b3 = box.querySelector('[data-wdel="'+pid0+'"]'); if(b3) b3.focus(); return; }
       pDelArmed = null;
-      var rm0 = pw1.login ? sb.fn("admin-users", {action:"remove", person:pid0}) : Promise.resolve({});
+      var rm0 = pw1.login ? sb.fn(LOGIN_FN, {action:"remove", person:pid0}) : Promise.resolve({});
       rm0.then(function(r){ if(r && r.error){ toast("⚠️ "+loginErr(r.error)); return; }
         doOp({k:"pdel", wid:pid0}); toast(pw1.name+" הוסר מהצוות"+(pw1.login ? " והכניסה שלו בוטלה" : "")+". המשימות שלו נשארו"); });
       return; }
@@ -2669,7 +2670,7 @@ $("lg-form").addEventListener("submit", function(ev){
   if(lgMode==="create" && !/^[a-z][a-z0-9._-]{1,29}$/.test(u)){ $("lg-err").textContent = loginErr({message:"bad username"}); $("lg-u").focus(); return; }
   if(pw.length < 8){ $("lg-err").textContent = loginErr({message:"bad password"}); $("lg-p").focus(); return; }
   var b = $("lg-go"), w = lgFor; b.disabled = true; b.textContent = "שומר…"; $("lg-err").textContent = "";
-  sb.fn("admin-users", lgMode==="create" ? {action:"create", person:w.id, username:u, password:pw} : {action:"password", person:w.id, password:pw}).then(function(r){
+  sb.fn(LOGIN_FN, lgMode==="create" ? {action:"create", person:w.id, username:u, password:pw} : {action:"password", person:w.id, password:pw}).then(function(r){
     b.disabled = false; b.textContent = lgMode==="create" ? "יצירת הכניסה" : "שמירת הסיסמה";
     if(r.error){ $("lg-err").textContent = loginErr(r.error); return; }
     lgDone = {w:w, u:u, p:pw};
