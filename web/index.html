@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<script src="db.js"></script>
+<script src="db.js?v=29.3"></script>
 <title>ראש שקט</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap">
@@ -2672,6 +2672,7 @@ $("lg-form").addEventListener("submit", function(ev){
   if(lgMode==="create" && !/^[a-z][a-z0-9._-]{1,29}$/.test(u)){ $("lg-err").textContent = loginErr({message:"bad username"}); $("lg-u").focus(); return; }
   if(pw.length < 8){ $("lg-err").textContent = loginErr({message:"bad password"}); $("lg-p").focus(); return; }
   var b = $("lg-go"), w = lgFor; b.disabled = true; b.textContent = "שומר…"; $("lg-err").textContent = "";
+  if(typeof sb.fn!=="function"){ b.disabled = false; b.textContent = lgMode==="create" ? "יצירת הכניסה" : "שמירת הסיסמה"; $("lg-err").textContent = "הדף לא עודכן עד הסוף. רענן את הדף ונסה שוב."; return; }
   sb.fn(LOGIN_FN, lgMode==="create" ? {action:"create", person:w.id, username:u, password:pw} : {action:"password", person:w.id, password:pw}).then(function(r){
     b.disabled = false; b.textContent = lgMode==="create" ? "יצירת הכניסה" : "שמירת הסיסמה";
     if(r.error){ $("lg-err").textContent = loginErr(r.error); return; }
