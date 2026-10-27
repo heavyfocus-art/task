@@ -92,11 +92,12 @@
     /* a server function (Supabase Edge Function), called as the signed-in person */
     this.fn = function(name, body){
       return token().then(function(t){
-        return fetch(base+"/functions/v1/"+name, {method:"POST", headers:{"apikey":key, "Authorization":"Bearer "+(t || key), "Content-Type":"application/json"}, body:JSON.stringify(body || {})})
-          .then(function(r){ return readJson(r).then(function(j){
+        var ac = window.AbortController ? new AbortController() : null, tm = ac ? setTimeout(function(){ ac.abort(); }, 30000) : null;
+        return fetch(base+"/functions/v1/"+name, {method:"POST", headers:{"apikey":key, "Authorization":"Bearer "+(t || key), "Content-Type":"application/json"}, body:JSON.stringify(body || {}), signal:ac ? ac.signal : undefined})
+          .then(function(r){ clearTimeout(tm); return readJson(r).then(function(j){
             if(!r.ok) return {data:null, error:err(j && (j.error || j.message || j.msg) || ("HTTP "+r.status), r.status)};
             return {data:j, error:null}; }); },
-            function(e){ return {data:null, error:err("Failed to fetch: "+(e && e.message || ""), 0)}; });
+            function(e){ clearTimeout(tm); return {data:null, error:err(e && e.name==="AbortError" ? "timeout" : "Failed to fetch: "+(e && e.message || ""), 0)}; });
       });
     };
     this.session = function(){ return sess; };

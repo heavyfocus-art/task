@@ -1927,6 +1927,8 @@ function loginErr(e){
   if(/bad password/.test(m)) return "הסיסמה צריכה להיות לפחות 8 תווים";
   if(/has login/.test(m)) return "לעובד הזה כבר יש כניסה";
   if(/not allowed|403/.test(m)) return "רק מנהל המערכת יכול לתת כניסה";
+  if(/timeout/.test(m)) return "השרת לא ענה תוך 30 שניות. בדוק ב-Supabase שהקוד של שירות הכניסות נשמר, ונסה שוב";
+  if(e && e.status===401) return "שירות הכניסות לא זיהה אותך. התנתק והיכנס שוב";
   if(e && (e.status===404 || /Failed to fetch/.test(m))) return e.status===404 ? "שירות הכניסות עוד לא הותקן ב-Supabase" : "אין חיבור לשרת";
   return "הפעולה לא הצליחה. נסה שוב";
 }
