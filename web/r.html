@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>✅ לאישור ביצוע המשימה</title>
+<meta property="og:title" content="✅ לאישור ביצוע המשימה">
+<meta property="og:description" content="לחץ כאן כדי לעדכן: בוצע / לא בוצע">
+<meta property="og:type" content="website">
+<meta name="description" content="לחץ כאן כדי לעדכן: בוצע / לא בוצע">
+<style>
+:root{--bg:#F4F2EC;--surface:#FFFFFF;--ink:#1A2133;--muted:#667089;--line:#E1DED4;--accent:#2B4C9B;--ok:#1C8F62;--ok-soft:#DDF3E8;--no:#C7631A;--no-soft:#FBEBDD;--r:16px}
+@media (prefers-color-scheme:dark){:root{--bg:#10141F;--surface:#191F2E;--ink:#EEF0F5;--muted:#98A1B7;--line:#2A3245;--accent:#8EA8F0;--ok:#43CC93;--ok-soft:#12342A;--no:#F09A55;--no-soft:#3A2717}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+main{max-width:480px;margin:0 auto;padding:24px 16px 40px;display:flex;flex-direction:column;gap:18px}
+.brand{font-size:14px;color:var(--muted);font-weight:600}
+h1{margin:0;font-size:24px;line-height:1.3}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px}
+.label{font-size:14px;color:var(--muted);font-weight:600}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{font:inherit;font-weight:700;font-size:18px;padding:18px 10px;border-radius:14px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.choice span{font-size:30px;line-height:1}
+.choice[data-s="done"][aria-pressed="true"]{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.choice[data-s="no"][aria-pressed="true"]{border-color:var(--no);background:var(--no-soft);color:var(--no)}
+textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%;min-height:110px;resize:vertical}
+textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.send{font:inherit;font-weight:700;font-size:18px;padding:15px;border:0;border-radius:14px;background:var(--accent);color:#fff;cursor:pointer}
+.send:disabled{opacity:.45;cursor:default}
+.err{color:#C93A31;font-size:15px;margin:0;min-height:1em}
+.done{text-align:center;padding:30px 16px}
+.done .big{font-size:56px;line-height:1}
+.done h2{margin:10px 0 6px;font-size:22px}
+.done p{margin:0;color:var(--muted)}
+.again{font:inherit;color:var(--accent);background:none;border:0;margin-top:14px;font-weight:600;cursor:pointer}
+.bad{text-align:center;color:var(--muted);padding:40px 16px}
+.task{background:var(--surface);border:1px solid var(--line);border-right:5px solid var(--accent);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.task .ttl{font-size:20px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.task .due{font-size:15px;color:var(--muted);font-weight:600}
+.task .from{font-size:14px;color:var(--muted)}
+.task ul{margin:6px 0 0;padding-inline-start:20px;font-size:16px}
+.urg{color:#C93A31;font-weight:800;font-size:14px}
+.state{font-size:15px;font-weight:600;color:var(--ok)}
+.state.no{color:var(--no)}
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="brand">ראש שקט · עדכון משימה</div>
+  <noscript><p>צריך להפעיל JavaScript בדפדפן כדי לשלוח עדכון.</p></noscript>
+</main>
+<script src="db.js"></script>
+<script>
+(function(){
+  "use strict";
+  var SB_URL = window.RS_SB_URL || "https://ozfztdfrewfzfwwiakja.supabase.co";
+  var SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96Znp0ZGZyZXdmemZ3d2lha2phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwNjEyNDYsImV4cCI6MjEwODYzNzI0Nn0.h33Qd7bCCoZ7Ko4T-2bgAbk-C-D7KVRUin6dnuCHNe4";
+  var app = document.getElementById("app");
+  var tok = (location.hash || "").replace(/^#/, "");
+  function el(tag, cls, text){ var e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+  function clear(){ while(app.children.length > 1) app.removeChild(app.lastChild); }
+  function bad(msg){ clear(); app.appendChild(el("p", "bad", msg)); }
+  if(!/^[A-Za-z0-9]{10,40}$/.test(tok)){ bad("הקישור לא שלם. פתח אותו שוב מההודעה בוואטסאפ."); return; }
+  if(!window.RSDB){ bad("אין חיבור לאינטרנט. נסה שוב בעוד רגע."); return; }
+  var db = new window.RSDB(SB_URL, SB_KEY, {storageKey:"rs-r-auth"}), task = null;
+  function p2(n){ return (n<10?"0":"")+n; }
+  function dayText(d, withTime){
+    var days = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+    var t0 = new Date(); t0.setHours(0,0,0,0); var d0 = new Date(d); d0.setHours(0,0,0,0);
+    var diff = Math.round((d0 - t0) / 86400000);
+    var day = diff === 0 ? "היום" : diff === 1 ? "מחר" : diff === -1 ? "אתמול" : "יום " + days[d.getDay()];
+    return day + " " + d.getDate() + "." + (d.getMonth()+1) + (withTime ? " בשעה " + p2(d.getHours()) + ":" + p2(d.getMinutes()) : "");
+  }
+  var REP = {d:"כל יום", wd:"כל יום עבודה", w:"כל שבוע", m:"כל חודש"};
+  function taskCard(){
+    var box = el("div", "task");
+    if(task.urgent) box.appendChild(el("div", "urg", "🚨 דחוף"));
+    box.appendChild(el("div", "label", "המשימה" + (task.boss ? " מ" + task.boss : "")));
+    box.appendChild(el("div", "ttl", task.title));
+    if(task.due){
+      var d = new Date(task.due);
+      if(task.from) box.appendChild(el("div", "due", "📅 מ" + dayText(new Date(+task.from), false) + " עד " + dayText(d, true)));
+      else box.appendChild(el("div", "due", "📅 תאריך יעד: " + dayText(d, true)));
+    }
+    if(task.rep && REP[task.rep]) box.appendChild(el("div", "from", "🔁 משימה קבועה: " + REP[task.rep]));
+    if(Array.isArray(task.ck) && task.ck.length){ var ul = el("ul"); task.ck.forEach(function(c){ ul.appendChild(el("li", null, c)); }); box.appendChild(ul); }
+    if(task.fb && !task.done){
+      var st = task.fb.s === "no" ? "נשלח קודם: לא בוצע" : (task.reported ? "נשלח קודם: בוצע · ממתין לאישור" : "");
+      if(st) box.appendChild(el("div", "state" + (task.fb.s === "no" ? " no" : ""), st));
+    }
+    return box;
+  }
+  function showForm(){
+    clear();
+    app.appendChild(el("h1", null, "אישור ביצוע המשימה"));
+    app.appendChild(taskCard());
+    var card = el("div", "card");
+    card.appendChild(el("div", "label", "מה המצב?"));
+    var ch = el("div", "choices");
+    var bDone = el("button", "choice"); bDone.type = "button"; bDone.dataset.s = "done"; bDone.setAttribute("aria-pressed","false");
+    bDone.appendChild(el("span", null, "✅")); bDone.appendChild(document.createTextNode("בוצע"));
+    var bNo = el("button", "choice"); bNo.type = "button"; bNo.dataset.s = "no"; bNo.setAttribute("aria-pressed","false");
+    bNo.appendChild(el("span", null, "❌")); bNo.appendChild(document.createTextNode("לא בוצע"));
+    ch.appendChild(bDone); ch.appendChild(bNo); card.appendChild(ch);
+    var lab = el("label", "label", "הערות (לא חובה)"); lab.htmlFor = "note";
+    var ta = el("textarea"); ta.id = "note"; ta.maxLength = 800; ta.placeholder = "למשל: חסר חלק, אסיים מחר בבוקר";
+    card.appendChild(lab); card.appendChild(ta);
+    var send = el("button", "send", "שליחה"); send.type = "button"; send.disabled = true;
+    var err = el("p", "err"); err.setAttribute("role","alert");
+    card.appendChild(send); card.appendChild(err);
+    app.appendChild(card);
+    var state = null;
+    function pick(s){ state = s; bDone.setAttribute("aria-pressed", String(s==="done")); bNo.setAttribute("aria-pressed", String(s==="no"));
+      ta.placeholder = s==="no" ? "מה חסר או מה הבעיה?" : "משהו שחשוב לדעת? (לא חובה)"; send.disabled = false; err.textContent = ""; }
+    bDone.onclick = function(){ pick("done"); };
+    bNo.onclick = function(){ pick("no"); ta.focus(); };
+    send.onclick = function(){
+      if(!state) return;
+      if(state==="no" && !ta.value.trim()){ err.textContent = "כתוב בקצרה מה הבעיה, כדי שיידעו איך לעזור."; ta.focus(); return; }
+      send.disabled = true; send.textContent = "שולח…"; err.textContent = "";
+      db.rpc("report_by_token", {p_tok:tok, p_s:state, p_note:ta.value.trim().slice(0,800)}).then(function(r){
+        if(r.error) throw r.error;
+        if(r.data !== true){ load(); return; }
+        showThanks(state);
+      }).catch(function(){ send.disabled = false; send.textContent = "שליחה"; err.textContent = "השליחה לא הצליחה. בדוק שיש אינטרנט ונסה שוב."; });
+    };
+  }
+  function showThanks(s){
+    clear();
+    var box = el("div", "card done");
+    box.appendChild(el("div", "big", s==="no" ? "📝" : "🎉"));
+    box.appendChild(el("h2", null, s==="no" ? "העדכון נשלח" : "כל הכבוד, נשלח!"));
+    box.appendChild(el("p", null, "“" + task.title + "” · " + (s==="no" ? "סומן כלא בוצע, עם ההערה שלך." : "סומן כבוצע. המנהל יבדוק ויאשר.")));
+    var again = el("button", "again", "צריך לשלוח עדכון נוסף?"); again.type = "button"; again.onclick = load;
+    box.appendChild(again);
+    app.appendChild(box);
+  }
+  function showClosed(){
+    clear();
+    var box = el("div", "card done");
+    box.appendChild(el("div", "big", "✅"));
+    box.appendChild(el("h2", null, "המשימה כבר אושרה"));
+    box.appendChild(el("p", null, "“" + task.title + "” · המנהל אישר את הביצוע. אין צורך לעדכן."));
+    app.appendChild(box);
+  }
+  function load(){
+    clear(); app.appendChild(el("p", "bad", "טוען…"));
+    db.rpc("task_by_token", {p_tok:tok}).then(function(r){
+      if(r.error) throw r.error;
+      task = r.data;
+      if(!task || !task.title){ bad("המשימה הזו לא נמצאה. אולי היא נמחקה. אפשר לשאול את המנהל."); return; }
+      if(task.done) showClosed(); else showForm();
+    }).catch(function(){ bad("אין חיבור לאינטרנט. רענן את הדף כדי לנסות שוב."); });
+  }
+  load();
+})();
+</script>
+</body>
+</html>
