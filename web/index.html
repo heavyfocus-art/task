@@ -253,6 +253,9 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:18px;pa
 .pwrow{display:flex;gap:8px}.pwrow .lgin{flex:1;margin:0;font-size:16px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:50;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font-size:15px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .toast button{color:var(--signal);font-weight:700}
+.lgnew{color:var(--accent)!important;border-color:var(--accent)!important;font-weight:700}
+.lgu{font-weight:600;margin-inline-end:auto}
+.lgbox{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;direction:ltr;text-align:left;font-size:16px;line-height:1.7;white-space:pre-line}
 .otr .st{display:flex;align-items:center;gap:8px;justify-content:space-between}
 .odel{border:1px solid var(--line);border-radius:8px;padding:2px 8px;color:var(--muted);font-size:13px;background:var(--surface)}
 .odel:hover{color:var(--danger);border-color:var(--danger)}
@@ -680,6 +683,28 @@ button.loadr:hover{background:var(--soft)}
     <button class="btn danger" id="set-off" type="button">התנתקות</button>
     <p class="hint">במחשב משותף, התנתק בסיום העבודה. הנתונים שמורים בשרת, ונכנסים שוב עם שם המשתמש והסיסמה.</p>
     <button class="btn ghost" id="set-close" type="button">סגירה</button>
+  </div>
+</div>
+
+<div class="overlay" id="lg-ov" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lg-h">
+    <h3 id="lg-h">כניסה למערכת</h3>
+    <form id="lg-form" autocomplete="off" style="display:flex;flex-direction:column;gap:10px">
+      <label class="hint" for="lg-u" style="margin:0">שם משתמש (אותיות באנגלית ומספרים)</label>
+      <input id="lg-u" class="lgin" style="margin:0" maxlength="30" autocapitalize="none" spellcheck="false" dir="ltr">
+      <label class="hint" for="lg-p" style="margin:0">סיסמה (אפשר לשנות)</label>
+      <input id="lg-p" class="lgin" style="margin:0" maxlength="72" autocapitalize="none" spellcheck="false" dir="ltr">
+      <p class="err" id="lg-err" role="alert" style="margin:0"></p>
+      <button class="btn primary" id="lg-go" type="submit">יצירת הכניסה</button>
+      <button class="btn ghost" id="lg-cancel" type="button">ביטול</button>
+    </form>
+    <div id="lg-ok" hidden style="display:flex;flex-direction:column;gap:10px">
+      <p class="hint" style="margin:0">✅ מוכן. שלח לעובד את הפרטים:</p>
+      <div class="lgbox" id="lg-box"></div>
+      <button class="btn primary" id="lg-wa" type="button">שליחה בוואטסאפ</button>
+      <button class="btn ghost" id="lg-copy" type="button">העתקה</button>
+      <button class="btn ghost" id="lg-close" type="button">סגירה</button>
+    </div>
   </div>
 </div>
 
@@ -1877,7 +1902,45 @@ function moveDue(id, day){
 /* ---- team: roles, departments and who reports to whom (the system manager only) ---- */
 var deptDelArmed = null;
 function oldPhone(){ return false; }
-var pDelArmed = null;
+var pDelArmed = null, lgRmArmed = null, lgFor = null, lgMode = null, lgDone = null;
+/* logins: the system manager gives each person a username and a password */
+var HEB_LAT = {"א":"a","ב":"b","ג":"g","ד":"d","ה":"h","ו":"v","ז":"z","ח":"h","ט":"t","י":"y","כ":"k","ך":"k","ל":"l","מ":"m","ם":"m","נ":"n","ן":"n","ס":"s","ע":"a","פ":"p","ף":"f","צ":"tz","ץ":"tz","ק":"k","ר":"r","ש":"sh","ת":"t"};
+function userSuggest(name){
+  var f = firstName(name), x = "";
+  for(var i=0;i<f.length;i++){ var c = f.charAt(i); x += HEB_LAT[c] !== undefined ? HEB_LAT[c] : /[a-z0-9]/i.test(c) ? c.toLowerCase() : ""; }
+  x = x.replace(/^[^a-z]+/, "").slice(0, 20) || "user";
+  var taken = {}; vw.forEach(function(w){ if(w.user) taken[w.user] = 1; }); if(cfg && cfg.user) taken[cfg.user] = 1;
+  var u = x, n = 2; while(taken[u]) u = x + (n++);
+  return u;
+}
+function newPassword(){
+  var L = "abcdefghjkmnpqrstuvwxyz", r = crypto.getRandomValues(new Uint8Array(8)), p = "";
+  for(var i=0;i<3;i++) p += L.charAt(r[i] % L.length);
+  for(var j=3;j<8;j++) p += String(r[j] % 10);
+  return p;
+}
+function loginErr(e){
+  var m = String(e && e.message || "");
+  if(/taken/.test(m)) return "שם המשתמש הזה כבר תפוס. בחר שם אחר";
+  if(/bad username/.test(m)) return "שם משתמש: אותיות באנגלית קטנות ומספרים בלבד, לפחות 2 תווים, ומתחיל באות";
+  if(/bad password/.test(m)) return "הסיסמה צריכה להיות לפחות 8 תווים";
+  if(/has login/.test(m)) return "לעובד הזה כבר יש כניסה";
+  if(/not allowed|403/.test(m)) return "רק מנהל המערכת יכול לתת כניסה";
+  if(e && (e.status===404 || /Failed to fetch/.test(m))) return e.status===404 ? "שירות הכניסות עוד לא הותקן ב-Supabase" : "אין חיבור לשרת";
+  return "הפעולה לא הצליחה. נסה שוב";
+}
+function openLogin(w, mode){
+  lgFor = w; lgMode = mode; lgDone = null;
+  $("lg-h").textContent = (mode==="create" ? "כניסה למערכת · " : "סיסמה חדשה · ")+w.name;
+  $("lg-u").value = mode==="create" ? userSuggest(w.name) : (w.user||""); $("lg-u").readOnly = mode!=="create";
+  $("lg-p").value = newPassword(); $("lg-err").textContent = "";
+  $("lg-form").hidden = false; $("lg-ok").hidden = true;
+  $("lg-go").disabled = false; $("lg-go").textContent = mode==="create" ? "יצירת הכניסה" : "שמירת הסיסמה";
+  $("lg-ov").hidden = false; setTimeout(function(){ (mode==="create" ? $("lg-u") : $("lg-p")).select(); }, 40);
+}
+function loginText(w, u, p){
+  return "היי "+firstName(w.name)+", זו הכניסה שלך לראש שקט:\n🌐 "+location.origin+"\n👤 שם משתמש: "+u+"\n🔑 סיסמה: "+p+"\n\nאחרי הכניסה אפשר להחליף סיסמה בגלגל השיניים ⚙️.";
+}
 function renderOrg(){
   var box = $("v-org");
   if(!snap){ box.innerHTML = '<section class="card empty"><h2>טוען…</h2><p>העובדים יופיעו כאן בעוד רגע.</p></section>'; return; }
@@ -1903,11 +1966,14 @@ function renderOrg(){
       '<select data-o="role" aria-label="התפקיד של '+esc(w.name)+'"'+(oldPhone()?" disabled":"")+'>'+["tech","area","dept","admin"].map(function(k){ return '<option value="'+k+'"'+(r===k ? " selected" : "")+'>'+ROLE_L[k]+'</option>'; }).join("")+'</select>' +
       '<select data-o="dept" aria-label="המחלקה של '+esc(w.name)+'"'+(oldPhone()?" disabled":"")+'><option value="">בלי מחלקה</option>'+vdepts.map(function(d){ return '<option value="'+esc(d.id)+'"'+(w.dept===d.id ? " selected" : "")+'>'+esc(d.name)+'</option>'; }).join("")+'</select>' +
       '<select data-o="boss" aria-label="הממונה של '+esc(w.name)+'"'+(oldPhone()?" disabled":"")+'>'+bossOpts(w)+'</select>' +
-      '<span class="st'+(w.login ? " on" : "")+'"><span dir="ltr">'+(w.login ? "👤 "+esc(w.user||"") : "אין עדיין")+'</span>' +
-      '<button type="button" class="odel" data-pdel="'+esc(w.id)+'" title="'+(pDelArmed===w.id ? "להסיר? לחץ שוב" : "הסרה מהצוות")+'" aria-label="'+esc((pDelArmed===w.id ? "לחץ שוב כדי להסיר את " : "הסרת ")+w.name)+'">'+(pDelArmed===w.id ? "להסיר?" : "✕")+'</button></span></div>'; });
+      '<span class="st'+(w.login ? " on" : "")+'">' +
+      (w.login ? '<span dir="ltr" class="lgu">👤 '+esc(w.user||"")+'</span><button type="button" class="odel" data-lg="pw" title="סיסמה חדשה">🔑</button>' +
+          '<button type="button" class="odel" data-lg="rm" title="'+(lgRmArmed===w.id ? "לבטל? לחץ שוב" : "ביטול הכניסה")+'">'+(lgRmArmed===w.id ? "לבטל?" : "🚫")+'</button>'
+        : '<button type="button" class="odel lgnew" data-lg="new">+ כניסה</button>') +
+      '<button type="button" class="odel" data-wdel="'+esc(w.id)+'" title="'+(pDelArmed===w.id ? "להסיר? לחץ שוב" : "הסרה מהצוות")+'" aria-label="'+esc((pDelArmed===w.id ? "לחץ שוב כדי להסיר את " : "הסרת ")+w.name)+'">'+(pDelArmed===w.id ? "להסיר?" : "✕")+'</button></span></div>'; });
   h += '</div></section>';
   h += '<section class="card mpanel"><h3>עובד חדש</h3><form class="addrow" id="p-add" autocomplete="off"><input id="p-name" placeholder="שם מלא" maxlength="60" aria-label="שם העובד החדש"><input id="p-phone" placeholder="טלפון, למשל 050-1234567" maxlength="20" inputmode="tel" dir="ltr" aria-label="הטלפון של העובד החדש"><button class="btn primary" type="submit">+ הוספה לצוות</button></form>' +
-    '<p class="hint" style="margin:8px 0 0">הטלפון משמש לשליחת משימות בוואטסאפ. שם משתמש וסיסמה לכניסה למערכת יתווספו כאן בשלב הבא.</p></section>';
+    '<p class="hint" style="margin:8px 0 0">הטלפון משמש לשליחת משימות בוואטסאפ. כדי שעובד ייכנס למערכת מהמחשב או מהטלפון, לחץ "+ כניסה" בשורה שלו.</p></section>';
   box.innerHTML = h;
 }
 (function(){
@@ -1936,10 +2002,26 @@ function renderOrg(){
     setTimeout(function(){ var i = $("dept-new"); if(i) i.focus(); }, 30);
   });
   box.addEventListener("click", function(ev){
-    var pd = ev.target.closest("[data-pdel]");
-    if(pd){ var pid0 = pd.dataset.pdel, pw1 = worker(pid0); if(!pw1) return;
-      if(pDelArmed!==pid0){ pDelArmed = pid0; renderOrg(); var b3 = box.querySelector('[data-pdel="'+pid0+'"]'); if(b3) b3.focus(); return; }
-      pDelArmed = null; doOp({k:"pdel", wid:pid0}); toast(pw1.name+" הוסר מהצוות. המשימות שלו נשארו"); return; }
+    var lg = ev.target.closest("[data-lg]"), lrow = lg && lg.closest("[data-w]");
+    if(lg && lrow){ var lw = worker(lrow.dataset.w); if(!lw) return;
+      if(lg.dataset.lg==="new") openLogin(lw, "create");
+      else if(lg.dataset.lg==="pw") openLogin(lw, "password");
+      else if(lg.dataset.lg==="rm"){
+        if(lgRmArmed!==lw.id){ lgRmArmed = lw.id; renderOrg(); return; }
+        lgRmArmed = null; lg.disabled = true;
+        sb.fn("admin-users", {action:"remove", person:lw.id}).then(function(r){
+          if(r.error){ toast("⚠️ "+loginErr(r.error)); renderOrg(); return; }
+          toast("🚫 "+lw.name+" כבר לא יכול להיכנס למערכת"); reload(0); });
+      }
+      return; }
+    var pd = ev.target.closest("[data-wdel]");
+    if(pd){ var pid0 = pd.dataset.wdel, pw1 = worker(pid0); if(!pw1) return;
+      if(pDelArmed!==pid0){ pDelArmed = pid0; renderOrg(); var b3 = box.querySelector('[data-wdel="'+pid0+'"]'); if(b3) b3.focus(); return; }
+      pDelArmed = null;
+      var rm0 = pw1.login ? sb.fn("admin-users", {action:"remove", person:pid0}) : Promise.resolve({});
+      rm0.then(function(r){ if(r && r.error){ toast("⚠️ "+loginErr(r.error)); return; }
+        doOp({k:"pdel", wid:pid0}); toast(pw1.name+" הוסר מהצוות"+(pw1.login ? " והכניסה שלו בוטלה" : "")+". המשימות שלו נשארו"); });
+      return; }
     var b = ev.target.closest("[data-ddel]"); if(!b) return;
     var id = b.dataset.ddel;
     if(deptDelArmed!==id){ deptDelArmed = id; renderOrg(); var b2 = box.querySelector('[data-ddel="'+id+'"]'); if(b2) b2.focus(); return; }
@@ -2580,6 +2662,29 @@ $("wk-xlsx").addEventListener("click", function(){ var r = wkPages[wkIdx]; if(!r
 $("exp-all").addEventListener("click", function(){
   try{ var d = new Date(); offerFile("משימות ראש שקט "+d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()+".xlsx", allTasksXlsx()); $("set-ov").hidden = true; toast("📥 הקובץ ירד. במחשב: משימות פתוחות ומה שהושלם ב-7 הימים האחרונים"); }catch(e){ toast("הייצוא נכשל"); } });
 
+/* ---------- logins dialog ---------- */
+$("lg-form").addEventListener("submit", function(ev){
+  ev.preventDefault(); if(!lgFor) return;
+  var u = $("lg-u").value.trim().toLowerCase(), pw = $("lg-p").value;
+  if(lgMode==="create" && !/^[a-z][a-z0-9._-]{1,29}$/.test(u)){ $("lg-err").textContent = loginErr({message:"bad username"}); $("lg-u").focus(); return; }
+  if(pw.length < 8){ $("lg-err").textContent = loginErr({message:"bad password"}); $("lg-p").focus(); return; }
+  var b = $("lg-go"), w = lgFor; b.disabled = true; b.textContent = "שומר…"; $("lg-err").textContent = "";
+  sb.fn("admin-users", lgMode==="create" ? {action:"create", person:w.id, username:u, password:pw} : {action:"password", person:w.id, password:pw}).then(function(r){
+    b.disabled = false; b.textContent = lgMode==="create" ? "יצירת הכניסה" : "שמירת הסיסמה";
+    if(r.error){ $("lg-err").textContent = loginErr(r.error); return; }
+    lgDone = {w:w, u:u, p:pw};
+    $("lg-box").textContent = "🌐 "+location.origin+"\n👤 "+u+"\n🔑 "+pw;
+    $("lg-form").hidden = true; $("lg-ok").hidden = false; $("lg-wa").hidden = !w.phone;
+    reload(0);
+  });
+});
+$("lg-wa").addEventListener("click", function(){ if(lgDone && lgDone.w.phone) openWa(lgDone.w.phone, loginText(lgDone.w, lgDone.u, lgDone.p)); });
+$("lg-copy").addEventListener("click", function(){ if(!lgDone) return; var t = loginText(lgDone.w, lgDone.u, lgDone.p);
+  try{ navigator.clipboard.writeText(t).then(function(){ toast("📋 הועתק"); }, function(){ toast("ההעתקה לא הצליחה"); }); }catch(e){ toast("ההעתקה לא הצליחה"); } });
+$("lg-cancel").addEventListener("click", function(){ $("lg-ov").hidden = true; });
+$("lg-close").addEventListener("click", function(){ $("lg-ov").hidden = true; lgDone = null; });
+$("lg-ov").addEventListener("click", function(ev){ if(ev.target===this && !lgDone) this.hidden = true; });
+
 /* ---------- settings ---------- */
 var offArmed = false;
 $("set-btn").addEventListener("click", function(){
@@ -2601,8 +2706,8 @@ $("set-off").addEventListener("click", function(){
   if(!offArmed){ offArmed = true; this.textContent = "להתנתק? לחץ שוב"; this.classList.add("armed"); return; }
   signOut("התנתקת. כדי להיכנס שוב, הקלד שם משתמש וסיסמה.");
 });
-function closeAll(){ ["edit-ov","wk-ov","set-ov","mk-ov"].forEach(function(k){ $(k).hidden = true; }); }
-function anyOpen(){ return ["edit-ov","wk-ov","set-ov","mk-ov"].some(function(k){ return !$(k).hidden; }); }
+function closeAll(){ ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov"].forEach(function(k){ $(k).hidden = true; }); }
+function anyOpen(){ return ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov"].some(function(k){ return !$(k).hidden; }); }
 document.addEventListener("keydown", function(ev){
   if(ev.key==="Escape"){ var was = anyOpen(); closeAll(); if(!was && selIds().length && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName||"")){ sel = {}; render(); } return; }
   if(!cfg || $("app").hidden || ev.ctrlKey || ev.metaKey || ev.altKey || anyOpen()) return;
