@@ -253,6 +253,13 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:18px;pa
 .pwrow{display:flex;gap:8px}.pwrow .lgin{flex:1;margin:0;font-size:16px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:50;background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 18px;font-size:15px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .toast button{color:var(--signal);font-weight:700}
+.imcard{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.imcard .btn{flex:none}
+.imsum{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.imspin{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:imspin 1s linear infinite;margin:6px auto}
+@keyframes imspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.imspin{animation:none}}
+#im-code-in{font:inherit;font-size:30px;font-weight:700;letter-spacing:.2em;text-align:center;direction:ltr;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:10px}
 .lgnew{color:var(--accent)!important;border-color:var(--accent)!important;font-weight:700}
 .lgu{font-weight:600;margin-inline-end:auto}
 .lgbox{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;direction:ltr;text-align:left;font-size:16px;line-height:1.7;white-space:pre-line}
@@ -708,6 +715,43 @@ button.loadr:hover{background:var(--soft)}
   </div>
 </div>
 
+<div class="overlay" id="im-ov" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="im-h">
+    <h3 id="im-h">📲 העברה מהטלפון</h3>
+    <form id="im-form" autocomplete="off" style="display:flex;flex-direction:column;gap:10px">
+      <ol class="steps">
+        <li>בטלפון, פתח את <b>ראש שקט</b> ← <b>העובדים שלי</b> ← <b>המחשב שלי</b>.</li>
+        <li>אם כתוב שם "המחשב מחובר", לחץ <b>ניתוק המחשב</b> (פעמיים) ופתח שוב את <b>המחשב שלי</b>.</li>
+        <li>הקלד כאן את הקוד בן 8 הספרות שמופיע בטלפון, והשאר את המסך הזה פתוח בטלפון.</li>
+      </ol>
+      <input id="im-code-in" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="0000 0000" aria-label="הקוד מהטלפון">
+      <p class="err" id="im-err" role="alert" style="margin:0"></p>
+      <button class="btn primary" id="im-go" type="submit">המשך</button>
+      <button class="btn ghost" id="im-cancel" type="button">ביטול</button>
+    </form>
+    <div id="im-s-wait" hidden style="display:flex;flex-direction:column;gap:10px;text-align:center">
+      <div class="imspin" aria-hidden="true"></div>
+      <p class="hint" style="margin:0">מקבל את הנתונים מהטלפון… השאר את ראש שקט פתוח בטלפון.</p>
+      <button class="btn ghost" id="im-cancel2" type="button">ביטול</button>
+    </div>
+    <div id="im-s-show" hidden style="display:flex;flex-direction:column;gap:12px">
+      <p class="hint" id="im-from" style="margin:0"></p>
+      <ul class="imsum" id="im-sum"></ul>
+      <p class="hint" style="margin:0">ההעברה מוסיפה למערכת. עובד שכבר קיים כאן (לפי מספר הטלפון או השם) לא ייווצר פעמיים.</p>
+      <p class="err" id="im-err2" role="alert" style="margin:0"></p>
+      <button class="btn primary" id="im-run" type="button">העברה למערכת</button>
+      <button class="btn ghost" id="im-cancel3" type="button">ביטול</button>
+    </div>
+    <div id="im-s-run" hidden style="display:flex;flex-direction:column;gap:10px;text-align:center"><div class="imspin" aria-hidden="true"></div><p class="hint" id="im-prog" style="margin:0"></p></div>
+    <div id="im-s-done" hidden style="display:flex;flex-direction:column;gap:12px">
+      <p style="margin:0;font-weight:700">✅ ההעברה הסתיימה</p>
+      <ul class="imsum" id="im-res"></ul>
+      <p class="hint" style="margin:0">מעכשיו כדאי לעבוד מהאתר. האפליקציה בטלפון עוד לא מחוברת למערכת החדשה, ומה שתוסיף בה לא יופיע כאן.</p>
+      <button class="btn primary" id="im-close" type="button">סגירה</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden><span id="toast-msg"></span><button id="toast-act" type="button" hidden></button></div>
 
 <script>
@@ -1076,7 +1120,7 @@ function buildSnap(res, meP, role, mt){
   });
   var ws = act.filter(function(w){ return see[w.id]; }).map(function(w){
     return {id:w.id, name:w.name, phone:w.phone||"", wa:false, linked:false, role:w.role, dept:w.dept||null,
-      boss:(owner && w.boss===owner.id) ? null : (w.boss||null), asg:!!asg[w.id], user:w.username||null, login:!!w.user_id}; });
+      boss:(owner && w.boss===owner.id) ? null : (w.boss||null), asg:!!asg[w.id], user:w.username||null, login:!!w.user_id, leg:w.legacy_id||null}; });
   var list = [];
   rowsT.forEach(function(r){
     var t = toTask(r); t._a = t.assignee;
@@ -1948,7 +1992,7 @@ function renderOrg(){
   var box = $("v-org");
   if(!snap){ box.innerHTML = '<section class="card empty"><h2>טוען…</h2><p>העובדים יופיעו כאן בעוד רגע.</p></section>'; return; }
   var ws = workers(), h = '<div class="toolbar"><div><h2>צוות ומחלקות</h2><div class="sub">לכל עובד: תפקיד, מחלקה וממונה ישיר. כל מנהל רואה במחשב רק את מה שמותר לו.</div></div></div>';
-  if(oldPhone()) h += '<div class="fbanner"><span>כדי לקבוע תפקידים ומחלקות צריך לעדכן את ראש שקט בטלפון שלך לגרסה 28.</span></div>';
+  h += '<section class="card mpanel imcard"><div><h3>📲 העברה מהטלפון</h3><p class="hint" style="margin:4px 0 0">מעביר מהאפליקציה בטלפון את העובדים, המחלקות, המשימות ודו״ח הטיפולים. אפשר להריץ שוב: מה שכבר עבר לא יוכפל.</p></div><button class="btn primary" type="button" data-imp>העברה מהטלפון</button></section>';
   h += '<section class="card mpanel"><h3>מי רואה מה</h3><div class="roles">' +
     '<div><b>מנהל מערכת (אתה)</b>רואה הכול, קובע תפקידים, מחלקות וממונים</div>' +
     '<div><b>מנהל מחלקה</b>רואה את העובדים שהוגדרו תחתיו ומחלק להם משימות</div>' +
@@ -2005,6 +2049,7 @@ function renderOrg(){
     setTimeout(function(){ var i = $("dept-new"); if(i) i.focus(); }, 30);
   });
   box.addEventListener("click", function(ev){
+    if(ev.target.closest("[data-imp]")){ impOpen(); return; }
     var lg = ev.target.closest("[data-lg]"), lrow = lg && lg.closest("[data-w]");
     if(lg && lrow){ var lw = worker(lrow.dataset.w); if(!lw) return;
       if(lg.dataset.lg==="new") openLogin(lw, "create");
@@ -2665,6 +2710,202 @@ $("wk-xlsx").addEventListener("click", function(){ var r = wkPages[wkIdx]; if(!r
 $("exp-all").addEventListener("click", function(){
   try{ var d = new Date(); offerFile("משימות ראש שקט "+d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear()+".xlsx", allTasksXlsx()); $("set-ov").hidden = true; toast("📥 הקובץ ירד. במחשב: משימות פתוחות ומה שהושלם ב-7 הימים האחרונים"); }catch(e){ toast("הייצוא נכשל"); } });
 
+/* ---------- version 30: moving everything from the phone app into the database ----------
+   The phone already knows how to send its whole list to a computer ("המחשב שלי" → code). This screen
+   takes that code, receives the phone's sealed snapshot, shows what it found, and copies it in once.
+   Running it again only adds what is new (each person, task and project remembers its phone id). */
+var NTFY = window.RS_NTFY || "https://ntfy.sh";
+var IMP = {j:null, snap:null, parts:{}, since:"12h", timer:null, tries:0, busy:false};
+function impLines(txt){ var a = []; String(txt).split("\n").forEach(function(l){ if(!l.trim()) return; try{ var m = JSON.parse(l); if(m.event==="message") a.push(m); }catch(e){} }); return a; }
+function impUnpack(b){
+  var bytes = unb64u(b.z.join(""));
+  var p = b.f==="d" ? new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"))).text() : Promise.resolve(TD.decode(bytes));
+  return p.then(function(t){ return JSON.parse(t); }).catch(function(){ return null; });
+}
+function impJoin(code){
+  return Promise.all([sha("rs-jt:"+code), sha("rs-jk:"+code)]).then(function(r){
+    var topic = "rsj"+hexOf(r[0]).slice(0,24), key = new Uint8Array(r[1]);
+    return fetch(NTFY+"/"+topic+"/json?poll=1&since=12h").then(function(res){ if(!res.ok) throw "net"; return res.text(); }).then(function(txt){
+      var envs = [];
+      impLines(txt).forEach(function(m){ try{ envs.push(JSON.parse(m.message)); }catch(e){} });
+      return Promise.all(envs.map(function(e){ return openEnv(key, e); })).then(function(list){
+        var found = null;
+        list.forEach(function(j){ if(j && j.kind==="pc" && j.key && unb64u(j.key).length===32 && ID_RE.test(j.m||"") && ID_RE.test(j.t||"") && ID_RE.test(j.id||"")) found = j; });
+        if(!found) throw "notfound";
+        return found;
+      });
+    });
+  });
+}
+function impHello(){
+  var j = IMP.j; if(!j) return;
+  seal(unb64u(j.key), {j:1}).then(function(env){ env.w = j.id; return fetch(NTFY+"/"+j.m, {method:"POST", body:JSON.stringify(env)}); }).catch(function(){});
+}
+function impPoll(){
+  var j = IMP.j; if(!j || IMP.snap) return;
+  var key = unb64u(j.key);
+  fetch(NTFY+"/"+j.t+"/json?poll=1&since="+IMP.since).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(txt){
+    return impLines(txt).reduce(function(pr, m){ return pr.then(function(){
+      IMP.since = m.id; var env; try{ env = JSON.parse(m.message); }catch(e){ return; }
+      if(!env || env.v!==2) return;
+      return openEnv(key, env).then(function(o){
+        if(!o || o.op!=="snap" || !o.s || !(o.n>0) || o.n>300 || !(o.i>=0) || o.i>=o.n) return;
+        var b = IMP.parts[o.s] || (IMP.parts[o.s] = {n:o.n, f:o.f, at:o.at, got:0, z:[]});
+        if(b.z[o.i]==null){ b.z[o.i] = String(o.z||""); b.got++; }
+        if(b.got < b.n) return;
+        delete IMP.parts[o.s];
+        return impUnpack(b).then(function(s){ if(s && s.v===1 && Array.isArray(s.tasks) && (!IMP.found || s.at > IMP.found.at)) IMP.found = s; });
+      });
+    }); }, Promise.resolve());
+  }).then(function(){
+    if(IMP.found){ IMP.snap = IMP.found; impShow(); return; }
+    IMP.tries++;
+    if(IMP.tries===2) impHello();
+    if(IMP.tries > 50){ impStep("code"); $("im-err").textContent = "הטלפון לא שלח את הנתונים. ודא שראש שקט פתוח בטלפון במסך \"המחשב שלי\", ונסה שוב."; return; }
+    IMP.timer = setTimeout(impPoll, 3000);
+  }, function(){ IMP.timer = setTimeout(impPoll, 4000); });
+}
+var IM_STEPS = {code:"im-form", wait:"im-s-wait", show:"im-s-show", run:"im-s-run", done:"im-s-done"};
+function impStep(k){ Object.keys(IM_STEPS).forEach(function(x){ $(IM_STEPS[x]).hidden = x!==k; }); }
+function impOpen(){
+  clearTimeout(IMP.timer); IMP = {j:null, snap:null, found:null, parts:{}, since:"12h", timer:null, tries:0, busy:false};
+  $("im-code-in").value = ""; $("im-err").textContent = ""; impStep("code"); $("im-ov").hidden = false;
+  setTimeout(function(){ $("im-code-in").focus(); }, 40);
+}
+function impClose(){ if(IMP.busy) return; clearTimeout(IMP.timer); IMP.j = null; $("im-ov").hidden = true; }
+/* what is new and what is already here */
+function impPlan(s){
+  var ppl = (snap && snap.workers || []).slice(), P = {legacy:{}, phone:{}, name:{}};
+  ppl.forEach(function(w){ if(w.leg) P.legacy[w.leg] = w; if(w.phone) P.phone[normPhone(w.phone)] = w; P.name[w.name] = w; });
+  var ws = (s.workers||[]).filter(function(w){ return w && w.id && w.name; });
+  var match = ws.filter(function(w){ return P.legacy[w.id] || (w.phone && P.phone[normPhone(w.phone)]) || P.name[w.name]; }).length;
+  var open = (s.tasks||[]).filter(function(t){ return !t.done; }).length, done = (s.tasks||[]).length - open;
+  var M = s.maint || {p:[]}, items = 0; (M.p||[]).forEach(function(p){ items += (p.items||[]).length; });
+  return {ws:ws.length, newW:ws.length - match, matchW:match, open:open, done:done, depts:(s.depts||[]).length, proj:(M.p||[]).length, items:items, marks:Object.keys(M.log||{}).length};
+}
+function impShow(){
+  clearTimeout(IMP.timer);
+  var s = IMP.snap, p = impPlan(s);
+  $("im-sum").innerHTML =
+    '<li><b class="num">'+p.ws+'</b> עובדים'+(p.matchW ? ' <small class="hint num">('+p.matchW+' כבר כאן, יעודכנו)</small>' : '')+'</li>' +
+    '<li><b class="num">'+p.open+'</b> משימות פתוחות'+(p.done ? ' <small class="hint num">+ '+p.done+' שהושלמו השבוע</small>' : '')+'</li>' +
+    '<li><b class="num">'+p.depts+'</b> מחלקות</li>' +
+    (p.proj ? '<li><b class="num">'+p.proj+'</b> פרויקטים בדו״ח הטיפולים <small class="hint num">('+p.items+' טיפולים, '+p.marks+' סימונים)</small></li>' : '');
+  $("im-from").textContent = "מהטלפון של "+(s.me && s.me.name || "מנהל המערכת")+" · עודכן "+relLabel(s.at);
+  impStep("show");
+}
+function impProg(t){ $("im-prog").textContent = t; }
+function chunks(a, n){ var o = []; for(var i=0;i<a.length;i+=n) o.push(a.slice(i, i+n)); return o; }
+function seqRun(list, fn){ return list.reduce(function(p, x){ return p.then(function(){ return fn(x); }); }, Promise.resolve()); }
+function impRun(){
+  var s = IMP.snap; if(!s || IMP.busy) return;
+  IMP.busy = true; impStep("run"); impProg("מתחיל…");
+  var me = cfg.id, nowIso = new Date().toISOString(), map = {}, res = {newW:0, updW:0, tasks:0, skipT:0, proj:0, items:0, marks:0};
+  var known = {};
+  function nn(v){ return v==null ? null : v; }
+  return Promise.all([
+    run(sb.from("people").select("id,name,phone,legacy_id,role,user_id")),
+    run(sb.from("tasks").select("id,legacy_id").limit(20000)),
+    run(sb.from("maint_projects").select("id,legacy_id")),
+    run(sb.from("maint_items").select("id,legacy_id"))
+  ]).then(function(r){
+    var ppl = r[0].data || [], byLeg = {}, byPhone = {}, byName = {};
+    ppl.forEach(function(p){ if(p.role==="owner") return; if(p.legacy_id) byLeg[p.legacy_id] = p; if(p.phone) byPhone[normPhone(p.phone)] = p; byName[p.name] = p; });
+    (r[1].data || []).forEach(function(t){ if(t.legacy_id) known["t:"+t.legacy_id] = t.id; });
+    (r[2].data || []).forEach(function(p){ if(p.legacy_id) known["p:"+p.legacy_id] = p.id; });
+    (r[3].data || []).forEach(function(i){ if(i.legacy_id) known["i:"+i.legacy_id] = i.id; });
+    /* 1. departments */
+    impProg("מחלקות…");
+    var deps = (s.depts||[]).filter(function(d){ return d && /^[A-Za-z0-9_-]{1,24}$/.test(d.id||"") && d.name; });
+    var depOk = {}; deps.forEach(function(d){ depOk[d.id] = 1; }); (snap && snap.depts || []).forEach(function(d){ depOk[d.id] = 1; });
+    return run(deps.length ? sb.from("departments").upsert(deps.map(function(d, i){ return {id:d.id, name:String(d.name).slice(0,60), sort:i+1}; })) : null).then(function(){
+      /* 2. people: match by phone id, then phone number, then name */
+      impProg("עובדים…");
+      var ws = (s.workers||[]).filter(function(w){ return w && w.id && w.name; }), adds = [], upds = [];
+      ws.forEach(function(w){
+        var role = ["tech","area","dept","admin"].indexOf(w.role) >= 0 ? w.role : "tech", dept = w.dept && depOk[w.dept] ? w.dept : null;
+        var ex = byLeg[w.id] || (w.phone && byPhone[normPhone(w.phone)]) || byName[String(w.name).trim()];
+        if(ex){ map[w.id] = ex.id; upds.push({id:ex.id, legacy_id:w.id, role:role, dept:dept}); res.updW++; }
+        else { var id = uid(); map[w.id] = id; adds.push({id:id, legacy_id:w.id, name:String(w.name).trim().slice(0,60), phone:w.phone ? normPhone(w.phone) : null, role:role, dept:dept, boss:null}); res.newW++; }
+      });
+      return run(adds.length ? sb.from("people").insert(adds) : null)
+        .then(function(){ return seqRun(upds, function(u){ return run(sb.from("people").update({legacy_id:u.legacy_id, role:u.role, dept:u.dept}).eq("id", u.id)); }); })
+        .then(function(){ return seqRun(ws, function(w){ var b = w.boss && map[w.boss] && w.boss!==w.id ? map[w.boss] : null; return run(sb.from("people").update({boss:b}).eq("id", map[w.id])); }); })
+        .then(function(){ if(s.me && s.me.phone){ var mine = ppl.filter(function(p){ return p.id===me; })[0]; if(mine && !mine.phone) return run(sb.from("people").update({phone:normPhone(s.me.phone)}).eq("id", me)); } });
+    });
+  }).then(function(){
+    /* 3. tasks (each phone task only once) */
+    impProg("משימות…");
+    var rows = [], byCreator = {};
+    (s.tasks||[]).forEach(function(t){
+      if(!t || !t.id || !t.title) return;
+      if(known["t:"+t.id]){ res.skipT++; return; }
+      var due = +t.due || null, dl = t.dl!==undefined && t.dl!==null ? +t.dl : due, fr = +t.from || null;
+      var ex = {tok:/^[A-Za-z0-9]{10,40}$/.test(t.tok||"") ? t.tok : randStr(12)}; if(fr && due && fr < due) ex.from = fr;
+      var asg = t.assignee ? (map[t.assignee] || null) : null; if(t.assignee && !asg && t.assigneeName) ex.was = String(t.assigneeName).slice(0,60);
+      var id = uid();
+      rows.push({id:id, legacy_id:String(t.id).slice(0,64), title:String(t.title).slice(0,2000), due:isoOf(due), deadline:isoOf(dl), deadline_first:isoOf(dl),
+        postponed:[], created_by:me, assignee:asg, grp:nn(t.grp), urgent:!!t.urg, rep:REP_L[t.rep] ? t.rep : null, rep_next:t.repNext ? nowIso : null,
+        checklist:Array.isArray(t.ck) && t.ck.length ? t.ck : null, checklist_done:Array.isArray(t.ckd) ? t.ckd : null, photo_required:!!t.phq, photos:null,
+        feedback:nn(t.fb), ext:nn(t.ext), rej:nn(t.rej), reported:!!t.reported, reported_at:isoOf(t.reportedAt), done:!!t.done, done_at:isoOf(t.doneAt),
+        sent_at:isoOf(t.sentAt), extra:ex, created_at:isoOf(t.createdAt) || nowIso});
+      var by = t.by && map[t.by]; if(by){ (byCreator[by] = byCreator[by] || []).push(id); }
+    });
+    var parts = chunks(rows, 100), done0 = 0;
+    return seqRun(parts, function(part){ return run(sb.from("tasks").insert(part)).then(function(){ done0 += part.length; res.tasks = done0; impProg("משימות… "+done0+" מתוך "+rows.length); }); })
+      .then(function(){ return seqRun(Object.keys(byCreator), function(c){ return seqRun(chunks(byCreator[c], 100), function(ids){ return run(sb.from("tasks").update({created_by:c}).in("id", ids)); }); }); });
+  }).then(function(){
+    /* 4. periodic maintenance */
+    var M = s.maint || {p:[], log:{}}; if(!(M.p||[]).length) return;
+    impProg("דו״ח טיפולים…");
+    var projs = [], items = [], pmap = {}, imap = {};
+    M.p.forEach(function(P){
+      if(!P || !P.id || !P.name) return;
+      pmap[P.id] = known["p:"+P.id] || null;
+      if(!pmap[P.id]){ pmap[P.id] = uid(); projs.push({id:pmap[P.id], legacy_id:P.id, name:String(P.name).slice(0,120), area:P.area && map[P.area] || null, note:P.note ? String(P.note).slice(0,300) : null}); }
+      (P.items||[]).forEach(function(it){
+        if(!it || !it.id || !it.name || !MFL[it.f]) return;
+        imap[P.id+"|"+it.id] = known["i:"+it.id] || null;
+        if(!imap[P.id+"|"+it.id]){ imap[P.id+"|"+it.id] = uid(); items.push({id:imap[P.id+"|"+it.id], legacy_id:it.id, project_id:pmap[P.id], name:String(it.name).slice(0,120), freq:it.f}); }
+      });
+    });
+    var marks = [];
+    Object.keys(M.log||{}).forEach(function(k){
+      var z = k.split("|"), L = M.log[k], iid = imap[z[0]+"|"+z[1]];
+      if(!iid || !L || (L.s!=="done" && L.s!=="no") || !/^\d{4}(-(0[1-9]|1[0-2])|-Q[1-4]|-H[12])?$/.test(z[2]||"")) return;
+      marks.push({item_id:iid, period:z[2], status:L.s, done_on:dayStr(+L.d || +L.at || Date.now()), note:L.note ? String(L.note).slice(0,300) : null, by:L.by && map[L.by] || me, at:isoOf(+L.at || Date.now())});
+    });
+    res.proj = projs.length; res.items = items.length; res.marks = marks.length;
+    return run(projs.length ? sb.from("maint_projects").insert(projs) : null)
+      .then(function(){ return seqRun(chunks(items, 100), function(x){ return run(sb.from("maint_items").insert(x)); }); })
+      .then(function(){ return seqRun(chunks(marks, 200), function(x){ return run(sb.from("maint_marks").upsert(x)); }); });
+  }).then(function(){
+    IMP.busy = false;
+    $("im-res").innerHTML = '<li>👥 '+(res.newW ? '<b class="num">'+res.newW+'</b> עובדים חדשים' : 'אין עובדים חדשים')+(res.updW ? ' · <span class="num">'+res.updW+'</span> עודכנו' : '')+'</li>' +
+      '<li>📋 '+(res.tasks ? '<b class="num">'+res.tasks+'</b> משימות הועברו' : 'אין משימות חדשות')+(res.skipT ? ' · <span class="num">'+res.skipT+'</span> כבר היו כאן' : '')+'</li>' +
+      (res.proj || res.items || res.marks ? '<li>🛠️ <span class="num">'+res.proj+'</span> פרויקטים, <span class="num">'+res.items+'</span> טיפולים, <span class="num">'+res.marks+'</span> סימונים</li>' : '');
+    impStep("done"); reload(0);
+  }, function(e){
+    IMP.busy = false; try{ console.error("import failed", e); }catch(x){}
+    impStep("show"); $("im-err2").textContent = "ההעברה נעצרה באמצע ("+errText(e)+"). אפשר ללחוץ שוב: מה שכבר עבר לא יוכפל.";
+    reload(0);
+  });
+}
+$("im-form").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var code = $("im-code-in").value.replace(/\D/g,"");
+  if(code.length!==8){ $("im-err").textContent = "הקוד צריך להיות 8 ספרות."; return; }
+  if(!SUB){ $("im-err").textContent = "הדפדפן הזה לא תומך בהצפנה. נסה Chrome."; return; }
+  var b = $("im-go"); b.disabled = true; b.textContent = "מחפש…"; $("im-err").textContent = "";
+  impJoin(code).then(function(j){ IMP.j = j; IMP.tries = 0; impStep("wait"); impPoll(); }, function(e){
+    $("im-err").textContent = e==="notfound" ? "הקוד לא נמצא. בדוק שהקלדת נכון ושהקוד עדיין מוצג בטלפון." : "אין חיבור לאינטרנט. נסה שוב.";
+  }).then(function(){ b.disabled = false; b.textContent = "המשך"; });
+});
+$("im-code-in").addEventListener("input", function(){ var d = this.value.replace(/\D/g,"").slice(0,8); this.value = d.length>4 ? d.slice(0,4)+" "+d.slice(4) : d; $("im-err").textContent = ""; });
+$("im-run").addEventListener("click", function(){ $("im-err2").textContent = ""; impRun(); });
+["im-cancel","im-cancel2","im-cancel3","im-close"].forEach(function(k){ $(k).addEventListener("click", impClose); });
+$("im-ov").addEventListener("click", function(ev){ if(ev.target===this) impClose(); });
+
 /* ---------- logins dialog ---------- */
 $("lg-form").addEventListener("submit", function(ev){
   ev.preventDefault(); if(!lgFor) return;
@@ -2710,8 +2951,8 @@ $("set-off").addEventListener("click", function(){
   if(!offArmed){ offArmed = true; this.textContent = "להתנתק? לחץ שוב"; this.classList.add("armed"); return; }
   signOut("התנתקת. כדי להיכנס שוב, הקלד שם משתמש וסיסמה.");
 });
-function closeAll(){ ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov"].forEach(function(k){ $(k).hidden = true; }); }
-function anyOpen(){ return ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov"].some(function(k){ return !$(k).hidden; }); }
+function closeAll(){ ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov","im-ov"].forEach(function(k){ $(k).hidden = true; }); }
+function anyOpen(){ return ["edit-ov","wk-ov","set-ov","mk-ov","lg-ov","im-ov"].some(function(k){ return !$(k).hidden; }); }
 document.addEventListener("keydown", function(ev){
   if(ev.key==="Escape"){ var was = anyOpen(); closeAll(); if(!was && selIds().length && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName||"")){ sel = {}; render(); } return; }
   if(!cfg || $("app").hidden || ev.ctrlKey || ev.metaKey || ev.altKey || anyOpen()) return;
