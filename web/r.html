@@ -44,6 +44,18 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
 .urg{color:#C93A31;font-weight:800;font-size:14px}
 .state{font-size:15px;font-weight:600;color:var(--ok)}
 .state.no{color:var(--no)}
+.stgbar{height:12px;border-radius:7px;background:var(--line);overflow:hidden}
+.stgbar i{display:block;height:100%;background:var(--ok);border-radius:7px;transition:width .25s}
+.stgpc{font-size:16px;font-weight:700;color:var(--ok)}
+.stg{font:inherit;text-align:right;display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);color:var(--ink);cursor:pointer;width:100%}
+.stg .bx{flex:0 0 28px;height:28px;border-radius:8px;border:2px solid var(--muted);display:grid;place-items:center;font-weight:800;color:#fff;margin-top:2px}
+.stg .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.stg .tx b{display:block;font-size:15px}
+.stg[aria-pressed="true"]{border-color:var(--ok);background:var(--ok-soft)}
+.stg[aria-pressed="true"] .bx{background:var(--ok);border-color:var(--ok)}
+.stg:disabled{opacity:.6}
+.stg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:15px;color:var(--muted);margin:0}
 </style>
 </head>
 <body>
@@ -51,7 +63,7 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
   <div class="brand">ראש שקט · עדכון משימה</div>
   <noscript><p>צריך להפעיל JavaScript בדפדפן כדי לשלוח עדכון.</p></noscript>
 </main>
-<script src="db.js?v=30"></script>
+<script src="db.js?v=31"></script>
 <script>
 (function(){
   "use strict";
@@ -85,17 +97,52 @@ textarea:focus,.choice:focus-visible,.send:focus-visible{outline:2px solid var(-
       else box.appendChild(el("div", "due", "📅 תאריך יעד: " + dayText(d, true)));
     }
     if(task.rep && REP[task.rep]) box.appendChild(el("div", "from", "🔁 משימה קבועה: " + REP[task.rep]));
-    if(Array.isArray(task.ck) && task.ck.length){ var ul = el("ul"); task.ck.forEach(function(c){ ul.appendChild(el("li", null, c)); }); box.appendChild(ul); }
+    if(Array.isArray(task.ck) && task.ck.length && !task.stg){ var ul = el("ul"); task.ck.forEach(function(c){ ul.appendChild(el("li", null, c)); }); box.appendChild(ul); }
     if(task.fb && !task.done){
       var st = task.fb.s === "no" ? "נשלח קודם: לא בוצע" : (task.reported ? "נשלח קודם: בוצע · ממתין לאישור" : "");
       if(st) box.appendChild(el("div", "state" + (task.fb.s === "no" ? " no" : ""), st));
     }
     return box;
   }
+  /* version 31: a task in stages. The worker marks each stage when he finishes it; the manager sees the progress */
+  var HEB1 = ["","א","ב","ג","ד","ה","ו","ז","ח","ט"], HEB10 = ["","י","כ","ל"];
+  function hebNum(n){ if(n===15) return "טו"; if(n===16) return "טז"; return (HEB10[Math.floor(n/10)]||"")+HEB1[n%10]; }
+  function stgName(i){ return "שלב " + hebNum(i+1); }
+  function stagesCard(){
+    var ck = task.ck, card = el("div", "card");
+    card.appendChild(el("div", "label", "📶 שלבי ביצוע · לחץ על שלב כשסיימת אותו"));
+    var bar = el("div", "stgbar"), fill = el("i"); bar.appendChild(fill); card.appendChild(bar);
+    var pc = el("div", "stgpc"); pc.setAttribute("aria-live", "polite"); card.appendChild(pc);
+    var btns = [], hint = el("p", "hint"), err = el("p", "err"); err.setAttribute("role", "alert");
+    function done(){ return (Array.isArray(task.ckd) ? task.ckd : []).filter(function(i){ return i >= 0 && i < ck.length; }); }
+    function paint(){
+      var d = done(), p = Math.round(d.length * 100 / ck.length);
+      fill.style.width = p + "%"; pc.textContent = p + "% בוצע · " + d.length + " מתוך " + ck.length + " שלבים";
+      btns.forEach(function(b, i){ var on = d.indexOf(i) >= 0; b.setAttribute("aria-pressed", String(on)); b.querySelector(".bx").textContent = on ? "✓" : ""; b.querySelector("b").textContent = stgName(i) + (on ? " · הושלם" : ""); });
+      hint.textContent = d.length === ck.length ? "✅ כל השלבים הושלמו. עכשיו סמן למטה \"בוצע\" ושלח, כדי שהמנהל יאשר." : "";
+    }
+    ck.forEach(function(c, i){
+      var b = el("button", "stg"); b.type = "button";
+      b.appendChild(el("span", "bx")); var tx = el("span", "tx"); tx.appendChild(el("b")); tx.appendChild(document.createTextNode(c)); b.appendChild(tx);
+      b.onclick = function(){
+        var on = b.getAttribute("aria-pressed") !== "true";
+        btns.forEach(function(x){ x.disabled = true; }); err.textContent = "";
+        db.rpc("stage_by_token", {p_tok:tok, p_i:i, p_on:on}).then(function(r){
+          if(r.error) throw r.error;
+          if(!r.data){ load(); return; }
+          task.ckd = r.data.ckd || []; btns.forEach(function(x){ x.disabled = false; }); paint();
+        }).catch(function(){ btns.forEach(function(x){ x.disabled = false; }); err.textContent = "הסימון לא נשמר. בדוק שיש אינטרנט ונסה שוב."; });
+      };
+      btns.push(b); card.appendChild(b);
+    });
+    card.appendChild(hint); card.appendChild(err); paint();
+    return card;
+  }
   function showForm(){
     clear();
     app.appendChild(el("h1", null, "אישור ביצוע המשימה"));
     app.appendChild(taskCard());
+    if(task.stg && Array.isArray(task.ck) && task.ck.length) app.appendChild(stagesCard());
     var card = el("div", "card");
     card.appendChild(el("div", "label", "מה המצב?"));
     var ch = el("div", "choices");

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<script src="db.js?v=30"></script>
+<script src="db.js?v=31"></script>
 <title>ראש שקט</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap">
@@ -289,6 +289,24 @@ main{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:18px;pa
 .chk small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 .ckst{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
 .ckst .y{color:var(--ok);font-weight:600}
+/* version 31: tasks in stages */
+.stgt{background:linear-gradient(to left,color-mix(in srgb,var(--ok) 30%,transparent) 0 var(--p),color-mix(in srgb,var(--ok) 7%,transparent) var(--p) 100%);border-radius:7px;padding:1px 6px}
+.chip.stgc{background:var(--ok-soft);color:var(--ok);font-weight:700}
+.cev.stg{background-image:linear-gradient(to left,#137A50 0 var(--p),transparent var(--p) 100%)}
+.cev .pc{font-size:11px;font-weight:800;flex:0 0 auto;background:rgba(0,0,0,.22);border-radius:4px;padding:0 4px}
+.stged{display:flex;flex-direction:column;gap:6px}
+#stg-in{max-height:40vh;overflow:auto}
+.stgrow{display:flex;align-items:flex-start;gap:8px}
+.stgl{flex:0 0 auto;min-width:54px;font-weight:700;font-size:14px;padding-top:9px}
+.stgrow textarea{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 10px;resize:none;min-height:38px}
+.stgx{flex:0 0 34px;height:38px;border:0;background:none;color:var(--muted);font-size:16px;border-radius:8px;cursor:pointer}
+.stgx:hover{background:var(--soft)}
+.stgadd{align-self:flex-start;border:1px dashed var(--muted);background:none;border-radius:10px;padding:7px 14px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.stgbar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:4px 0}
+.stgbar i{display:block;height:100%;width:var(--p);background:var(--ok);border-radius:6px}
+.stgsum{font-size:14px;font-weight:700;color:var(--ok)}
+.stgl2{margin:6px 0 2px;padding:0 18px 0 0;display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--muted)}
+.stgl2 .y{color:var(--ok)}
 .wkx{display:flex;gap:8px}.wkx .btn{flex:1}
 
 /* ===== desktop board (version 28): views, filters, bulk, kanban, control room ===== */
@@ -575,11 +593,13 @@ button.loadr:hover{background:var(--soft)}
         <div class="opts" id="opts" role="group" aria-label="אפשרויות למשימה">
           <button type="button" data-o="urg" aria-pressed="false">🚨 דחוף</button>
           <button type="button" data-o="ck" aria-pressed="false">☑ רשימת בדיקה</button>
+          <button type="button" data-o="stg" aria-pressed="false">📶 שלבים</button>
           <button type="button" data-o="ph" aria-pressed="false">📷 תמונה בדיווח</button>
           <button type="button" data-o="rng" aria-pressed="false">📆 כמה ימים</button>
         </div>
         <div class="rng" id="rng-in" hidden><label>מתאריך <input type="date" id="rng-from"></label><label>עד תאריך <input type="date" id="rng-to"></label><span class="hint">אפשר גם לכתוב "מ-26.10 עד 30.10"</span></div>
         <textarea id="ck-in" hidden aria-label="סעיפי רשימת הבדיקה" placeholder="סעיף בכל שורה, למשל:&#10;בקר&#10;ראשי רמזור&#10;גלאים"></textarea>
+        <div id="stg-in" class="stged" hidden role="group" aria-label="שלבי הביצוע"></div>
         <div class="preview" id="preview"></div>
       </form>
       <div class="fbanner" id="fbanner" hidden></div>
@@ -640,7 +660,9 @@ button.loadr:hover{background:var(--soft)}
     <label class="chk"><input type="checkbox" id="edit-urg"><span>🚨 משימה דחופה<small>ראשונה ברשימה, ואצל עובד עם האפליקציה מצלצלת כמו שעון מעורר</small></span></label>
     <label class="chk" id="edit-phq-f"><input type="checkbox" id="edit-phq"><span>📷 תמונה בדיווח<small>העובד יוכל לצלם או לצרף תמונה כשהוא מדווח (באפליקציה בטלפון)</small></span></label>
     <div class="field"><label for="edit-rpt">חוזרת</label><select id="edit-rpt"><option value="">לא חוזרת</option><option value="d">כל יום</option><option value="wd">כל יום עבודה (א׳–ה׳)</option><option value="w">כל שבוע</option><option value="m">כל חודש</option></select><p class="hint" id="edit-rpt-h"></p></div>
-    <div class="field"><label for="edit-ck">☑ רשימת בדיקה · שורה לכל סעיף</label><textarea id="edit-ck" placeholder="בקר&#10;ראשי רמזור&#10;גלאים"></textarea><div class="ckst" id="edit-ck-st"></div></div>
+    <label class="chk" id="edit-stg-f"><input type="checkbox" id="edit-stg"><span>📶 ביצוע בשלבים<small>העובד מסמן כל שלב שסיים, ואתה רואה כמה אחוזים מהמשימה בוצעו</small></span></label>
+    <div class="field" id="edit-stgs-f" hidden><div id="edit-stg-st"></div><label>📶 שלבי הביצוע · מה בדיוק לעשות בכל שלב</label><div class="stged" id="edit-stgs"></div></div>
+    <div class="field" id="edit-ck-f"><label for="edit-ck">☑ רשימת בדיקה · שורה לכל סעיף</label><textarea id="edit-ck" placeholder="בקר&#10;ראשי רמזור&#10;גלאים"></textarea><div class="ckst" id="edit-ck-st"></div></div>
     <div class="actions">
       <button class="btn primary" id="edit-save" type="button">שמירה</button>
       <button class="btn ghost" id="edit-cancel" type="button">ביטול</button>
@@ -949,6 +971,43 @@ function firstDue(rep){ var now = new Date(), d = atTime(now,9,0); if(d<=now) d 
 function ckOf(t){ return Array.isArray(t && t.ck) ? t.ck : []; }
 function ckDone(t){ var n = ckOf(t).length; return Array.isArray(t.ckd) ? t.ckd.filter(function(i){ return i>=0 && i<n; }).length : 0; }
 function ckParse(v){ return String(v||"").split(/\n+/).map(function(x){ return x.replace(/^[\s\-–•☐☑✓✔*]+/,"").trim().slice(0,120); }).filter(Boolean).slice(0,25); }
+/* ---------- version 31: a task in stages (same as the phone) ----------
+   t.stg = the checklist (t.ck) is a list of stages: שלב א, שלב ב … The worker marks each one when he finishes it (t.ckd),
+   and the manager sees how far the task has come. t.sat = when each stage was marked. */
+var HEB1 = ["","א","ב","ג","ד","ה","ו","ז","ח","ט"], HEB10 = ["","י","כ","ל"];
+function hebNum(n){ if(n===15) return "טו"; if(n===16) return "טז"; return (HEB10[Math.floor(n/10)]||"")+HEB1[n%10]; }
+function stgName(i){ return "שלב "+hebNum(i+1); }
+function stgOn(t){ return !!(t && t.stg && ckOf(t).length); }
+function stgPct(t){ return !stgOn(t) ? 0 : t.done ? 100 : Math.round(ckDone(t)*100/ckOf(t).length); }
+function stgParse(a){ return (a||[]).map(function(x){ return String(x||"").replace(/\s+/g," ").trim().slice(0,300); }).filter(Boolean).slice(0,25); }
+function stgRowHtml(i, v){ return '<div class="stgrow"><span class="stgl">'+stgName(i)+'</span><textarea rows="1" maxlength="300" aria-label="'+stgName(i)+': מה צריך לעשות" placeholder="מה בדיוק צריך לעשות בשלב הזה">'+esc(v||"")+'</textarea><button type="button" class="stgx" data-sx="1" aria-label="הסרת '+stgName(i)+'" title="הסרת השלב">✕</button></div>'; }
+function stgEd(box, items){
+  items = items && items.length ? items : ["", ""];
+  box.innerHTML = items.map(function(v, i){ return stgRowHtml(i, v); }).join("") + '<button type="button" class="stgadd" data-sa="1">+ שלב נוסף</button>';
+  stgFit(box);
+}
+function stgRead(box){ return stgParse(Array.prototype.map.call(box.querySelectorAll("textarea"), function(x){ return x.value; })); }
+function stgFit(box){ Array.prototype.forEach.call(box.querySelectorAll("textarea"), function(x){ x.style.height = "auto"; if(x.scrollHeight) x.style.height = Math.min(x.scrollHeight+2, 160)+"px"; }); }
+function stgRelabel(box){ Array.prototype.forEach.call(box.querySelectorAll(".stgrow"), function(r, i){ r.querySelector(".stgl").textContent = stgName(i);
+  r.querySelector("textarea").setAttribute("aria-label", stgName(i)+": מה צריך לעשות"); r.querySelector(".stgx").setAttribute("aria-label", "הסרת "+stgName(i)); }); }
+function stgWire(box, onChange){
+  box.addEventListener("click", function(ev){
+    var a = ev.target.closest("[data-sa]"), x = ev.target.closest("[data-sx]");
+    if(a){ var n = box.querySelectorAll(".stgrow").length; if(n>=25){ toast("אפשר עד 25 שלבים"); return; }
+      a.insertAdjacentHTML("beforebegin", stgRowHtml(n, "")); var ta = box.querySelectorAll("textarea"); ta[ta.length-1].focus(); if(onChange) onChange(); }
+    else if(x){ var rows = box.querySelectorAll(".stgrow"); if(rows.length<=1) rows[0].querySelector("textarea").value = ""; else x.closest(".stgrow").remove();
+      stgRelabel(box); stgFit(box); if(onChange) onChange(); }
+  });
+  box.addEventListener("input", function(ev){ if(ev.target.tagName==="TEXTAREA"){ stgFit(box); if(onChange) onChange(); } });
+  box.addEventListener("keydown", function(ev){ if(ev.key==="Enter" && ev.target.tagName==="TEXTAREA" && !ev.shiftKey){ ev.preventDefault(); var add = box.querySelector("[data-sa]"); if(add) add.click(); } });
+}
+function stgStatus(t){
+  var ck = ckOf(t), d = Array.isArray(t.ckd) ? t.ckd : [], at = t.sat || {}, p = stgPct(t);
+  return '<div class="stgbar" style="--p:'+p+'%"><i></i></div><div class="stgsum num">'+p+'% בוצע · '+ckDone(t)+' מתוך '+ck.length+' שלבים'+(t.assignee ? ' · '+esc(nameOf(t)) : '')+'</div>' +
+    '<ol class="stgl2">'+ck.map(function(c, i){ var y = d.indexOf(i)>=0;
+      return '<li class="'+(y?"y":"")+'"><b>'+(y?"✓ ":"")+stgName(i)+':</b> '+esc(c)+(y && at[i] ? ' <small class="num">· '+esc(whenLabel(+at[i]))+'</small>' : '')+'</li>'; }).join("")+'</ol>';
+}
+function titleHtml(t, cls){ return stgOn(t) ? '<span class="'+cls+' stgt" style="--p:'+stgPct(t)+'%">'+esc(t.title)+'</span>' : '<span class="'+cls+'">'+esc(t.title)+'</span>'; }
 
 function parseExtras(text){ var u = parseUrg(text), r = parseRep(u.text); return {urg:u.urg, rep:r.rep, text:r.text}; }
 function dlOf(t){ return t.dl!==undefined ? t.dl : (t.due||null); }
@@ -1018,14 +1077,14 @@ function toTask(r){
     fb:r.feedback||null, ext:r.ext||null, rej:r.rej||null, tok:x.tok||null, createdAt:msOf(r.created_at), sentAt:msOf(r.sent_at),
     dl0:msOf(r.deadline_first), pl:Array.isArray(r.postponed) && r.postponed.length ? r.postponed : null,
     urg:r.urgent||null, rep:r.rep||null, repNext:r.rep_next ? true : null, ck:Array.isArray(r.checklist) && r.checklist.length ? r.checklist : null,
-    ckd:Array.isArray(r.checklist_done) ? r.checklist_done : null, phq:r.photo_required||null, ph:r.photos||null, grp:r.grp||null, _ex:x};
+    ckd:Array.isArray(r.checklist_done) ? r.checklist_done : null, stg:r.stages||null, sat:r.stages_at||null, phq:r.photo_required||null, ph:r.photos||null, grp:r.grp||null, _ex:x};
   if(r.deadline) t.dl = msOf(r.deadline);
   return t;
 }
 var COLS = {title:"title", due:"due", assignee:"assignee", done:"done", doneAt:"done_at", reported:"reported", reportedAt:"reported_at",
   fb:"feedback", ext:"ext", rej:"rej", sentAt:"sent_at", dl:"deadline", dl0:"deadline_first", pl:"postponed", urg:"urgent", rep:"rep",
-  ck:"checklist", ckd:"checklist_done", phq:"photo_required"};
-var TSF = {due:1, doneAt:1, reportedAt:1, sentAt:1, dl:1, dl0:1}, BOOLF = {done:1, reported:1, urg:1, phq:1};
+  ck:"checklist", ckd:"checklist_done", stg:"stages", phq:"photo_required"};
+var TSF = {due:1, doneAt:1, reportedAt:1, sentAt:1, dl:1, dl0:1}, BOOLF = {done:1, reported:1, urg:1, phq:1, stg:1};
 function toRow(p, t){
   var r = {}, ex = null;
   Object.keys(p).forEach(function(k){
@@ -1192,11 +1251,12 @@ function applyLocal(o, mark){
   var t = view[o.id];
   switch(o.k){
     case "add": if(t) return; view[o.id] = {id:o.id, title:o.title, due:o.due||null, from:o.from||null, assignee:o.assignee||null, assigneeName:o.assigneeName||null, done:false, createdAt:o.at, sentAt:o.sentAt||null, tok:o.tok||null,
-        urg:!!o.urg||null, rep:o.rep||null, ck:(o.ck&&o.ck.length)?o.ck:null, phq:!!o.phq||null, by:cfg ? cfg.id : null, pm:"full"}; break;
+        urg:!!o.urg||null, rep:o.rep||null, ck:(o.ck&&o.ck.length)?o.ck:null, stg:(o.stg && o.ck && o.ck.length) ? true : null, phq:!!o.phq||null, by:cfg ? cfg.id : null, pm:"full"}; break;
     case "edit": if(!t) return; if(o.title!=null) t.title = o.title; if(o.due!==undefined) t.due = o.due||null; if(o.from!==undefined) t.from = o.from||null;
       if(o.assignee!==undefined){ t.assignee = o.assignee||null; t.assigneeName = o.assigneeName||null; } if(o.tok && !t.tok) t.tok = o.tok; if(o.sentAt) t.sentAt = o.sentAt;
       if(o.urg!==undefined) t.urg = !!o.urg||null; if(o.phq!==undefined) t.phq = !!o.phq||null; if(o.rep!==undefined && !t.repNext) t.rep = o.rep||null;
-      if(o.ck!==undefined){ var nc = (o.ck&&o.ck.length) ? o.ck : null; if(JSON.stringify(nc)!==JSON.stringify(t.ck||null)){ t.ck = nc; t.ckd = null; } } break;
+      if(o.ck!==undefined){ var nc = (o.ck&&o.ck.length) ? o.ck : null; if(JSON.stringify(nc)!==JSON.stringify(t.ck||null)){ t.ck = nc; t.ckd = null; } }
+      if(o.stg!==undefined) t.stg = !!o.stg || null; break;
     case "decide": if(!t || t.done) return;
       if(o.kind==="okdone"){ t.done = true; t.doneAt = o.at; }
       else if(o.kind==="rejdone"){ t.reported = false; t.reportedAt = null; t.rej = {at:o.at, why:"done"}; }
@@ -1226,7 +1286,7 @@ function dbOp(o, t){
       var due = +o.due || null, fr = +o.from || null; if(fr && !(due && fr < due)) fr = null;
       var r = {id:o.id, title:String(o.title||"").trim().slice(0,500), due:isoOf(due), deadline:isoOf(due), deadline_first:isoOf(due),
         created_by:cfg.id, assignee:o.assignee || (isSys() ? null : cfg.id), urgent:!!o.urg, rep:REP_L[o.rep] ? o.rep : null,
-        checklist:(o.ck && o.ck.length) ? o.ck : null, photo_required:!!(o.assignee && o.phq),
+        checklist:(o.ck && o.ck.length) ? o.ck : null, stages:!!(o.stg && o.ck && o.ck.length), photo_required:!!(o.assignee && o.phq),
         sent_at:o.assignee ? isoOf(o.sentAt || at) : null, created_at:isoOf(at), extra:{tok:o.tok || randStr(12)}};
       if(fr) r.extra.from = fr;
       return T.insert(r);
@@ -1244,6 +1304,7 @@ function dbOp(o, t){
       if(o.phq!==undefined && !!o.phq !== !!t.phq) p.phq = !!o.phq;
       if(o.rep!==undefined && !t.repNext && (o.rep||null) !== (t.rep||null)) p.rep = REP_L[o.rep] ? o.rep : null;
       if(o.ck!==undefined){ var ckE = (o.ck||[]).slice(0,25); if(JSON.stringify(ckE) !== JSON.stringify(ckOf(t))){ p.ck = ckE.length ? ckE : null; p.ckd = null; } }
+      if(o.stg!==undefined && !!o.stg !== !!t.stg) p.stg = !!o.stg;
       if(!Object.keys(p).length) return null;
       return T.update(toRow(p, t)).eq("id", t.id);
     }
@@ -1392,7 +1453,8 @@ function taskMessage(t, w, reminder){
   L.push(reminder ? "היי "+firstName(w.name)+", תזכורת למשימה:" : "היי "+firstName(w.name)+", משימה חדשה"+(mn?" מ"+mn:"")+":");
   L.push("*"+t.title+"*");
   if(t.rep && REP_L[t.rep]) L.push("🔁 משימה קבועה: "+REP_L[t.rep]);
-  ckOf(t).forEach(function(c){ L.push("☐ "+c); });
+  if(stgOn(t)){ L.push("📶 *המשימה בשלבים.* בקישור למטה מסמנים כל שלב שסיימת:"); ckOf(t).forEach(function(c, i){ L.push("▫️ "+stgName(i)+": "+c); }); }
+  else ckOf(t).forEach(function(c){ L.push("☐ "+c); });
   if(hasRange(t)) L.push("📅 מתאריך "+dmOf(t.from)+" עד "+dmOf(t.due)+" בשעה "+hm(new Date(t.due))+" ("+rangeDays(t)+" ימים)");
   else if(t.due){ var d = new Date(t.due), dl = dayLabel(t.due), dm = d.getDate()+"."+(d.getMonth()+1); L.push("📅 תאריך יעד: "+(dl===dm ? dm : dl+" "+dm)+" בשעה "+hm(d)); }
   L.push(""); L.push("כשסיימת, או אם יש בעיה:"); L.push("*לחץ כאן* 👈 "+formLink(t));
@@ -1483,7 +1545,8 @@ function chipsOf(t){
   else if(s0==="rej") chips += '<span class="chip plain">'+(t.rej.why==="ext"?"ההארכה לא אושרה":"הביצוע לא אושר")+' · '+esc(relLabel(t.rej.at))+'</span>';
   var q = quietMs(t); if(q) chips += '<span class="chip pend" title="נשלחה לעובד ועוד לא היה ממנו עדכון">🔕 אין תגובה · נשלחה '+esc(relLabel(t.sentAt||t.createdAt))+'</span>';
   if(t.rep && REP_L[t.rep] && !t.repNext) chips += '<span class="chip plain">🔁 '+esc(REP_L[t.rep])+'</span>';
-  if(ckOf(t).length) chips += '<span class="chip plain num">☑ '+ckDone(t)+'/'+ckOf(t).length+'</span>';
+  if(stgOn(t)) chips += '<span class="chip stgc num" title="'+esc(stgPct(t)+"% בוצע · "+ckDone(t)+" מתוך "+ckOf(t).length+" שלבים")+'">📶 '+stgPct(t)+'% · '+ckDone(t)+'/'+ckOf(t).length+' שלבים</span>';
+  else if(ckOf(t).length) chips += '<span class="chip plain num">☑ '+ckDone(t)+'/'+ckOf(t).length+'</span>';
   if((t.ph && t.ph.length) || t._php) chips += '<span class="chip plain" title="העובד צירף תמונה">📷 תמונה</span>';
   else if(t.phq && !t.done) chips += '<span class="chip plain">📷 מבקש תמונה</span>';
   return chips;
@@ -1528,7 +1591,7 @@ function rowHtml(t){
   return '<div class="row'+(t.done?" done":"")+(ROWCLS[s0]||"")+(t.urg && !t.done ? " urgent" : "")+(on?" sel":"")+'" data-id="'+esc(t.id)+'">' +
     '<input type="checkbox" class="selbox" data-sel aria-label="בחירה: '+esc(t.title)+'"'+(on?" checked":"")+(t.done || !canEdit(t)?" disabled":"")+'>' +
     '<button class="check" type="button" data-act="toggle" aria-label="'+(t.done?"סמן כפתוחה":s0==="review"?"אשר ביצוע":"סמן כבוצעה")+'">'+CHECK+'</button>' +
-    '<button class="body" type="button" data-act="edit"><span class="title">'+esc(t.title)+'</span>'+(chips?'<span class="chips">'+chips+'</span>':'')+(nt?'<span class="fbnote">💬 '+esc(nt)+'</span>':'')+'</button>' +
+    '<button class="body" type="button" data-act="edit">'+titleHtml(t, "title")+(chips?'<span class="chips">'+chips+'</span>':'')+(nt?'<span class="fbnote">💬 '+esc(nt)+'</span>':'')+'</button>' +
     '<span class="cell who">'+(t.assignee ? avatar(t.assignee, nameOf(t))+'<span class="wn">'+esc(nameOf(t))+'</span>'+(lw?'<span title="מחובר לאפליקציה" aria-label="מחובר לאפליקציה">📱</span>':'') : avatar("", myName())+'<span class="wn muted">שלי</span>')+'</span>' +
     '<span class="cell st">'+pill(t)+'</span>' +
     '<span class="cell due">'+(dueChip(t) || '<span class="muted" style="color:var(--muted)">בלי מועד</span>')+'</span>' +
@@ -1739,7 +1802,7 @@ function kcard(t, showWho){
   var dg = !t.done && canEdit(t);
   return '<article class="kcard'+(t.done?" done":"")+(t.urg && !t.done ? " urgent" : "")+'" draggable="'+(dg?"true":"false")+'" data-id="'+esc(t.id)+'">' +
     pill(t) + (c ? '<div class="chips">'+c+'</div>' : '') +
-    '<button class="ktitle" type="button" data-act="edit" draggable="'+(dg?"true":"false")+'">'+esc(t.title)+'</button>' +
+    '<button class="ktitle" type="button" data-act="edit" draggable="'+(dg?"true":"false")+'">'+(stgOn(t) ? titleHtml(t, "kt") : esc(t.title))+'</button>' +
     (nt ? '<div class="knote">💬 '+esc(nt)+'</div>' : '') +
     '<div class="kmeta">'+who+dueChip(t)+'</div>' +
     (a && !t.done ? '<div class="kacts acts">'+a+'</div>' : '') + '</article>';
@@ -1845,12 +1908,12 @@ function dayIdx(a, b){ return Math.round((b - a)/86400000); }
 function spanOf(t){ var e = startOfDay(new Date(t.due)).getTime(); return {s: hasRange(t) ? startOfDay(new Date(t.from)).getTime() : e, e: e}; }
 function cevHtml(t, o){
   o = o || {};
-  var k = stKey(t), w = t.assignee ? firstName(nameOf(t)) : "", multi = hasRange(t), ed = canEdit(t) && !t.done;
-  var tip = t.title + (t.assignee ? " · "+nameOf(t) : " · שלי") + " · " + STL[k] + (t.due ? " · "+(multi ? rangeLabel(t)+" ("+rangeDays(t)+" ימים)" : whenLabel(t.due)) : "");
-  var st = o.col ? ' style="grid-column:'+o.col+' / span '+o.span+';grid-row:'+o.row+'"' : '';
-  return '<button type="button" class="cev s-'+k+(t.done?" done":"")+(multi?" multi":"")+(o.cs?" cs":"")+(o.ce?" ce":"")+(ed?"":" ro")+'" data-id="'+esc(t.id)+'" data-act="edit" draggable="'+(ed?"true":"false")+'" title="'+esc(tip)+'"'+st+'>' +
+  var k = stKey(t), w = t.assignee ? firstName(nameOf(t)) : "", multi = hasRange(t), ed = canEdit(t) && !t.done, sg = stgOn(t), pc = stgPct(t);
+  var tip = t.title + (t.assignee ? " · "+nameOf(t) : " · שלי") + " · " + STL[k] + (t.due ? " · "+(multi ? rangeLabel(t)+" ("+rangeDays(t)+" ימים)" : whenLabel(t.due)) : "") + (sg ? " · "+pc+"% בוצע ("+ckDone(t)+" מתוך "+ckOf(t).length+" שלבים)" : "");
+  var st = o.col || sg ? ' style="'+(o.col ? 'grid-column:'+o.col+' / span '+o.span+';grid-row:'+o.row+';' : '')+(sg ? '--p:'+pc+'%' : '')+'"' : '';
+  return '<button type="button" class="cev s-'+k+(t.done?" done":"")+(multi?" multi":"")+(sg?" stg":"")+(o.cs?" cs":"")+(o.ce?" ce":"")+(ed?"":" ro")+'" data-id="'+esc(t.id)+'" data-act="edit" draggable="'+(ed?"true":"false")+'" title="'+esc(tip)+'"'+st+'>' +
     (!multi && o.showTime && t.due ? '<small class="num">'+hm(new Date(t.due))+'</small>' : '') +
-    '<span>'+(t.urg && !t.done ? "🚨 " : "")+esc(t.title)+'</span>' +
+    '<span>'+(t.urg && !t.done ? "🚨 " : "")+esc(t.title)+'</span>' + (sg ? '<small class="pc num">'+pc+'%</small>' : '') +
     (multi ? '<small class="num">'+dmOf(t.from)+'–'+dmOf(t.due)+'</small>' : '') + (w ? '<small>'+esc(w)+'</small>' : '') + '</button>';
 }
 function renderCal(list){
@@ -2442,7 +2505,7 @@ function syncLoad(){
   Array.prototype.forEach.call($("towho").querySelectorAll(".ld"), function(el){ var n = loadOn(el.dataset.l, day0); el.textContent = n ? "· "+n : "· פנוי"; el.classList.toggle("busy", n>=4); });
 }
 /* 🚨 / ☑ / 📷 for the task being written */
-var opt = {urg:false, ck:false, ph:false, rng:false};
+var opt = {urg:false, ck:false, ph:false, rng:false, stg:false};
 /* "מ-26.10 עד 30.10" in the text, or the two date boxes */
 var RNG_RE = /(^|\s)(?:מ-?|מתאריך\s*)?(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?\s*(?:עד|-|–)\s*(?:ה-?|ל-?)?(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?(?=\s|$)/;
 function mkDay(d, m, y){ var now = new Date(), yy = y ? (+y < 100 ? 2000 + +y : +y) : now.getFullYear(), x = new Date(yy, +m-1, +d);
@@ -2464,16 +2527,21 @@ function syncOpts(forWorker){
     b.setAttribute("aria-pressed", String(!!on));
     if(k==="ph"){ b.disabled = !forWorker; b.title = forWorker ? "" : "תמונה בדיווח היא למשימות של עובדים"; }
   });
-  $("ck-in").hidden = !opt.ck; $("rng-in").hidden = !opt.rng;
+  $("ck-in").hidden = !opt.ck; $("rng-in").hidden = !opt.rng; $("stg-in").hidden = !opt.stg;
 }
 $("opts").addEventListener("click", function(ev){
   var b = ev.target.closest("button[data-o]"); if(!b || b.disabled) return; var k = b.dataset.o;
-  opt[k] = !opt[k]; syncOpts(); updatePreview();
+  opt[k] = !opt[k];
+  if(k==="ck" && opt.ck) opt.stg = false;
+  if(k==="stg" && opt.stg){ opt.ck = false; if(!$("stg-in").querySelector(".stgrow")) stgEd($("stg-in"), ckParse($("ck-in").value)); }
+  syncOpts(); updatePreview();
   if(k==="ck" && opt.ck) setTimeout(function(){ $("ck-in").focus(); }, 30);
+  else if(k==="stg" && opt.stg) setTimeout(function(){ var e = $("stg-in").querySelector("textarea"); if(e) e.focus(); }, 30);
   else if(k==="rng" && opt.rng){ if(!$("rng-from").value) $("rng-from").value = dayInput(Date.now()); setTimeout(function(){ $("rng-to").focus(); }, 30); }
   else inp.focus();
 });
 ["rng-from","rng-to"].forEach(function(k){ $(k).addEventListener("input", updatePreview); });
+stgWire($("stg-in"), updatePreview);
 $("towho").addEventListener("click", function(ev){ var b = ev.target.closest("button[data-u]"); if(!b) return; target = b.dataset.u||null; syncTowho(); updatePreview(); inp.focus(); });
 function resolveInput(v){ var m = matchPerson(v); return {w: m ? m.w : (target ? worker(target) : null), text: m ? m.rest : v}; }
 function updatePreview(){
@@ -2482,8 +2550,8 @@ function updatePreview(){
   var r = resolveInput(v), x = parseExtras(r.text), rg = pickRange(x.text), p = parseTask(rg ? rg.text : x.text);
   if(rg) p.due = rangeDue(rg, p.due);
   if(x.rep && !p.due) p.due = firstDue(x.rep);
-  var ckn = opt.ck ? ckParse($("ck-in").value).length : 0;
-  var ex = (x.urg || opt.urg ? '<span class="chip urgc">🚨 דחוף</span>' : '') + (x.rep ? '<span class="chip plain">🔁 '+esc(REP_L[x.rep])+'</span>' : '') + (ckn ? '<span class="chip plain num">☑ '+ckn+' סעיפים</span>' : '') + (opt.ph && r.w ? '<span class="chip plain">📷 תמונה</span>' : '');
+  var ckn = opt.ck ? ckParse($("ck-in").value).length : 0, stn = opt.stg ? stgRead($("stg-in")).length : 0;
+  var ex = (x.urg || opt.urg ? '<span class="chip urgc">🚨 דחוף</span>' : '') + (x.rep ? '<span class="chip plain">🔁 '+esc(REP_L[x.rep])+'</span>' : '') + (ckn ? '<span class="chip plain num">☑ '+ckn+' סעיפים</span>' : '') + (stn ? '<span class="chip stgc num">📶 '+stn+' שלבים</span>' : '') + (opt.ph && r.w ? '<span class="chip plain">📷 תמונה</span>' : '');
   var how = r.w ? (linkedW(r.w.id) && !r.w.wa ? "לאפליקציה של "+r.w.name : "ל"+r.w.name+" בוואטסאפ") : "לרשימה שלך";
   $("preview").innerHTML = ex + '<span class="chip app">'+esc(how)+'</span>' + (rg ? '<span class="chip soon num">📆 '+esc(dmOf(rg.from)+" – "+dmOf(p.due)+" · "+hm(new Date(p.due)))+'</span><span class="num">'+(Math.round((startOfDay(new Date(p.due)) - rg.from)/86400000)+1)+' ימים</span>' : p.due ? '<span class="chip soon num">'+esc(whenLabel(p.due))+'</span><span class="num">'+esc(relLabel(p.due))+'</span>' : '<span>בלי מועד. אפשר להוסיף "מחר ב-10" או "בעוד שעה".</span>');
 }
@@ -2499,6 +2567,7 @@ $("form").addEventListener("submit", function(ev){
   if(rg) o.from = rg.from;
   if(x.urg || opt.urg) o.urg = true; if(x.rep) o.rep = x.rep;
   var ckIn = opt.ck ? ckParse($("ck-in").value) : []; if(ckIn.length) o.ck = ckIn;
+  var stIn = opt.stg ? stgRead($("stg-in")) : []; if(stIn.length){ o.ck = stIn; o.stg = true; }
   if(r.w){ o.assignee = r.w.id; o.assigneeName = r.w.name; o.sentAt = now; o.tok = randStr(10); if(opt.ph) o.phq = true; }
   doOp(o);
   if(r.w){
@@ -2506,7 +2575,7 @@ $("form").addEventListener("submit", function(ev){
     if(lw && !r.w.wa){ var id0 = o.id; toast("📱 נשלחה לאפליקציה של "+r.w.name, "גם וואטסאפ", function(){ openWa(r.w.phone, taskMessage(view[id0], r.w, false)); }); }
     else { openWa(r.w.phone, taskMessage(view[o.id], r.w, false)); toast("נשמרה ונפתחה בוואטסאפ ל"+r.w.name); }
   } else toast(rg ? "נוספה · "+rangeLabel(view[o.id]) : p.due ? "נוספה · "+whenLabel(p.due) : "נוספה לרשימה");
-  inp.value = ""; opt = {urg:false, ck:false, ph:false, rng:false}; $("ck-in").value = ""; $("rng-from").value = ""; $("rng-to").value = ""; updatePreview(); syncOpts();
+  inp.value = ""; opt = {urg:false, ck:false, ph:false, rng:false, stg:false}; $("ck-in").value = ""; $("stg-in").innerHTML = ""; $("rng-from").value = ""; $("rng-to").value = ""; updatePreview(); syncOpts();
 });
 
 /* ---------- edit ---------- */
@@ -2550,7 +2619,10 @@ function openEdit(id){
   var ck = ckOf(t); $("edit-ck").value = ck.join("\n");
   $("edit-ck-st").innerHTML = ck.length && Array.isArray(t.ckd) ? ck.map(function(c,i){ var y = t.ckd.indexOf(i)>=0; return '<span class="'+(y?"y":"")+'">'+(y?"☑ ":"☐ ")+esc(c)+'</span>'; }).join("") + '<span>'+esc(nameOf(t))+' סימן '+ckDone(t)+' מתוך '+ck.length+'</span>' : "";
   var ro = !canEdit(t), pm = pmOf(t);
-  ["edit-title","edit-who","edit-from","edit-due","edit-urg","edit-phq","edit-rpt","edit-ck"].forEach(function(k){ $(k).disabled = ro || (k==="edit-rpt" && !!t.repNext); });
+  $("edit-stg").checked = !!t.stg; stgEd($("edit-stgs"), t.stg ? ck : []);
+  $("edit-stg-st").innerHTML = stgOn(t) && (t.assignee || ckDone(t)) ? stgStatus(t) : ""; syncStgField();
+  Array.prototype.forEach.call($("edit-stgs").querySelectorAll("textarea,button"), function(e){ e.disabled = ro; }); $("edit-stgs").querySelector("[data-sa]").hidden = ro;
+  ["edit-title","edit-who","edit-from","edit-due","edit-urg","edit-phq","edit-rpt","edit-ck","edit-stg"].forEach(function(k){ $(k).disabled = ro || (k==="edit-rpt" && !!t.repNext); });
   Array.prototype.forEach.call($("edit-quick").querySelectorAll("button"), function(b){ b.disabled = ro; });
   $("edit-quick").hidden = ro; $("edit-save").hidden = ro; $("edit-del").hidden = ro;
   $("edit-h").textContent = ro ? "פרטי המשימה" : "עריכת משימה";
@@ -2560,6 +2632,13 @@ function openEdit(id){
   fillEditPh(t); $("edit-ov").hidden = false; (ro ? $("edit-cancel") : $("edit-title")).focus();
 }
 function closeEdit(){ $("edit-ov").hidden = true; editing = null; }
+function syncStgField(){ var on = $("edit-stg").checked; $("edit-stgs-f").hidden = !on; $("edit-ck-f").hidden = on; }
+$("edit-stg").addEventListener("change", function(){
+  if($("edit-stg").checked){ if(!stgRead($("edit-stgs")).length) stgEd($("edit-stgs"), ckParse($("edit-ck").value)); }
+  else if(!ckParse($("edit-ck").value).length) $("edit-ck").value = stgRead($("edit-stgs")).join("\n");
+  syncStgField(); if($("edit-stg").checked) setTimeout(function(){ stgFit($("edit-stgs")); }, 0);
+});
+stgWire($("edit-stgs"));
 function syncRptHint(){ var r = $("edit-rpt").value, v = $("edit-due").value, due = v ? new Date(v).getTime() : null;
   $("edit-rpt-h").textContent = $("edit-rpt").disabled ? "המשימה הבאה בתור כבר נוצרה. כדי לשנות את החזרה, ערוך אותה." : !r ? "" : "כשהמשימה תאושר, או כשהמועד יעבור, המערכת תיצור לבד את הבאה בתור"+(due ? ": "+whenLabel(nextOcc(due, r)) : " (בלי מועד, תתחיל מחר ב-09:00)")+"."; }
 $("edit-rpt").addEventListener("change", syncRptHint);
@@ -2586,7 +2665,9 @@ $("edit-save").addEventListener("click", function(){
   if(from !== (hasRange(old) ? old.from : null)){ o.from = from; changed = true; }
   if(moved){ var nw = who && worker(who); o.assignee = who; o.assigneeName = nw ? nw.name : null; changed = true; if(who){ o.sentAt = Date.now(); if(!old.tok) o.tok = randStr(10); } }
   var rpt = $("edit-rpt").value || null; if(rpt && !due && !old.due){ due = firstDue(rpt); o.due = due; changed = true; }
-  var urg = $("edit-urg").checked, phq = !!(who && $("edit-phq").checked), ckN = ckParse($("edit-ck").value), notify = false;
+  var stgN = $("edit-stg").checked, urg = $("edit-urg").checked, phq = !!(who && $("edit-phq").checked), ckN = stgN ? stgRead($("edit-stgs")) : ckParse($("edit-ck").value), notify = false;
+  if(!ckN.length) stgN = false;
+  if(stgN !== !!old.stg){ o.stg = stgN; changed = true; notify = true; }
   if(urg !== !!old.urg){ o.urg = urg; changed = true; if(urg) notify = true; }
   if(phq !== !!old.phq){ o.phq = phq; changed = true; if(phq) notify = true; }
   if(!old.repNext && (rpt||null) !== (old.rep||null)){ o.rep = rpt; changed = true; }
