@@ -1286,9 +1286,10 @@ function dbOp(o, t){
       var due = +o.due || null, fr = +o.from || null; if(fr && !(due && fr < due)) fr = null;
       var r = {id:o.id, title:String(o.title||"").trim().slice(0,500), due:isoOf(due), deadline:isoOf(due), deadline_first:isoOf(due),
         created_by:cfg.id, assignee:o.assignee || (isSys() ? null : cfg.id), urgent:!!o.urg, rep:REP_L[o.rep] ? o.rep : null,
-        checklist:(o.ck && o.ck.length) ? o.ck : null, stages:!!(o.stg && o.ck && o.ck.length), photo_required:!!(o.assignee && o.phq),
+        checklist:(o.ck && o.ck.length) ? o.ck : null, photo_required:!!(o.assignee && o.phq),
         sent_at:o.assignee ? isoOf(o.sentAt || at) : null, created_at:isoOf(at), extra:{tok:o.tok || randStr(12)}};
       if(fr) r.extra.from = fr;
+      if(o.stg && o.ck && o.ck.length) r.stages = true;
       return T.insert(r);
     }
     case "edit": {
