@@ -1149,7 +1149,9 @@ function loadAll(){
   var qs = [
     run(sb.from("people").select("*")),
     run(sb.from("departments").select("*").order("sort")),
-    run(sb.from("tasks").select("*").or("done.eq.false,done_at.gte."+since+",updated_at.gte."+since).order("created_at").limit(5000))
+    run(sb.from("tasks").select("*").or("done.eq.false,done_at.gte."+since+",updated_at.gte."+since).order("created_at").limit(5000)),
+    /* who has the app on a phone (signed in there): their tasks reach the app by themselves, no WhatsApp needed */
+    Promise.resolve(sb.rpc("team_versions")).then(function(r){ return r; }, function(){ return {data:[]}; })
   ];
   loading = Promise.all(qs).then(function(res){
     var ppl = res[0].data || [], meP = null;
@@ -1178,7 +1180,9 @@ function rollRecurring(){
     if(n > 0){ toast(n===1 ? "🔁 נוצרה המשימה הקבועה הבאה" : "🔁 נוצרו "+n+" משימות קבועות"); reload(0); } }, function(){});
 }
 function buildSnap(res, meP, role, mt){
-  var ppl = res[0].data || [], deps = res[1].data || [], rowsT = res[2].data || [];
+  var ppl = res[0].data || [], deps = res[1].data || [], rowsT = res[2].data || [], onApp = {};
+  ((res[3] && Array.isArray(res[3].data)) ? res[3].data : []).forEach(function(d){ var s0 = d && d.seen ? Date.parse(d.seen) : 0;
+    if(d && d.id && s0 && Date.now() - s0 < 21*86400000) onApp[d.id] = 1; });
   var me = meP.id, names = {}, owner = null;
   ppl.forEach(function(p){ names[p.id] = p.name; if(p.role==="owner") owner = p; });
   cfg = {id:me, mgr:role!=="sys", role:role, name:meP.name, user:meP.username||"", at:(cfg && cfg.at) || Date.now()};
@@ -1189,7 +1193,7 @@ function buildSnap(res, meP, role, mt){
     else if((role==="dept" || role==="area") && w.boss===me){ see[w.id] = asg[w.id] = 1; }
   });
   var ws = act.filter(function(w){ return see[w.id]; }).map(function(w){
-    return {id:w.id, name:w.name, phone:w.phone||"", wa:false, linked:false, role:w.role, dept:w.dept||null,
+    return {id:w.id, name:w.name, phone:w.phone||"", wa:false, linked:false, app:!!onApp[w.id], role:w.role, dept:w.dept||null,
       boss:(owner && w.boss===owner.id) ? null : (w.boss||null), asg:!!asg[w.id], user:w.username||null, login:!!w.user_id, leg:w.legacy_id||null}; });
   var list = [];
   rowsT.forEach(function(r){
@@ -1448,7 +1452,7 @@ function localOrg(o){
 }
 function nameOf(t){ var w = t.assignee && worker(t.assignee); return w ? w.name : (t.assigneeName || "עובד"); }
 function firstName(n){ return String(n||"").trim().split(/\s+/)[0] || ""; }
-function linkedW(id){ var w = id && worker(id); return w && w.linked && w.topic && w.key ? w : null; }
+function linkedW(id){ var w = id && worker(id); return w && ((w.linked && w.topic && w.key) || w.app) ? w : null; }
 function feedW(id){ var w = id && worker(id); return w && (w.linked || w.feed) && w.topic && w.key ? w : null; }
 function myName(){ return (snap && snap.me && snap.me.name) || (cfg && (cfg.mgr ? cfg.name : cfg.mName)) || ""; }
 function stOf(t){ if(t.done) return "done"; if(t.reported) return "review"; if(t.ext && t.ext.st==="pending") return "extreq"; if(t.rej) return "rej";
@@ -1489,7 +1493,8 @@ function sendToWorker(t, reminder, forceWa){
   doOp({k:"sent", id:t.id});
   var fw = feedW(w.id);
   if(fw && reminder){ var x = wTask(view[t.id]||t); if(x) pushW(fw, {op:"up", t:x}); }
-  if(linkedW(w.id) && !forceWa && !w.wa) return true;
+  /* a reminder to someone on the app (database) would not ring his phone, so it still goes by WhatsApp */
+  if(linkedW(w.id) && !forceWa && !w.wa && !(reminder && !w.linked)) return true;
   openWa(w.phone, taskMessage(view[t.id]||t, w, reminder)); return false;
 }
 function matchPerson(text){
@@ -1870,7 +1875,8 @@ function reassign(id, wid){
   if(who){ o.sentAt = Date.now(); if(!old.tok) o.tok = randStr(10); }
   doOp(o);
   var t2 = view[id];
-  if(nw){ var ao = linkedW(nw.id) && !nw.wa; if(!ao) openWa(nw.phone, taskMessage(t2, nw, false)); toast(ao ? "📱 הועברה לאפליקציה של "+nw.name : "הועברה ונפתחה בוואטסאפ ל"+nw.name); }
+  if(nw){ var ao = linkedW(nw.id) && !nw.wa; if(!ao){ openWa(nw.phone, taskMessage(t2, nw, false)); toast("הועברה ונפתחה בוואטסאפ ל"+nw.name); }
+    else toast("📱 הועברה לאפליקציה של "+nw.name, "גם וואטסאפ", function(){ var x = view[id]; if(x) openWa(nw.phone, taskMessage(x, nw, false)); }); }
   else toast("המשימה הועברה אליך");
 }
 function dropTo(id, col){
@@ -2716,7 +2722,8 @@ $("edit-save").addEventListener("click", function(){
   if(!changed){ toast("לא שונה כלום"); return; }
   doOp(o);
   var t2 = view[id], w2 = t2 && t2.assignee && worker(t2.assignee);
-  if(w2 && sendIt){ var ao = linkedW(w2.id) && !w2.wa; if(!ao) openWa(w2.phone, taskMessage(t2, w2, false)); toast(ao ? "📱 נשמר ועודכן באפליקציה של "+w2.name : "נשמר ונפתח בוואטסאפ ל"+w2.name); }
+  if(w2 && sendIt){ var ao = linkedW(w2.id) && !w2.wa; if(!ao){ openWa(w2.phone, taskMessage(t2, w2, false)); toast("נשמר ונפתח בוואטסאפ ל"+w2.name); }
+    else toast("📱 נשמר ועודכן באפליקציה של "+w2.name, "גם וואטסאפ", function(){ var x = view[id]; if(x) openWa(w2.phone, taskMessage(x, w2, false)); }); }
   else toast("נשמר");
 });
 $("edit-cancel").addEventListener("click", closeEdit);
