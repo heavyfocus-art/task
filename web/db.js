@@ -129,19 +129,30 @@
     };
     /* the code window. Resolves true once the session is two-step, false if the person chose to sign out;
        rejects (with .status) when the server can't be reached or the sign-in has expired. */
+    var PEND = "rs-mfa-pending";
+    function dropPend(){ try{ localStorage.removeItem(PEND); }catch(e){} }
     this.mfaGate = function(opt){
       opt = opt || {};
       if(claims().aal==="aal2") return Promise.resolve(true);
-      var mfa = self.mfa;
+      var mfa = self.mfa, uid = sess && sess.user && sess.user.id, pend = null;
+      /* a set-up that was started and not finished (the page reloaded, the app went to the authenticator and back):
+         keep the same key, so the code the authenticator already shows still works */
+      try{ pend = JSON.parse(localStorage.getItem(PEND) || "null"); }catch(e){ pend = null; }
+      if(pend && (pend.user!==uid || !pend.totp)) pend = null;
       return mfa.factors().then(function(r){
         if(r.error) throw r.error;
         var ver = r.data.filter(function(f){ return f.status==="verified"; })[0] || null;
         var stale = r.data.filter(function(f){ return f.status!=="verified"; });
-        var clean = stale.reduce(function(p, f){ return p.then(function(){ return mfa.unenroll(f.id); }); }, Promise.resolve());
-        return clean.then(function(){ return ver ? {id:ver.id} : mfa.enroll().then(function(e){
+        var same = !ver && pend && stale.some(function(f){ return f.id===pend.id; }) ? pend : null;
+        if(ver || !same) dropPend();
+        var clean = stale.filter(function(f){ return !same || f.id!==same.id; })
+          .reduce(function(p, f){ return p.then(function(){ return mfa.unenroll(f.id); }); }, Promise.resolve());
+        return clean.then(function(){ return ver ? {id:ver.id} : same ? {id:same.id, totp:same.totp} : mfa.enroll().then(function(e){
           /* two-step sign-in switched off on the server: let the person in rather than lock everyone out */
           if(e.error && e.error.status >= 400 && e.error.status < 500 && /not.?enabled|disabled/i.test(String(e.error.message || "") + " " + String(e.error.code || ""))){ self.mfaOff = true; return null; }
-          if(e.error) throw e.error; return e.data; }); });
+          if(e.error) throw e.error;
+          try{ localStorage.setItem(PEND, JSON.stringify({user:uid, id:e.data.id, totp:e.data.totp})); }catch(x){}
+          return e.data; }); });
       }).then(function(f){ if(!f) return true; return new Promise(function(done){ gateUi(f, opt, done); }); });
     };
     function gateUi(f, opt, done){
@@ -158,7 +169,8 @@
           '<ol style="margin:0;padding-inline-start:20px;font-size:15px;line-height:1.6"><li>מתקינים בטלפון <b>Google Authenticator</b> או <b>Microsoft Authenticator</b> (חינם, מחנות האפליקציות).</li>' +
           '<li>'+(opt.phone ? 'לוחצים "פתיחה באפליקציית האימות", או מוסיפים חשבון ומקלידים את המפתח.' : 'באפליקציה לוחצים + וסורקים את הקוד.')+'</li>' +
           '<li>מקלידים כאן את 6 הספרות שמופיעות באפליקציה תחת Rosh Shaket.</li></ol>' +
-          (opt.phone ? '<a href="'+esc(f.totp.uri)+'" style="display:block;text-align:center;padding:12px;border-radius:12px;background:'+C.acc+';color:#fff;text-decoration:none;font-weight:700">פתיחה באפליקציית האימות</a>'
+          (opt.phone ? '<a href="'+esc(f.totp.uri)+'" style="display:block;text-align:center;padding:12px;border-radius:12px;background:'+C.acc+';color:#fff;text-decoration:none;font-weight:700">פתיחה באפליקציית האימות</a>' +
+                       '<div style="font-size:13px;color:'+C.muted+'">לא נפתח כלום? קודם מתקינים את אפליקציית האימות מ-Google Play, ואז לוחצים שוב. אחרי ששמרת בה את Rosh Shaket, חוזרים לכאן ומקלידים את הקוד.</div>'
                      : '<img alt="קוד לסריקה באפליקציית האימות" src="'+esc(f.totp.qr_code)+'" style="width:200px;height:200px;align-self:center;background:#fff;border-radius:8px;padding:6px">') +
           '<div style="font-size:13px;color:'+C.muted+'">אין אפשרות לסרוק? בוחרים "הקלדת מפתח" ומקלידים:</div>' +
           '<div dir="ltr" style="font-family:monospace;font-size:15px;background:#EEF1F6;border-radius:8px;padding:8px 10px;text-align:center;user-select:all;-webkit-user-select:all;word-break:break-all">'+esc(secret)+'</div>';
@@ -184,7 +196,7 @@
         go.disabled = true; go.textContent = "בודק…"; e.textContent = "";
         self.mfa.verify(f.id, code).then(function(r){
           go.disabled = false; go.textContent = setup ? "אישור והפעלה" : "כניסה";
-          if(!r.error){ finish(true); return; }
+          if(!r.error){ dropPend(); finish(true); return; }
           var m = String(r.error.message || "");
           e.textContent = /fetch|network/i.test(m) ? "אין חיבור לאינטרנט. נסה שוב."
             : r.error.status===429 ? "יותר מדי ניסיונות. חכה דקה ונסה שוב."
