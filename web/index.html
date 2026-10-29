@@ -1179,7 +1179,7 @@ function buildSnap(res, meP, role, mt){
   var act = ppl.filter(function(p){ return p.active && p.id!==me && p.role!=="owner"; }), see = {}, asg = {};
   act.forEach(function(w){
     if(role==="sys"){ see[w.id] = asg[w.id] = 1; }
-    else if(role==="admin"){ if(w.role==="area" || w.role==="tech"){ see[w.id] = 1; if(w.role==="area") asg[w.id] = 1; } }
+    else if(role==="admin"){ if(adminCovers(meP.dept, w)) see[w.id] = asg[w.id] = 1; }
     else if((role==="dept" || role==="area") && w.boss===me){ see[w.id] = asg[w.id] = 1; }
   });
   var ws = act.filter(function(w){ return see[w.id]; }).map(function(w){
@@ -1408,6 +1408,17 @@ function isSys(){ return !(cfg && cfg.mgr); }
 function myRole(){ return isSys() ? "sys" : ((snap && snap.me && ROLE_L[snap.me.role] && snap.me.role) || cfg.role || "dept"); }
 function roleOf(w){ return w && ROLE_L[w.role] && w.role!=="sys" ? w.role : "tech"; }
 function isMgrW(w){ var r = roleOf(w); return r==="dept" || r==="area" || r==="admin"; }
+/* administration manager: only the area managers of the department set on her row (none set = all area managers) */
+function adminCovers(myDept, w){ return !!w && w.role==="area" && (!myDept || w.dept===myDept); }
+/* who may be someone's direct manager (besides the system manager, who always may):
+   department manager -> only the system manager; area manager / administration -> the manager of their own department */
+function bossOk(w, x){
+  if(!w || !x || x.id===w.id) return false;
+  var r = roleOf(w), xr = roleOf(x);
+  if(r==="dept") return false;
+  if(r==="area" || r==="admin") return xr==="dept" && !!w.dept && x.dept===w.dept;
+  return isMgrW(x);
+}
 function canMaint(){ var r = myRole(); return r==="sys" || r==="admin"; }
 function asgW(){ return workers().filter(function(w){ return isSys() || w.asg; }); }
 function pmOf(t){ return isSys() ? "full" : (t.pm || "full"); }
@@ -2064,16 +2075,18 @@ function renderOrg(){
   h += '<section class="card mpanel imcard"><div><h3>📲 העברה מהטלפון</h3><p class="hint" style="margin:4px 0 0">מעביר מהאפליקציה בטלפון את העובדים, המחלקות, המשימות ודו״ח הטיפולים. אפשר להריץ שוב: מה שכבר עבר לא יוכפל.</p></div><button class="btn primary" type="button" data-imp>העברה מהטלפון</button></section>';
   h += '<section class="card mpanel"><h3>מי רואה מה</h3><div class="roles">' +
     '<div><b>מנהל מערכת (אתה)</b>רואה הכול, קובע תפקידים, מחלקות וממונים</div>' +
-    '<div><b>מנהל מחלקה</b>רואה את העובדים שהוגדרו תחתיו ומחלק להם משימות</div>' +
-    '<div><b>מנהל אזור</b>רואה משימות שקיבל ממך ומהאדמיניסטרציה, ומחלק משימות לעובדים שתחתיו</div>' +
-    '<div><b>מנהלת אדמיניסטרציה</b>רואה את כל מנהלי האזור והטכנאים, נותנת משימות למנהלי אזור, ומנהלת את דו״ח הטיפולים</div>' +
+    '<div><b>מנהל מחלקה</b>רואה את העובדים שהוגדרו תחתיו ומחלק להם משימות. הממונה הישיר שלו: מנהל המערכת</div>' +
+    '<div><b>מנהל אזור</b>רואה משימות שקיבל ממך, ממנהל המחלקה ומהאדמיניסטרציה, ומחלק משימות לעובדים שתחתיו. הממונה הישיר: מנהל המחלקה שלו או מנהל המערכת</div>' +
+    '<div><b>מנהלת אדמיניסטרציה</b>רואה רק את המשימות שלה ואת המשימות של מנהלי האזור במחלקה שנבחרה לה בעמודה "מחלקה" (למשל שירות), פותחת להם משימות, ומנהלת את דו״ח הטיפולים. בלי מחלקה: רואה את כל מנהלי האזור</div>' +
     '<div><b>טכנאי</b>רואה רק את המשימות שלו, כמו היום</div></div></section>';
   h += '<section class="card mpanel"><h3>מחלקות</h3><div class="dchips">' + (vdepts.length ? vdepts.map(function(d){
       var n = ws.filter(function(w){ return w.dept===d.id; }).length, armed = deptDelArmed===d.id;
       return '<span class="dchip">'+esc(d.name)+' <span class="n num">'+n+'</span><button type="button" data-ddel="'+esc(d.id)+'" aria-label="'+esc((armed ? "לחץ שוב כדי למחוק את מחלקת " : "מחיקת מחלקת ")+d.name)+'" title="'+(armed ? "למחוק? לחץ שוב" : "מחיקה")+'">'+(armed ? "?" : "✕")+'</button></span>'; }).join("") : '<span class="hint">עוד אין מחלקות.</span>') + '</div>' +
     '<form class="addrow" id="dept-add" autocomplete="off"><input id="dept-new" placeholder="שם מחלקה חדשה, למשל: שירות" maxlength="60" aria-label="שם מחלקה חדשה"><button class="btn primary" type="submit">+ פתיחת מחלקה</button></form></section>';
-  function bossOpts(w){ var o = '<option value="">אני (מנהל המערכת)</option>';
-    ws.forEach(function(x){ if(x.id===w.id || (!isMgrW(x) && w.boss!==x.id)) return; o += '<option value="'+esc(x.id)+'"'+(w.boss===x.id ? " selected" : "")+'>'+esc(x.name)+' · '+ROLE_L[roleOf(x)]+'</option>'; });
+  function bossOpts(w){ var o = '<option value="">אני (מנהל המערכת)</option>', r = roleOf(w);
+    ws.forEach(function(x){ if(x.id===w.id || (!bossOk(w, x) && w.boss!==x.id)) return; o += '<option value="'+esc(x.id)+'"'+(w.boss===x.id ? " selected" : "")+'>'+esc(x.name)+' · '+ROLE_L[roleOf(x)]+(x.dept && x.dept!==w.dept ? ' · '+esc(deptName(x.dept)) : '')+'</option>'; });
+    if((r==="area" || r==="admin") && !w.dept) o += '<option value="" disabled>כדי לבחור מנהל מחלקה, קודם בוחרים מחלקה</option>';
+    else if((r==="area" || r==="admin") && !ws.some(function(x){ return bossOk(w, x); })) o += '<option value="" disabled>אין עדיין מנהל מחלקה ל'+esc(deptName(w.dept))+'</option>';
     return o; }
   h += '<section class="card" style="overflow:hidden"><div class="otable"><div class="otr h"><span>עובד</span><span>תפקיד</span><span>מחלקה</span><span>ממונה ישיר</span><span>כניסה למערכת</span></div>';
   if(!ws.length) h += '<div class="wempty">עוד אין עובדים. מוסיפים אותם במסך "צוות ומחלקות".</div>';
@@ -2099,9 +2112,13 @@ function renderOrg(){
     var w = worker(row.dataset.w); if(!w) return;
     var o = {k:"wset", wid:w.id}; o[sl.dataset.o] = sl.value || null;
     if(sl.dataset.o==="role") o.role = sl.value || "tech";
+    /* a new role or department can make the current direct manager not allowed: then it goes back to the system manager */
+    var nw = Object.assign({}, w, o), bw = nw.boss && worker(nw.boss), reset = false;
+    if(sl.dataset.o!=="boss" && bw && !bossOk(nw, bw)){ o.boss = null; reset = true; }
     doOp(o);
-    if(sl.dataset.o==="role") toast(w.name+" · "+ROLE_L[roleOf(worker(w.id))]+(isMgrW(worker(w.id)) ? ". כשייכנס למערכת, הוא יראה את מסך המנהל" : ""));
-    else toast("נשמר · "+w.name);
+    var tail = reset ? ". הממונה הישיר חזר להיות מנהל המערכת" : "";
+    if(sl.dataset.o==="role") toast(w.name+" · "+ROLE_L[roleOf(worker(w.id))]+(isMgrW(worker(w.id)) ? ". כשייכנס למערכת, הוא יראה את מסך המנהל" : "")+tail);
+    else toast("נשמר · "+w.name+tail);
   });
   box.addEventListener("submit", function(ev){
     if(ev.target.id==="p-add"){ ev.preventDefault();
