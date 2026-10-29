@@ -101,6 +101,98 @@
       });
     };
     this.session = function(){ return sess; };
+    /* ---- version 34: two-step sign-in. After the password, a 6-digit code from an authenticator app
+       (Google Authenticator / Microsoft Authenticator). The first time, the person sets the app up here. ---- */
+    function claims(){
+      try{ var p = String(sess && sess.access_token || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(decodeURIComponent(escape(atob(p + "===".slice((p.length + 3) % 4))))); }catch(e){ return {}; }
+    }
+    this.aal = function(){ return claims().aal || null; };
+    function authTok(path, body, method){
+      return token().then(function(t){ if(!t) return {data:null, error:err("not signed in", 401)}; return authCall(path, body, method, t); });
+    }
+    this.mfa = {
+      factors: function(){
+        return authTok("user", null, "GET").then(function(r){ if(r.error) return r;
+          return {data:((r.data && r.data.factors) || []).filter(function(f){ return f.factor_type==="totp"; }), error:null}; });
+      },
+      enroll: function(){ return authTok("factors", {factor_type:"totp", issuer:"Rosh Shaket", friendly_name:"rs-"+Date.now()}); },
+      unenroll: function(id){ return authTok("factors/"+encodeURIComponent(id), null, "DELETE"); },
+      verify: function(id, code){
+        var f = "factors/"+encodeURIComponent(id);
+        return authTok(f+"/challenge", {}).then(function(c){
+          if(c.error) return c;
+          return authTok(f+"/verify", {challenge_id:c.data && c.data.id, code:String(code)}).then(function(v){
+            if(v.error) return v; keep(v.data); return {data:sess, error:null}; });
+        });
+      }
+    };
+    /* the code window. Resolves true once the session is two-step, false if the person chose to sign out;
+       rejects (with .status) when the server can't be reached or the sign-in has expired. */
+    this.mfaGate = function(opt){
+      opt = opt || {};
+      if(claims().aal==="aal2") return Promise.resolve(true);
+      var mfa = self.mfa;
+      return mfa.factors().then(function(r){
+        if(r.error) throw r.error;
+        var ver = r.data.filter(function(f){ return f.status==="verified"; })[0] || null;
+        var stale = r.data.filter(function(f){ return f.status!=="verified"; });
+        var clean = stale.reduce(function(p, f){ return p.then(function(){ return mfa.unenroll(f.id); }); }, Promise.resolve());
+        return clean.then(function(){ return ver ? {id:ver.id} : mfa.enroll().then(function(e){
+          /* two-step sign-in switched off on the server: let the person in rather than lock everyone out */
+          if(e.error && e.error.status >= 400 && e.error.status < 500 && /not.?enabled|disabled/i.test(String(e.error.message || "") + " " + String(e.error.code || ""))){ self.mfaOff = true; return null; }
+          if(e.error) throw e.error; return e.data; }); });
+      }).then(function(f){ if(!f) return true; return new Promise(function(done){ gateUi(f, opt, done); }); });
+    };
+    function gateUi(f, opt, done){
+      var setup = !!(f && f.totp), d = document, C = {ink:"#14213D", muted:"#4A5568", line:"#D5DAE3", acc:"#2D4BE0", bad:"#B42318"};
+      var ov = d.createElement("div");
+      ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "rs-mfa-h"); ov.dir = "rtl";
+      ov.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(15,20,35,.6);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;font-family:inherit";
+      function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+      var secret = setup ? String(f.totp.secret || "").replace(/(.{4})/g, "$1 ").trim() : "";
+      var h = '<div style="background:#FBFBF8;color:'+C.ink+';border-radius:16px;max-width:420px;width:100%;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 40px rgba(0,0,0,.25);margin:auto">' +
+        '<h2 id="rs-mfa-h" style="margin:0;font-size:22px">🔐 '+(setup ? "הגדרת אימות דו-שלבי" : "קוד אבטחה")+'</h2>';
+      if(setup){
+        h += '<p style="margin:0;color:'+C.muted+';font-size:15px;line-height:1.5">פעם אחת בלבד: מחברים את ראש שקט לאפליקציית אימות בטלפון. מעכשיו, בכל כניסה, אחרי הסיסמה יתבקש גם הקוד מהאפליקציה.</p>' +
+          '<ol style="margin:0;padding-inline-start:20px;font-size:15px;line-height:1.6"><li>מתקינים בטלפון <b>Google Authenticator</b> או <b>Microsoft Authenticator</b> (חינם, מחנות האפליקציות).</li>' +
+          '<li>'+(opt.phone ? 'לוחצים "פתיחה באפליקציית האימות", או מוסיפים חשבון ומקלידים את המפתח.' : 'באפליקציה לוחצים + וסורקים את הקוד.')+'</li>' +
+          '<li>מקלידים כאן את 6 הספרות שמופיעות באפליקציה תחת Rosh Shaket.</li></ol>' +
+          (opt.phone ? '<a href="'+esc(f.totp.uri)+'" style="display:block;text-align:center;padding:12px;border-radius:12px;background:'+C.acc+';color:#fff;text-decoration:none;font-weight:700">פתיחה באפליקציית האימות</a>'
+                     : '<img alt="קוד לסריקה באפליקציית האימות" src="'+esc(f.totp.qr_code)+'" style="width:200px;height:200px;align-self:center;background:#fff;border-radius:8px;padding:6px">') +
+          '<div style="font-size:13px;color:'+C.muted+'">אין אפשרות לסרוק? בוחרים "הקלדת מפתח" ומקלידים:</div>' +
+          '<div dir="ltr" style="font-family:monospace;font-size:15px;background:#EEF1F6;border-radius:8px;padding:8px 10px;text-align:center;user-select:all;-webkit-user-select:all;word-break:break-all">'+esc(secret)+'</div>';
+      } else {
+        h += '<p style="margin:0;color:'+C.muted+';font-size:15px;line-height:1.5">פתח את אפליקציית האימות בטלפון (Google Authenticator או Microsoft Authenticator) והקלד את הקוד בן 6 הספרות של Rosh Shaket.</p>';
+      }
+      h += '<form id="rs-mfa-f" style="display:flex;flex-direction:column;gap:10px;margin:0" autocomplete="off">' +
+        '<label for="rs-mfa-c" style="font-size:14px;font-weight:600">הקוד מהאפליקציה</label>' +
+        '<input id="rs-mfa-c" inputmode="numeric" autocomplete="one-time-code" maxlength="8" dir="ltr" placeholder="123456" style="font:inherit;font-size:24px;letter-spacing:6px;text-align:center;padding:10px;border:1px solid '+C.line+';border-radius:12px;background:#fff;color:'+C.ink+'">' +
+        '<p id="rs-mfa-e" role="alert" style="margin:0;min-height:1.2em;color:'+C.bad+';font-size:14px"></p>' +
+        '<button id="rs-mfa-go" type="submit" style="font:inherit;font-weight:700;font-size:16px;padding:12px;border:0;border-radius:12px;background:'+C.acc+';color:#fff;cursor:pointer">'+(setup ? "אישור והפעלה" : "כניסה")+'</button>' +
+        '<button id="rs-mfa-out" type="button" style="font:inherit;font-size:14px;padding:8px;border:0;background:transparent;color:'+C.muted+';cursor:pointer;text-decoration:underline">יציאה</button>' +
+        '</form></div>';
+      ov.innerHTML = h; d.body.appendChild(ov);
+      var inp = d.getElementById("rs-mfa-c"), e = d.getElementById("rs-mfa-e"), go = d.getElementById("rs-mfa-go");
+      setTimeout(function(){ try{ inp.focus(); }catch(x){} }, 50);
+      function finish(ok){ if(ov.parentNode) ov.parentNode.removeChild(ov); done(ok); }
+      d.getElementById("rs-mfa-out").addEventListener("click", function(){ finish(false); });
+      d.getElementById("rs-mfa-f").addEventListener("submit", function(ev){
+        ev.preventDefault();
+        var code = String(inp.value || "").replace(/\D/g, "");
+        if(code.length !== 6){ e.textContent = "הקלד את 6 הספרות שמופיעות באפליקציה."; inp.focus(); return; }
+        go.disabled = true; go.textContent = "בודק…"; e.textContent = "";
+        self.mfa.verify(f.id, code).then(function(r){
+          go.disabled = false; go.textContent = setup ? "אישור והפעלה" : "כניסה";
+          if(!r.error){ finish(true); return; }
+          var m = String(r.error.message || "");
+          e.textContent = /fetch|network/i.test(m) ? "אין חיבור לאינטרנט. נסה שוב."
+            : r.error.status===429 ? "יותר מדי ניסיונות. חכה דקה ונסה שוב."
+            : "הקוד לא נכון או שפג תוקפו. הקלד את הקוד שמופיע עכשיו באפליקציה.";
+          inp.select();
+        });
+      });
+    }
     /* storage: upload one file, and short-lived links to view private files */
     function spath(p){ return String(p).split("/").map(encodeURIComponent).join("/"); }
     this.storageUpload = function(bucket, path, blob, ctype){
