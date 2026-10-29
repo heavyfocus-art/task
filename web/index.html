@@ -652,6 +652,12 @@ button.loadr:hover{background:var(--soft)}
     <div class="field" id="edit-who-f"><label for="edit-who">למי</label><select id="edit-who"></select></div>
     <div class="frow"><div class="field"><label for="edit-from">מתאריך (למשימה של כמה ימים)</label><input id="edit-from" type="date"></div><div class="field"><label for="edit-due" id="edit-due-l">מועד</label><input id="edit-due" type="datetime-local"></div></div>
     <p class="hint" id="edit-ro" hidden></p>
+    <div id="edit-own" hidden style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn primary" id="own-done" type="button">✓ סיימתי</button>
+      <div class="field"><label for="own-due">⏳ צריך עוד זמן? עד מתי</label><input id="own-due" type="datetime-local"></div>
+      <div class="field"><label for="own-note">הערה (לא חובה)</label><input id="own-note" maxlength="800" placeholder="למשל: חסר חלק, יגיע מחר"></div>
+      <button class="btn ghost" id="own-ext" type="button">שלח בקשת הארכה</button>
+    </div>
     <div class="quick" id="edit-quick">
       <button type="button" data-q="1h">בעוד שעה</button>
       <button type="button" data-q="eve">הערב 20:00</button>
@@ -1266,6 +1272,7 @@ function applyLocal(o, mark){
       break;
     case "done": if(!t) return; t.done = !!o.done; t.doneAt = o.done ? o.at : null; break;
     case "rep": if(!t || t.done || t.reported) return; t.reported = true; t.reportedAt = o.at; break;
+    case "myext": if(!t || t.done || t.reported) return; t.ext = {due:o.due, note:o.note||"", at:o.at, st:"pending"}; break;
     case "sent": if(!t) return; t.sentAt = o.at; if(t.fb && t.fb.s==="no") t.fb = null; break;
     case "del": delete view[o.id]; return;
     case "wset": localOrg(o); return;
@@ -1321,6 +1328,7 @@ function dbOp(o, t){
     }
     case "done": if(!t) return null; return T.update(toRow({done:!!o.done, doneAt:o.done ? at : null}, t)).eq("id", t.id);
     case "rep": if(!t || t.done || t.reported) return null; return T.update(toRow({reported:true, reportedAt:at}, t)).eq("id", t.id);
+    case "myext": if(!t || t.done || t.reported) return null; return T.update(toRow({ext:{due:+o.due, note:String(o.note||"").slice(0,800), at:at, st:"pending"}}, t)).eq("id", t.id);
     case "sent": { if(!t) return null; var sp = {sentAt:at}; if(t.fb && t.fb.s==="no") sp.fb = null; return T.update(toRow(sp, t)).eq("id", t.id); }
     case "del": return T.delete().eq("id", o.id);
     case "wset": {
@@ -2646,11 +2654,23 @@ function openEdit(id){
   $("edit-quick").hidden = ro; $("edit-save").hidden = ro; $("edit-del").hidden = ro;
   $("edit-h").textContent = ro ? "פרטי המשימה" : "עריכת משימה";
   $("edit-ro").hidden = !ro;
-  $("edit-ro").textContent = pm==="own" ? "את המשימה הזאת קיבלת מ"+(t.byName || "המנהל")+". כשסיימת, לחץ \"✓ סיימתי\" בשורה שלה."
+  var s1 = stOf(t), ownOpen = pm==="own" && !t.done && !t.reported && s1!=="extreq";
+  $("edit-own").hidden = !ownOpen;
+  if(ownOpen){ $("own-note").value = ""; $("own-due").value = toLocalInput(Math.max(t.due || 0, Date.now()) + 86400000); }
+  $("edit-ro").textContent = pm==="own" ? (t.reported ? "✓ דיווחת שסיימת · ממתין לאישור של "+(t.byName || "המנהל")
+      : s1==="extreq" ? "⏳ ביקשת הארכה עד "+whenLabel(t.ext.due)+" · ממתין לתשובה של "+(t.byName || "המנהל")
+      : "את המשימה הזאת קיבלת מ"+(t.byName || "המנהל")+". כשסיימת, לחץ \"✓ סיימתי\". צריך עוד זמן? בקש הארכה.")
     : pm==="ctl" ? "את המשימה הזאת נתן "+(t.byName || "מנהל המערכת")+". אפשר לאשר ביצוע ולשלוח תזכורת, אבל לא לשנות אותה." : "אפשר רק לצפות במשימה הזאת.";
   fillEditPh(t); $("edit-ov").hidden = false; (ro ? $("edit-cancel") : $("edit-title")).focus();
 }
 function closeEdit(){ $("edit-ov").hidden = true; editing = null; }
+$("own-done").addEventListener("click", function(){ var t = editing && view[editing]; if(!t) return; closeEdit();
+  doOp({k:"rep", id:t.id}); toast("✓ סומן שסיימת. ממתין לאישור של "+(t.byName || "המנהל")); });
+$("own-ext").addEventListener("click", function(){ var t = editing && view[editing]; if(!t) return;
+  var v = $("own-due").value, d = v ? new Date(v).getTime() : 0;
+  if(!d){ toast("בחר עד מתי צריך את המשימה"); $("own-due").focus(); return; }
+  if(d <= Date.now()){ toast("המועד החדש צריך להיות בעתיד"); $("own-due").focus(); return; }
+  closeEdit(); doOp({k:"myext", id:t.id, due:d, note:$("own-note").value.trim()}); toast("⏳ נשלחה ל"+(t.byName || "המנהל")+" בקשה להאריך עד "+whenLabel(d)); });
 function syncStgField(){ var on = $("edit-stg").checked; $("edit-stgs-f").hidden = !on; $("edit-ck-f").hidden = on; }
 $("edit-stg").addEventListener("change", function(){
   if($("edit-stg").checked){ if(!stgRead($("edit-stgs")).length) stgEd($("edit-stgs"), ckParse($("edit-ck").value)); }
